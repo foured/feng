@@ -1,0 +1,149 @@
+#include <iostream>
+
+#include <glad/glad.h>
+#include <stb/stb_image.h>
+#include <glm/glm.hpp>
+
+#include "graphics/window.h"
+#include "graphics/shader.h"
+#include "logging/logging.h"
+#include "graphics/texture.h"
+#include "io/camera.h"
+#include "utilities/utilities.h"
+#include "io/input.h"
+#include "graphics/model.h"
+#include "graphics/gl_buffers/framebuffer.hpp"
+#include "graphics/skybox.h"
+#include "graphics/gl_buffers/uniformbuffer.hpp"
+#include "graphics/model2d.h"
+#include "graphics/primitives2d.h"
+#include "graphics/uimodel.h"
+#include "logic/ui/ui_layer.h"
+#include "logic/ui/ui.h"
+#include "logic/ui/components/slider.h"
+
+using namespace feng;
+
+std::vector<std::string> skybox_faces{
+	"res/textures/skyboxes/1/right.jpg",
+	"res/textures/skyboxes/1/left.jpg",
+	"res/textures/skyboxes/1/top.jpg",
+	"res/textures/skyboxes/1/bottom.jpg",
+	"res/textures/skyboxes/1/front.jpg",
+	"res/textures/skyboxes/1/back.jpg"
+};
+
+int main() {
+	window win("Feng", 800, 600);
+	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
+	shader framebuffer_shader("res/shaders/framebuffer.vs", "res/shaders/framebuffer.fs");
+	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
+	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
+	camera cam;
+	model backpack("res/models/survival_guitar_backpack/scene.gltf");
+	framebuffer fb(&framebuffer_shader);
+	skybox sb(&skybox_shader, skybox_faces);
+
+	obj_shader.set_ubo_index("Matrices", 0);
+	skybox_shader.set_ubo_index("Matrices", 0);
+
+	uniformbuffer ubuffer;
+	ubuffer.fast_setup(0, 2 * sizeof(glm::mat4));
+
+	ui::ui ui(ui_shader);
+	auto layer1 = ui.create_layer();
+	layer1->support_input = true;
+
+	auto square1 = ui.create_model(primitives2d::generate_square_mesh({0, 1, 0}));
+	auto inst1 = ui.add_instance(layer1, square1, glm::vec2(0), glm::vec2(0.5f));
+	inst1->uitransform.set_size_pix({ 300, 50 });
+	inst1->render_order = 2;
+
+	auto square2 = ui.create_model(primitives2d::generate_square_mesh({ 1, 0, 0 }));
+	auto inst2 = ui.add_instance(layer1, square2, glm::vec2(0), glm::vec2(0.5f));
+	inst2->uitransform.set_size_pix({ 10, 40 });
+	inst2->render_order = 1;
+
+	ui::slider& sl = inst1->add_component<ui::slider>(inst2.get());
+
+	bool is_spot_light_working = false;
+	ui.start();
+	while (!win.should_close())
+	{
+		utilities::update_delta_time();
+		cam.move();
+		win.process_input();
+		ui.update();
+		// prepare to render
+
+		fb.set();
+
+		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
+		if (input::get_key_down(GLFW_KEY_E)) inst1->uitransform.set_pos_pix({ 300, 300 });
+
+		glm::mat4 model(1.0f);
+		model = glm::scale(model, glm::vec3(0.01f));
+		glm::mat4 projection;
+		projection = glm::perspective(
+			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.1f, 100.0f);
+
+		ubuffer.bind();
+		ubuffer.buffer_sub_data(0, sizeof(glm::mat4), glm::value_ptr(projection));
+		ubuffer.buffer_sub_data(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(cam.get_view_matrix()));
+		ubuffer.unbind();
+
+		// start render
+
+		obj_shader.activate();
+		
+		obj_shader.set_3float("viewPos", cam.position());
+		obj_shader.set_int("isSLWorking", is_spot_light_working);
+		obj_shader.set_float("material.shininess", 32.0f);
+		
+		obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		obj_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
+		obj_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
+		obj_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
+
+		//shader.set_3float("pointLight.position", 1.2f, 1.0f, 2.0f);
+		//shader.set_3float("pointLight.ambient", glm::vec3(0.2f));
+		//shader.set_3float("pointLight.diffuse", glm::vec3(0.5f));
+		//shader.set_3float("pointLight.specular", glm::vec3(1.0f));
+		//shader.set_float("pointLight.constant", 1.0f);
+		//shader.set_float("pointLight.linear", 0.09f);
+		//shader.set_float("pointLight.quadratic", 0.032f);
+
+		obj_shader.set_3float("spotLight.position", cam.position());
+		obj_shader.set_3float("spotLight.direction", cam.front());
+		obj_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		obj_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+		obj_shader.set_3float("spotLight.ambient", glm::vec3(0.1));
+		obj_shader.set_3float("spotLight.diffuse", glm::vec3(0.8f));
+		obj_shader.set_3float("spotLight.specular", glm::vec3(1.0f));
+		obj_shader.set_float("spotLight.constant", 1.0f);
+		obj_shader.set_float("spotLight.linear", 0.09f);
+		obj_shader.set_float("spotLight.quadratic", 0.032f);
+		
+		obj_shader.set_mat4("model", model);
+
+		backpack.render(obj_shader);
+
+		sb.render(cam.get_view_matrix());
+
+		// render ui
+
+		ui.render();
+
+		// end render
+
+		fb.render();
+
+		win.swap_buffers();
+		glfwPollEvents();
+	}
+
+	fb.delete_buffer();
+
+	return 0;
+}
+
