@@ -93,4 +93,8 @@ namespace feng::ui {
 		}
 	}
 
+	glm::mat4 ui::get_projection_matrix() const {
+		return _ortho_proj;
+	}
+
 }

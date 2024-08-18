@@ -21,6 +21,7 @@
 #include "logic/ui/ui_layer.h"
 #include "logic/ui/ui.h"
 #include "logic/ui/components/slider.h"
+#include "graphics/text_renderer.h"
 
 using namespace feng;
 
@@ -35,10 +36,13 @@ std::vector<std::string> skybox_faces{
 
 int main() {
 	window win("Feng", 800, 600);
+
 	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
 	shader framebuffer_shader("res/shaders/framebuffer.vs", "res/shaders/framebuffer.fs");
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
+	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
+
 	camera cam;
 	model backpack("res/models/survival_guitar_backpack/scene.gltf");
 	framebuffer fb(&framebuffer_shader);
@@ -49,6 +53,18 @@ int main() {
 
 	uniformbuffer ubuffer;
 	ubuffer.fast_setup(0, 2 * sizeof(glm::mat4));
+
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+		return -1;
+	}
+
+	text_renderer text;
+	text.load_font("res/fonts/clacon2.ttf", ft, 48);
+
+	FT_Done_FreeType(ft);
 
 	ui::ui ui(ui_shader);
 	auto layer1 = ui.create_layer();
@@ -74,6 +90,7 @@ int main() {
 		cam.move();
 		win.process_input();
 		ui.update();
+
 		// prepare to render
 
 		fb.set();
@@ -133,6 +150,13 @@ int main() {
 		// render ui
 
 		ui.render();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		text_shader.activate();
+		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f));
+		text.render(text_shader, "Hello123", 0, 0, 1, glm::vec3(0.0f));
+		glDisable(GL_BLEND);
 
 		// end render
 

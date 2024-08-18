@@ -106,7 +106,6 @@ namespace feng {
 
 		if (mesh->mMaterialIndex >= 0) {
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
 			if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 				std::vector<texture> diffuse_maps
 					= load_material_textures(material, aiTextureType_DIFFUSE);

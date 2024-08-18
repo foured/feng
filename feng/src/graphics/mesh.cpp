@@ -62,7 +62,6 @@ namespace feng {
 		}
 
 		vertex_array.bind();
-		//vertex_array.draw_elements(GL_TRIANGLES, _indices.size());
 		vertex_array.draw_elements_inctanced(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0, no_instances);
 
 		vertexarray::unbind();

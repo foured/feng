@@ -35,10 +35,6 @@ namespace feng {
 
 		glEnable(GL_DEPTH_TEST);
 
-		// Для прозрачных объектов
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 

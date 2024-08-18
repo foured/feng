@@ -19,20 +19,7 @@ namespace feng::ui {
 		_pin->on_mouse_down.subscribe([this]() 
 			{ 
 				if(is_active)
-				_is_lmb_down = true; 
-				
-			});
-		_pin->on_mouse_in.subscribe([this]()
-			{
-				if (is_active && _is_lmb_down) {
-					float v = get_real_value();
-
-					if (v < 0) set_value(0);
-					else if (v > 1) set_value(1);
-
-					_pin->uitransform.set_pos_pix(_pin->uitransform.get_pos_pix()
-						+ glm::vec2(input::get_mouse_delta_pos().x * 2.0f, 0));
-				}
+					_is_lmb_down = true; 
 			});
 	}
 
@@ -42,6 +29,17 @@ namespace feng::ui {
 
 	void slider::update() {
 		if (is_active && input::get_mouse_key_up(GLFW_MOUSE_BUTTON_LEFT)) _is_lmb_down = false;
+		if (is_active && input::get_mouse_key(GLFW_MOUSE_BUTTON_LEFT)) {
+			if (_is_lmb_down) {
+				float v = get_real_value();
+
+				if (v < 0) set_value(0);
+				else if (v > 1) set_value(1);
+
+				_pin->uitransform.set_pos_pix(_pin->uitransform.get_pos_pix()
+					+ glm::vec2(input::get_mouse_delta_pos().x * 2.0f, 0));
+			}
+		}
 	}
 
 	float slider::calculate_w() {

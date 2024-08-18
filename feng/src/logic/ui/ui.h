@@ -29,6 +29,7 @@ namespace feng::ui {
 		void start();
 		void update();
 		void render();
+		glm::mat4 get_projection_matrix() const;
 
 	private:
 		std::vector<std::shared_ptr<uimodel>> _models;
