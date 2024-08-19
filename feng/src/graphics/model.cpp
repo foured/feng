@@ -9,11 +9,11 @@ namespace feng {
 
 	model::model(std::string filepath, bool has_textures)
 		: _has_textures(has_textures) {
-		START_TIMER();
+		//START_TIMER();
 		load_model(filepath);
 		add_instance(glm::vec3(0.0f));
 		setup();
-		LOG_INFO("Model at '" + filepath + "' has " + std::to_string(_meshes.size()) + " meshes.");
+		//LOG_INFO("Model at '" + filepath + "' has " + std::to_string(_meshes.size()) + " meshes.");
 	}
 
 	void model::setup() {

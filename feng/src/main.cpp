@@ -57,12 +57,12 @@ int main() {
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
 	{
-		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+		std::cout << "Error to init FreeType Library" << std::endl;
 		return -1;
 	}
 
 	text_renderer text;
-	text.load_font("res/fonts/clacon2.ttf", ft, 48);
+	text.generate_atlas("res/fonts/UniversCondensed.ttf", ft, 48);
 
 	FT_Done_FreeType(ft);
 
@@ -149,13 +149,15 @@ int main() {
 
 		// render ui
 
-		ui.render();
+		//ui.render();
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		text_shader.activate();
-		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f));
-		text.render(text_shader, "Hello123", 0, 0, 1, glm::vec3(0.0f));
+		//text_shader.set_mat4("projection", glm::ortho(-1, 1, -1, 1, -100, 100));
+		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, -2.0f, 2.0f));
+		//text_shader.set_mat4("projection", ui.get_projection_matrix());
+		text.render(text_shader, "Hello", 0, 0, glm::vec3(0, 1, 0));
 		glDisable(GL_BLEND);
 
 		// end render

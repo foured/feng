@@ -13,23 +13,37 @@
 
 namespace feng {
 
-	struct character{
-		uint32_t texture_id;
-		glm::ivec2 size;
-		glm::ivec2 bearing;
-		uint32_t advance;
+	struct character_info {
+		float ax;
+		float ay;
+
+		float bw;
+		float bh;
+
+		float bl;
+		float bt;
+
+		float tx;
+	};
+
+	struct text_vertex{
+		float x;
+		float y;
+		float s;
+		float t;
 	};
 
 	class text_renderer {
 	public:
-		void load_font(const char* font_path, FT_Library& lib, uint32_t size);
-		void render(shader& shader, const std::string& text, float x, float y, float scale, glm::vec3 color);
+		void generate_atlas(const char* font_path, FT_Library& lib, uint32_t size);
+		void render(shader& shader, const std::string& text, float x, float y, glm::vec3 color, float sx = 1, float sy = 1);
 
 	private:
-		std::map<char, character> _characters;
-
+		character_info _characters[128];
+		uint32_t _atlas_textur_id;
 		vertexarray _vertex_array;
 		arraybuffer _vertex_buffer;
+		uint32_t _atlas_width, _atlas_height;
 
 	};
 

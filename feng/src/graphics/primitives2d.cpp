@@ -1,6 +1,6 @@
 #include "primitives2d.h"
 
-#include "../logger/logger.h"
+#include "../logging/logging.h"
 
 namespace feng {
 
