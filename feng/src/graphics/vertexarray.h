@@ -16,6 +16,7 @@ namespace feng {
 		void draw_arrays(int32_t mode, uint32_t no_vertices);
 		void draw_elements_inctanced(int32_t mode, int32_t count, int32_t type, 
 			const void *indices, int32_t primcount);
+		void free();
 
 		static void unbind();
 

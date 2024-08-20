@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="lib\glad.c" />
     <ClCompile Include="lib\stb.cpp" />
+    <ClCompile Include="src\graphics\batching\text_batcher.cpp" />
     <ClCompile Include="src\graphics\cubemap.cpp" />
     <ClCompile Include="src\graphics\mesh.cpp" />
     <ClCompile Include="src\graphics\mesh2d.cpp" />
@@ -159,7 +160,8 @@
     <ClCompile Include="src\graphics\shader.cpp" />
     <ClCompile Include="src\graphics\skybox.cpp" />
     <ClCompile Include="src\graphics\texture.cpp" />
-    <ClCompile Include="src\graphics\text_renderer.cpp" />
+    <ClCompile Include="src\graphics\text\font_atlas.cpp" />
+    <ClCompile Include="src\graphics\text\text_renderer.cpp" />
     <ClCompile Include="src\graphics\uimodel.cpp" />
     <ClCompile Include="src\graphics\vertexarray.cpp" />
     <ClCompile Include="src\graphics\window.cpp" />
@@ -177,6 +179,7 @@
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\batching\text_batcher.h" />
     <ClInclude Include="src\graphics\gl_buffers\arraybuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\elementarraybuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\gl_buffer.hpp" />
@@ -194,7 +197,8 @@
     <ClInclude Include="src\graphics\shader.h" />
     <ClInclude Include="src\graphics\skybox.h" />
     <ClInclude Include="src\graphics\texture.h" />
-    <ClInclude Include="src\graphics\text_renderer.h" />
+    <ClInclude Include="src\graphics\text\font_atlas.h" />
+    <ClInclude Include="src\graphics\text\text_renderer.h" />
     <ClInclude Include="src\graphics\uimodel.h" />
     <ClInclude Include="src\graphics\vertexarray.h" />
     <ClInclude Include="src\graphics\window.h" />

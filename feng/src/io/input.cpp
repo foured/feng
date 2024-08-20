@@ -39,6 +39,7 @@ namespace feng {
 	bool input::_is_cursor_in_window = false;
 	bool input::_is_cursor_enter_leave_status_changed = false;
 	bool input::_is_cursor_enter_leave_status_changed_flag = false;
+
 	//
 	// methods
 	//

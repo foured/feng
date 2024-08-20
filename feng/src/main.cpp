@@ -21,7 +21,8 @@
 #include "logic/ui/ui_layer.h"
 #include "logic/ui/ui.h"
 #include "logic/ui/components/slider.h"
-#include "graphics/text_renderer.h"
+#include "graphics/text/text_renderer.h"
+#include "graphics/batching/text_batcher.h"
 
 using namespace feng;
 
@@ -61,8 +62,9 @@ int main() {
 		return -1;
 	}
 
-	text_renderer text;
-	text.generate_atlas("res/fonts/UniversCondensed.ttf", ft, 48);
+	font_atlas atlas1("res/fonts/UniversCondensed.ttf", ft, 48);
+	font_atlas atlas2("res/fonts/clacon2.ttf", ft, 48);
+	text_renderer text1(atlas1), text2(atlas2);
 
 	FT_Done_FreeType(ft);
 
@@ -81,6 +83,8 @@ int main() {
 	inst2->render_order = 1;
 
 	ui::slider& sl = inst1->add_component<ui::slider>(inst2.get());
+
+	text_batcher tb;
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -154,10 +158,10 @@ int main() {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		text_shader.activate();
-		//text_shader.set_mat4("projection", glm::ortho(-1, 1, -1, 1, -100, 100));
 		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, -2.0f, 2.0f));
-		//text_shader.set_mat4("projection", ui.get_projection_matrix());
-		text.render(text_shader, "Hello", 0, 0, glm::vec3(0, 1, 0));
+		text2.render(&tb, "Hello", 0, 50, glm::vec3(0, 1, 0));
+		text1.render(&tb, "Hello", 0, 0, glm::vec3(1, 0, 0));
+		tb.render(text_shader);
 		glDisable(GL_BLEND);
 
 		// end render

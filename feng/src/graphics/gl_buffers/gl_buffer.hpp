@@ -18,6 +18,10 @@ namespace feng {
 			}
 		}
 
+		void free() {
+			glDeleteBuffers(1, &_id);
+		}
+
 		void generate() override {
 			glGenBuffers(1, &_id);
 		}

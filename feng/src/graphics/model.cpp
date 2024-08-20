@@ -60,7 +60,7 @@ namespace feng {
 
 		for (size_t i = 0; i < node->mNumMeshes; i++){
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			_meshes.push_back(process_mesh(mesh, scene, n_mat));
+			_meshes.emplace_back(process_mesh(mesh, scene, n_mat));
 		}
 		for (size_t i = 0; i < node->mNumChildren; i++){
 			process_node(node->mChildren[i], scene, n_mat);

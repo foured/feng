@@ -96,7 +96,13 @@
     <ClCompile Include="src\logic\ui\components\slider.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\text_renderer.cpp">
+    <ClCompile Include="src\graphics\text\text_renderer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\batching\text_batcher.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\text\font_atlas.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -197,7 +203,13 @@
     <ClInclude Include="src\logic\ui\components\slider.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\text_renderer.h">
+    <ClInclude Include="src\graphics\text\text_renderer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\batching\text_batcher.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\text\font_atlas.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

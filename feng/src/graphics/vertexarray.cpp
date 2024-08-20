@@ -1,7 +1,11 @@
 #include "vertexarray.h"
 
 namespace feng {
-	
+
+	void vertexarray::free() {
+		glDeleteVertexArrays(1, &_id);
+	}
+
 	void vertexarray::generate() {
 		glGenVertexArrays(1, &_id);
 	}
