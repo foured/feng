@@ -25,21 +25,24 @@ namespace feng {
 		mesh(std::vector<vertex> vertices, std::vector<uint32_t> indices, aiColor4D diffuse, aiColor4D specular);
 
 		void render(shader& shader, uint32_t no_instances);
+		void setup();
 
 		vertexarray vertex_array;
 
 	private:
-		std::vector<vertex> _vertices;
-		std::vector<uint32_t> _indices;
-		std::vector<texture> _textures;
+		friend class model;
+		friend struct mesh_batch;
 
-		bool _has_textures;
+		std::vector<texture> _textures;
+		std::vector<uint32_t> _indices;
+		std::vector<vertex> _vertices;
+
 		aiColor4D _diffuse, _specular;
 
 		arraybuffer _arraybuffer;
 		elementarraybuffer _elementbuffer;
+		bool _has_textures;
 
-		void setup();
 	};
 
 }

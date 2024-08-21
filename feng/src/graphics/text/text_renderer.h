@@ -33,7 +33,7 @@ namespace feng {
 	public:
 		text_renderer(font_atlas& atlas);
 
-		void render(text_batcher* batcher, const std::string& text, float x, float y, glm::vec3 color);
+		void render(text_batcher* batcher, const std::string& text, glm::vec3 pos, glm::vec3 color);
 
 	private:
 		vertexarray _vertex_array;

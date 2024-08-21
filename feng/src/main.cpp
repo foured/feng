@@ -39,6 +39,7 @@ int main() {
 	window win("Feng", 800, 600);
 
 	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
+	shader obj_batch_shader("res/shaders/object_batching.vs", "res/shaders/object_batching.fs");
 	shader framebuffer_shader("res/shaders/framebuffer.vs", "res/shaders/framebuffer.fs");
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
@@ -49,7 +50,8 @@ int main() {
 	framebuffer fb(&framebuffer_shader);
 	skybox sb(&skybox_shader, skybox_faces);
 
-	obj_shader.set_ubo_index("Matrices", 0);
+	//obj_shader.set_ubo_index("Matrices", 0);
+	obj_batch_shader.set_ubo_index("Matrices", 0);
 	skybox_shader.set_ubo_index("Matrices", 0);
 
 	uniformbuffer ubuffer;
@@ -62,8 +64,8 @@ int main() {
 		return -1;
 	}
 
-	font_atlas atlas1("res/fonts/UniversCondensed.ttf", ft, 48);
-	font_atlas atlas2("res/fonts/clacon2.ttf", ft, 48);
+	font_atlas atlas1("res/fonts/UniversCondensed.ttf", ft, 30);
+	font_atlas atlas2("res/fonts/clacon2.ttf", ft, 30);
 	text_renderer text1(atlas1), text2(atlas2);
 
 	FT_Done_FreeType(ft);
@@ -88,6 +90,10 @@ int main() {
 
 	bool is_spot_light_working = false;
 	ui.start();
+
+	double time = 0;
+	uint64_t frames_count = 0, fps = 0;
+
 	while (!win.should_close())
 	{
 		utilities::update_delta_time();
@@ -115,16 +121,16 @@ int main() {
 
 		// start render
 
-		obj_shader.activate();
+		obj_batch_shader.activate();
 		
-		obj_shader.set_3float("viewPos", cam.position());
-		obj_shader.set_int("isSLWorking", is_spot_light_working);
-		obj_shader.set_float("material.shininess", 32.0f);
+		obj_batch_shader.set_3float("viewPos", cam.position());
+		obj_batch_shader.set_int("isSLWorking", is_spot_light_working);
+		obj_batch_shader.set_float("material.shininess", 32.0f);
 		
-		obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		obj_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
-		obj_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
-		obj_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
+		obj_batch_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		obj_batch_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
+		obj_batch_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
+		obj_batch_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
 
 		//shader.set_3float("pointLight.position", 1.2f, 1.0f, 2.0f);
 		//shader.set_3float("pointLight.ambient", glm::vec3(0.2f));
@@ -134,33 +140,41 @@ int main() {
 		//shader.set_float("pointLight.linear", 0.09f);
 		//shader.set_float("pointLight.quadratic", 0.032f);
 
-		obj_shader.set_3float("spotLight.position", cam.position());
-		obj_shader.set_3float("spotLight.direction", cam.front());
-		obj_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		obj_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-		obj_shader.set_3float("spotLight.ambient", glm::vec3(0.1));
-		obj_shader.set_3float("spotLight.diffuse", glm::vec3(0.8f));
-		obj_shader.set_3float("spotLight.specular", glm::vec3(1.0f));
-		obj_shader.set_float("spotLight.constant", 1.0f);
-		obj_shader.set_float("spotLight.linear", 0.09f);
-		obj_shader.set_float("spotLight.quadratic", 0.032f);
+		obj_batch_shader.set_3float("spotLight.direction", cam.front());
+		obj_batch_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		obj_batch_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+		obj_batch_shader.set_3float("spotLight.ambient", glm::vec3(0.1));
+		obj_batch_shader.set_3float("spotLight.diffuse", glm::vec3(0.8f));
+		obj_batch_shader.set_3float("spotLight.specular", glm::vec3(1.0f));
+		obj_batch_shader.set_float("spotLight.constant", 1.0f);
+		obj_batch_shader.set_float("spotLight.linear", 0.09f);
+		obj_batch_shader.set_float("spotLight.quadratic", 0.032f);
 		
-		obj_shader.set_mat4("model", model);
+		obj_batch_shader.set_mat4("model", model);
 
-		backpack.render(obj_shader);
+		backpack.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());
 
 		// render ui
 
 		//ui.render();
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		text_shader.activate();
-		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, -2.0f, 2.0f));
-		text2.render(&tb, "Hello", 0, 50, glm::vec3(0, 1, 0));
-		text1.render(&tb, "Hello", 0, 0, glm::vec3(1, 0, 0));
+		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, 0.0f, (float)UCHAR_MAX));
+		
+		time += utilities::delta_time();
+		frames_count++;
+		if (time >= 0.5) {
+			fps = frames_count / time;
+			time = 0;
+			frames_count = 0;
+		}
+
+		text2.render(&tb, std::to_string(fps), { -400, 270, 0 }, glm::vec3(0, 1, 0));
+		//text1.render(&tb, std::to_string(sl.get_value()), glm::vec3(0), glm::vec3(0));
 		tb.render(text_shader);
 		glDisable(GL_BLEND);
 

@@ -19,6 +19,10 @@ namespace feng {
 		int32_t width();
 		int32_t height();
 
+		bool operator==(const texture& other) const {
+			return _id == other._id;
+		}
+
 	private:
 		uint32_t _id;
 

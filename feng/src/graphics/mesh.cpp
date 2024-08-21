@@ -7,12 +7,10 @@ namespace feng {
 
 	mesh::mesh(std::vector<vertex> vertices, std::vector<uint32_t> indices, std::vector<texture> textures)
 		: _vertices(vertices), _indices(indices), _textures(textures), _has_textures(true) {
-		setup();
 	}
 
 	mesh::mesh(std::vector<vertex> vertices, std::vector<uint32_t> indices, aiColor4D diffuse, aiColor4D specular)
 		: _vertices(vertices), _indices(indices), _has_textures(false), _diffuse(diffuse), _specular(specular) {
-		setup();
 	}
 
 	void mesh::setup() {

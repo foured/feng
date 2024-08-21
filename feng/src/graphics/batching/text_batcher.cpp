@@ -76,10 +76,9 @@ namespace feng {
 
 	void text_batch::add_data_to_batch(std::vector<text_vertex>& ndata, uint32_t texture_id) {
 		uint32_t si = data.size();
-		int32_t tid = textures_ids.size();
 		data.insert(data.end(), ndata.begin(), ndata.end());
 		for (uint32_t i = si; i < data.size(); i++)
-			data[i].texture_index = (float)tid;
+			data[i].texture_index = (int)textures_ids.size();;
 		textures_ids.push_back(texture_id);
 	}
 
