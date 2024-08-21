@@ -46,11 +46,11 @@ int main() {
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
 
 	camera cam;
-	model backpack("res/models/survival_guitar_backpack/scene.gltf");
+	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
 	framebuffer fb(&framebuffer_shader);
 	skybox sb(&skybox_shader, skybox_faces);
 
-	//obj_shader.set_ubo_index("Matrices", 0);
+	obj_shader.set_ubo_index("Matrices", 0);
 	obj_batch_shader.set_ubo_index("Matrices", 0);
 	skybox_shader.set_ubo_index("Matrices", 0);
 
@@ -140,6 +140,7 @@ int main() {
 		//shader.set_float("pointLight.linear", 0.09f);
 		//shader.set_float("pointLight.quadratic", 0.032f);
 
+		obj_batch_shader.set_3float("spotLight.position", cam.position());
 		obj_batch_shader.set_3float("spotLight.direction", cam.front());
 		obj_batch_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
 		obj_batch_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
