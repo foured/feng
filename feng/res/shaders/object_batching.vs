@@ -5,6 +5,7 @@ layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in vec4 aDiffuse;
 layout (location = 4) in vec4 aSpecular;
 layout (location = 5) in float aTexIdxs;
+// dynamic
 layout (location = 6) in vec3 aOffset;
 
 out vec3 FragPos;

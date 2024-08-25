@@ -37,14 +37,14 @@ namespace feng {
 
 			glGenTextures(1, &_render_texture);
 			glBindTexture(GL_TEXTURE_2D, _render_texture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window::win_width, window::win_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _render_texture, 0);
 
 			_renderbuffer.generate();
 			_renderbuffer.bind();
-			_renderbuffer.renderbuffer_storage(GL_DEPTH24_STENCIL8, 800, 600);
+			_renderbuffer.renderbuffer_storage(GL_DEPTH24_STENCIL8, window::win_width, window::win_height);
 			_renderbuffer.attach_to_framebuffer(GL_DEPTH_STENCIL_ATTACHMENT);
 
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)

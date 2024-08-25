@@ -23,6 +23,7 @@ namespace feng {
 		for (unsigned char c = 0; c < 128; c++) {
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
 				LOG_ERROR("Error to load Glyph");
+				continue;
 			}
 			w += g->bitmap.width;
 			h = std::max(h, g->bitmap.rows);
@@ -44,6 +45,7 @@ namespace feng {
 		for (unsigned char c = 0; c < 128; c++) {
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
 				LOG_ERROR("Error to load Glyph");
+				continue;
 			}
 
 			glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, g->bitmap.width, g->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer);

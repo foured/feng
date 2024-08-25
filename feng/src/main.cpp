@@ -156,15 +156,17 @@ int main() {
 		backpack.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());
-
+		
 		// render ui
 
-		//ui.render();
+		ui.render();
 		//glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		text_shader.activate();
-		text_shader.set_mat4("projection", glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, 0.0f, (float)UCHAR_MAX));
+		float hw = window::win_width / 2.0f;
+		float hh = window::win_height / 2.0f;
+		text_shader.set_mat4("projection", glm::ortho(-hw, hw, -hh, hh, 0.0f, (float)UCHAR_MAX));
 		
 		time += utilities::delta_time();
 		frames_count++;
@@ -174,7 +176,7 @@ int main() {
 			frames_count = 0;
 		}
 
-		text2.render(&tb, std::to_string(fps), { -400, 270, 0 }, glm::vec3(0, 1, 0));
+		text2.render(&tb, std::to_string(fps), { -400, 280, 0 }, glm::vec3(0, 1, 0));
 		//text1.render(&tb, std::to_string(sl.get_value()), glm::vec3(0), glm::vec3(0));
 		tb.render(text_shader);
 		glDisable(GL_BLEND);
@@ -188,7 +190,6 @@ int main() {
 	}
 
 	fb.delete_buffer();
-
 	return 0;
 }
 
