@@ -42,7 +42,7 @@ namespace feng {
 		for (mesh& m : _meshes) {
 			m.vertex_array.bind();
 			_pos_array_buffer.bind();
-			m.vertex_array.set_attrib_pointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			m.vertex_array.set_attrib_pointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			vertexarray::unbind();
 		}
 	}
@@ -55,7 +55,7 @@ namespace feng {
 		for (mesh_batch& batch : _batches) {
 			batch.vertex_array.bind();
 			_pos_array_buffer.bind();
-			batch.vertex_array.set_attrib_pointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			batch.vertex_array.set_attrib_pointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			vertexarray::unbind;
 		}
 
@@ -70,6 +70,7 @@ namespace feng {
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(path, 
 			aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
 			LOG_ERROR("ASSIMP error: " + std::string(importer.GetErrorString()));
@@ -127,6 +128,13 @@ namespace feng {
 			}
 			vert.tex_coords = vec;
 
+			if (mesh->HasTangentsAndBitangents()) {
+				vector.x = mesh->mTangents[i].x;
+				vector.y = mesh->mTangents[i].y;
+				vector.z = mesh->mTangents[i].z;
+				vert.tangent = vector * glm::mat3(matrix);
+			}
+
 			vertices.push_back(vert);
 		}
 
@@ -145,7 +153,9 @@ namespace feng {
 				std::vector<texture> specular_maps
 					= load_material_textures(material, aiTextureType_SPECULAR);
 				textures.insert(textures.end(), specular_maps.begin(), specular_maps.end());
-
+				std::vector<texture> normal_maps
+					= load_material_textures(material, aiTextureType_NORMALS);
+				textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
 				return feng::mesh(vertices, indices, textures);
 			}
 			else {

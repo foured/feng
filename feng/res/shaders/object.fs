@@ -7,6 +7,7 @@ struct Material {
 
     sampler2D diffuse0;
     sampler2D specular0;
+    sampler2D normal0;
 
     float shininess;
 }; 
@@ -48,12 +49,14 @@ struct SpotLight {
 
 #define MAX_POINT_LIGHTS 1
 
-in vec3 FragPos;
-in vec3 Normal;
-in vec2 TexCoords;
+in VS_OUT{
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+    vec3 ViewPos;
+} fs_in;
 
 uniform int has_tex;
-uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLight;
@@ -69,14 +72,14 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
 
 void main()
 {    
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 norm = normalize(fs_in.Normal);
+    vec3 viewDir = normalize(fs_in.ViewPos - fs_in.FragPos);
     
     vec3 c_dif;
     vec3 c_spec;
     if(has_tex == 1){
-        c_dif = texture(material.diffuse0, TexCoords).rgb;
-        c_spec = texture(material.specular0, TexCoords).rgb;
+        c_dif = texture(material.diffuse0, fs_in.TexCoords).rgb;
+        c_spec = texture(material.specular0, fs_in.TexCoords).rgb;
     }
     else{
         c_dif = vec3(material.diffuse);
@@ -87,7 +90,7 @@ void main()
     //for(int i = 0; i < MAX_POINT_LIGHTS; i++)
     //       result += CalcPointLight(pointLights[i], norm, FragPos, viewDir, c_dif, c_spec); 
     if(isSLWorking == 1){      
-        result += CalcSpotLight(spotLight, norm, FragPos, viewDir, c_dif, c_spec);    
+        result += CalcSpotLight(spotLight, norm, fs_in.FragPos, viewDir, c_dif, c_spec);    
     }
     
     //vec3 I = normalize(FragPos - viewPos);

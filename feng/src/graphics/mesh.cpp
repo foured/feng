@@ -28,6 +28,7 @@ namespace feng {
 		vertex_array.set_attrib_pointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), 0);
 		vertex_array.set_attrib_pointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (3 * sizeof(float)));
 		vertex_array.set_attrib_pointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (6 * sizeof(float)));
+		vertex_array.set_attrib_pointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (8 * sizeof(float)));
 
 		vertexarray::unbind();
 	}
@@ -35,7 +36,7 @@ namespace feng {
 	void mesh::render(shader& shader, uint32_t no_instances) {
 		shader.set_int("has_tex", _has_textures);
 		if (_has_textures) {
-			uint32_t diff_idx = 0, spec_idx = 0;
+			uint32_t diff_idx = 0, spec_idx = 0, norm_idx = 0;
 			for (size_t i = 0; i < _textures.size(); i++)
 			{
 				glActiveTexture(GL_TEXTURE0 + i);
@@ -47,6 +48,9 @@ namespace feng {
 
 				case aiTextureType_SPECULAR:
 					name = "specular" + std::to_string(spec_idx++);
+					break;
+				case aiTextureType_NORMALS:
+					name = "normal" + std::to_string(norm_idx++);
 					break;
 				}
 

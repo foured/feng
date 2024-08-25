@@ -28,7 +28,7 @@ namespace feng {
 		{
 			THROW_ERROR("Failed to initialize GLAD");
 		}
-		//glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		window::win_width = width;
 		window::win_height = height;

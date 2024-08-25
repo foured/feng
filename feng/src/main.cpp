@@ -46,9 +46,11 @@ int main() {
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
 
 	camera cam;
-	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
 	framebuffer fb(&framebuffer_shader);
 	skybox sb(&skybox_shader, skybox_faces);
+
+	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::mesh_by_mesh);
+	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
 
 	obj_shader.set_ubo_index("Matrices", 0);
 	obj_batch_shader.set_ubo_index("Matrices", 0);
@@ -89,6 +91,7 @@ int main() {
 	text_batcher tb;
 
 	bool is_spot_light_working = false;
+	bool use_normal_mapping = true;
 	ui.start();
 
 	double time = 0;
@@ -106,6 +109,7 @@ int main() {
 		fb.set();
 
 		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
+		if (input::get_key_down(GLFW_KEY_N)) use_normal_mapping = !use_normal_mapping;
 		if (input::get_key_down(GLFW_KEY_E)) inst1->uitransform.set_pos_pix({ 300, 300 });
 
 		glm::mat4 model(1.0f);
@@ -121,45 +125,46 @@ int main() {
 
 		// start render
 
-		obj_batch_shader.activate();
+		obj_shader.activate();
 		
-		obj_batch_shader.set_3float("viewPos", cam.position());
-		obj_batch_shader.set_int("isSLWorking", is_spot_light_working);
-		obj_batch_shader.set_float("material.shininess", 32.0f);
+		obj_shader.set_3float("viewPos", cam.position());
+		obj_shader.set_int("isSLWorking", is_spot_light_working);
+		obj_shader.set_int("useNormalMapping", use_normal_mapping);
+		obj_shader.set_float("material.shininess", 32.0f);
 		
-		obj_batch_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		obj_batch_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
-		obj_batch_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
-		obj_batch_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
+		obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		obj_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
+		obj_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
+		obj_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
 
-		//shader.set_3float("pointLight.position", 1.2f, 1.0f, 2.0f);
-		//shader.set_3float("pointLight.ambient", glm::vec3(0.2f));
-		//shader.set_3float("pointLight.diffuse", glm::vec3(0.5f));
-		//shader.set_3float("pointLight.specular", glm::vec3(1.0f));
-		//shader.set_float("pointLight.constant", 1.0f);
-		//shader.set_float("pointLight.linear", 0.09f);
-		//shader.set_float("pointLight.quadratic", 0.032f);
+		//obj_shader.set_3float("pointLights[0].position", 1.2f, 1.0f, 2.0f);
+		//obj_shader.set_3float("pointLights[0].ambient", glm::vec3(0.2f));
+		//obj_shader.set_3float("pointLights[0].diffuse", glm::vec3(0.5f));
+		//obj_shader.set_3float("pointLights[0].specular", glm::vec3(1.0f));
+		//obj_shader.set_float("pointLights[0].constant", 1.0f);
+		//obj_shader.set_float("pointLights[0].linear", 0.09f);
+		//obj_shader.set_float("pointLights[0].quadratic", 0.032f);
 
-		obj_batch_shader.set_3float("spotLight.position", cam.position());
-		obj_batch_shader.set_3float("spotLight.direction", cam.front());
-		obj_batch_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		obj_batch_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-		obj_batch_shader.set_3float("spotLight.ambient", glm::vec3(0.1));
-		obj_batch_shader.set_3float("spotLight.diffuse", glm::vec3(0.8f));
-		obj_batch_shader.set_3float("spotLight.specular", glm::vec3(1.0f));
-		obj_batch_shader.set_float("spotLight.constant", 1.0f);
-		obj_batch_shader.set_float("spotLight.linear", 0.09f);
-		obj_batch_shader.set_float("spotLight.quadratic", 0.032f);
+		obj_shader.set_3float("spotLight.position", cam.position());
+		obj_shader.set_3float("spotLight.direction", cam.front());
+		obj_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		obj_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+		obj_shader.set_3float("spotLight.ambient", glm::vec3(0.1));
+		obj_shader.set_3float("spotLight.diffuse", glm::vec3(0.8f));
+		obj_shader.set_3float("spotLight.specular", glm::vec3(1.0f));
+		obj_shader.set_float("spotLight.constant", 1.0f);
+		obj_shader.set_float("spotLight.linear", 0.09f);
+		obj_shader.set_float("spotLight.quadratic", 0.032f);
 		
-		obj_batch_shader.set_mat4("model", model);
+		obj_shader.set_mat4("model", model);
 
-		backpack.render(obj_batch_shader);
+		backpack.render(obj_shader);
 
 		sb.render(cam.get_view_matrix());
 		
 		// render ui
 
-		ui.render();
+		//ui.render();
 		//glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -177,6 +182,7 @@ int main() {
 		}
 
 		text2.render(&tb, std::to_string(fps), { -400, 280, 0 }, glm::vec3(0, 1, 0));
+		text1.render(&tb, "normalmapping: " + std::to_string(use_normal_mapping), {-400, 260, 0}, glm::vec3(0, 1, 0));
 		//text1.render(&tb, std::to_string(sl.get_value()), glm::vec3(0), glm::vec3(0));
 		tb.render(text_shader);
 		glDisable(GL_BLEND);
