@@ -187,7 +187,9 @@
     <ClInclude Include="src\graphics\gl_buffers\framebuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\i_gl_buffer.h" />
     <ClInclude Include="src\graphics\gl_buffers\renderbuffer.hpp" />
+    <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
+    <ClInclude Include="src\graphics\light\lights.h" />
     <ClInclude Include="src\graphics\mesh.h" />
     <ClInclude Include="src\graphics\mesh2d.h" />
     <ClInclude Include="src\graphics\model.h" />

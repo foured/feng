@@ -44,6 +44,10 @@ namespace feng {
 			glBindBufferRange(_type, index, _id, offset, data_size);
 		}
 
+		void bind_buffer_base(uint32_t index) {
+			glBindBufferBase(_type, index, _id);
+		}
+
 		void unbind() override {
 			glBindBuffer(_type, 0);
 		}

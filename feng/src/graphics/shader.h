@@ -27,6 +27,8 @@ namespace feng {
 		void set_3float(const std::string& name, glm::vec3 v);
 		void set_ubo_index(const std::string& name, int v);
 
+		uint32_t id() const;
+
 	private:
 		uint32_t _shader_program;
 

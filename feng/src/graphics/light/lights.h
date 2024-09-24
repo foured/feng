@@ -1,0 +1,46 @@
+#pragma once
+
+#include <glm/glm.hpp>
+
+#define MAX_POINT_LIGHTS 1
+#define MAX_SPOT_LIGHTS 1
+
+namespace feng {
+
+    struct DirLight {
+        glm::vec3 direction;
+
+        glm::vec3 ambient;
+        glm::vec3 diffuse;
+        glm::vec3 specular;
+    };
+
+    struct PointLight {
+        glm::vec3 position;
+
+        float constant;
+        float linear;
+        float quadratic;
+
+        glm::vec3 ambient;
+        glm::vec3 diffuse;
+        glm::vec3 specular;
+    };
+
+    struct SpotLight {
+        glm::vec3 position;
+        glm::vec3 direction;
+
+        float cutOff;
+        float outerCutOff;
+
+        float constant;
+        float linear;
+        float quadratic;
+
+        glm::vec3 ambient;
+        glm::vec3 diffuse;
+        glm::vec3 specular;
+    };
+
+}

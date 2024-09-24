@@ -12,6 +12,8 @@ namespace feng {
 		static glm::vec2 pixel_to_ndc(glm::vec2 pixel_pos);
 		static glm::vec2 ndc_to_pixel(glm::vec2 ndc_pos);
 
+		static int32_t round_to(int32_t val, int32_t align);
+
 	private:
 		static double _last_frame_time, _frame_time, _delta_time;
 		static bool _is_first;

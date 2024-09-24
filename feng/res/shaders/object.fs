@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 out vec4 FragColor;
 
 struct Material {
@@ -11,6 +11,9 @@ struct Material {
 
     float shininess;
 }; 
+
+#define MAX_POINT_LIGHTS 1
+#define MAX_SPOT_LIGHTS 1
 
 struct DirLight {
     vec3 direction;
@@ -47,19 +50,23 @@ struct SpotLight {
     vec3 specular;       
 };
 
-#define MAX_POINT_LIGHTS 1
-
 in VS_OUT{
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
     vec3 ViewPos;
+
+    DirLight DirectionalLight;
+    flat int NoPointLights;
+	PointLight PointLights[MAX_POINT_LIGHTS];
+	flat int NoSpotLights;
+	SpotLight SpotLights[MAX_SPOT_LIGHTS];
 } fs_in;
 
 uniform int has_tex;
-uniform DirLight dirLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform SpotLight spotLight;
+//uniform DirLight dirLight;
+//uniform PointLight pointLights[MAX_POINT_LIGHTS];
+//uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform Material material;
 uniform int isSLWorking;
 
@@ -86,11 +93,11 @@ void main()
         c_spec = vec3(material.specular);
     }
 
-    vec3 result = CalcDirLight(dirLight, norm, viewDir, c_dif, c_spec);
+    vec3 result = CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
     //for(int i = 0; i < MAX_POINT_LIGHTS; i++)
     //       result += CalcPointLight(pointLights[i], norm, FragPos, viewDir, c_dif, c_spec); 
     if(isSLWorking == 1){      
-        result += CalcSpotLight(spotLight, norm, fs_in.FragPos, viewDir, c_dif, c_spec);    
+        result += CalcSpotLight(fs_in.SpotLights[0], norm, fs_in.FragPos, viewDir, c_dif, c_spec);    
     }
     
     //vec3 I = normalize(FragPos - viewPos);

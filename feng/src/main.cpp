@@ -23,6 +23,10 @@
 #include "logic/ui/components/slider.h"
 #include "graphics/text/text_renderer.h"
 #include "graphics/batching/text_batcher.h"
+#include "graphics/light/lights.h"
+#include "graphics/gl_buffers/ssbo.hpp"
+
+#define PRINT(msg) std::cout << msg << '\n'
 
 using namespace feng;
 
@@ -33,6 +37,13 @@ std::vector<std::string> skybox_faces{
 	"res/textures/skyboxes/1/bottom.jpg",
 	"res/textures/skyboxes/1/front.jpg",
 	"res/textures/skyboxes/1/back.jpg"
+};
+
+int32_t get_uniform_block_size(shader& s, const char* block_name);
+
+struct A {
+	int iv = 1;
+	float fv = 0.5f;
 };
 
 int main() {
@@ -52,12 +63,71 @@ int main() {
 	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::mesh_by_mesh);
 	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
 
+	DirLight dir_light{
+		{ -0.2f, -1.0f, -0.3f },
+		glm::vec3(0.5f),
+		glm::vec3(0.5f),
+		glm::vec3(1.0f)
+	};
+	PointLight point_lights[MAX_POINT_LIGHTS] { 
+		{ 
+			glm::vec3(1.0f),
+			1.0f,
+			1.0f,
+			1.0f,
+			glm::vec3(1.0f),
+			glm::vec3(1.0f),
+			glm::vec3(1.0f)
+		} 
+	};
+	SpotLight spot_lights[MAX_SPOT_LIGHTS] {
+		{
+			cam.position(),
+			cam.front(),
+			glm::cos(glm::radians(12.5f)),
+			glm::cos(glm::radians(17.5f)),
+			1,
+			0.09f,
+			0.032f,
+			glm::vec3(0.1f),
+			glm::vec3(0.8f),
+			glm::vec3(1.0f)
+		}
+	};
+
 	obj_shader.set_ubo_index("Matrices", 0);
+	obj_shader.set_ubo_index("Lights", 1);
 	obj_batch_shader.set_ubo_index("Matrices", 0);
 	skybox_shader.set_ubo_index("Matrices", 0);
 
-	uniformbuffer ubuffer;
-	ubuffer.fast_setup(0, 2 * sizeof(glm::mat4));
+	ssbo matrices_ssbo;
+	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 3);
+	ssbo dirlight_ssbo;
+	dirlight_ssbo.allocate(sizeof(DirLight), 2);
+
+	// Broken UBOs: 
+	
+	//uniformbuffer_struct dir_light_ubo_struct;
+	//dir_light_ubo_struct.add_elements<glm::vec3, glm::vec3, glm::vec3, glm::vec3>();
+	//uniformbuffer_struct point_light_ubo_struct;
+	//point_light_ubo_struct.add_elements<glm::vec3, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
+	//uniformbuffer_struct spot_light_ubo_struct;
+	//spot_light_ubo_struct.add_elements<glm::vec3, glm::vec3, float, float, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
+	//
+	//uniformbuffer_pack matrices_ubuffer_pack;
+	//matrices_ubuffer_pack.add_element<glm::mat4>();
+	//matrices_ubuffer_pack.add_element<glm::mat4>();
+	//uniformbuffer matrices_ubuffer;
+	//matrices_ubuffer.fast_setup(0, matrices_ubuffer_pack);
+	//
+	//uniformbuffer_pack lights_ubuffer_pack;
+	//lights_ubuffer_pack.add_element(dir_light_ubo_struct);
+	//lights_ubuffer_pack.add_element<int32_t>();
+	//lights_ubuffer_pack.add_array<MAX_POINT_LIGHTS>(point_light_ubo_struct);
+	//lights_ubuffer_pack.add_element<int32_t>();
+	//lights_ubuffer_pack.add_array<MAX_SPOT_LIGHTS>(spot_light_ubo_struct);
+	//uniformbuffer lights_ubuffer;
+	//lights_ubuffer.fast_setup(1, lights_ubuffer_pack);
 
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
@@ -118,10 +188,26 @@ int main() {
 		projection = glm::perspective(
 			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.1f, 100.0f);
 
-		ubuffer.bind();
-		ubuffer.buffer_sub_data(0, sizeof(glm::mat4), glm::value_ptr(projection));
-		ubuffer.buffer_sub_data(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(cam.get_view_matrix()));
-		ubuffer.unbind();
+		dirlight_ssbo.update(0, sizeof(DirLight), &dir_light);
+		matrices_ssbo.update(0, sizeof(glm::mat4), glm::value_ptr(projection));
+		matrices_ssbo.update(sizeof(glm::mat4), sizeof(glm::mat4), (void*)glm::value_ptr(cam.get_view_matrix()));
+
+		// More UBOs:
+		
+		//matrices_ubuffer.start_block();
+		//matrices_ubuffer.buffer_block_element((glm::mat4*)glm::value_ptr(projection));
+		//matrices_ubuffer.buffer_block_element((glm::mat4*)glm::value_ptr(cam.get_view_matrix()));
+		//matrices_ubuffer.end_block();
+		//
+		//lights_ubuffer.start_block();
+		//lights_ubuffer.buffer_block_struct(dir_light_ubo_struct, &dir_light);
+		//int32_t pls = 0;
+		//lights_ubuffer.buffer_block_element(&pls);
+		//lights_ubuffer.buffer_block_struct_array(point_light_ubo_struct, &point_lights[0], MAX_POINT_LIGHTS);
+		//int32_t sls = 1;
+		//lights_ubuffer.buffer_block_element(&sls);
+		//lights_ubuffer.buffer_block_struct_array(spot_light_ubo_struct, &spot_lights[0], MAX_SPOT_LIGHTS);
+		//lights_ubuffer.end_block();
 
 		// start render
 
@@ -132,10 +218,10 @@ int main() {
 		obj_shader.set_int("useNormalMapping", use_normal_mapping);
 		obj_shader.set_float("material.shininess", 32.0f);
 		
-		obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		obj_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
-		obj_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
-		obj_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
+		//obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		//obj_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
+		//obj_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
+		//obj_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
 
 		//obj_shader.set_3float("pointLights[0].position", 1.2f, 1.0f, 2.0f);
 		//obj_shader.set_3float("pointLights[0].ambient", glm::vec3(0.2f));
@@ -145,16 +231,16 @@ int main() {
 		//obj_shader.set_float("pointLights[0].linear", 0.09f);
 		//obj_shader.set_float("pointLights[0].quadratic", 0.032f);
 
-		obj_shader.set_3float("spotLight.position", cam.position());
-		obj_shader.set_3float("spotLight.direction", cam.front());
-		obj_shader.set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		obj_shader.set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-		obj_shader.set_3float("spotLight.ambient", glm::vec3(0.1));
-		obj_shader.set_3float("spotLight.diffuse", glm::vec3(0.8f));
-		obj_shader.set_3float("spotLight.specular", glm::vec3(1.0f));
-		obj_shader.set_float("spotLight.constant", 1.0f);
-		obj_shader.set_float("spotLight.linear", 0.09f);
-		obj_shader.set_float("spotLight.quadratic", 0.032f);
+		//obj_shader.set_3float("spotLights[0].position", cam.position());
+		//obj_shader.set_3float("spotLights[0].direction", cam.front());
+		//obj_shader.set_float("spotLights[0].cutOff", glm::cos(glm::radians(12.5f)));
+		//obj_shader.set_float("spotLights[0].outerCutOff", glm::cos(glm::radians(17.5f)));
+		//obj_shader.set_3float("spotLights[0].ambient", glm::vec3(0.1));
+		//obj_shader.set_3float("spotLights[0].diffuse", glm::vec3(0.8f));
+		//obj_shader.set_3float("spotLights[0].specular", glm::vec3(1.0f));
+		//obj_shader.set_float("spotLights[0].constant", 1.0f);
+		//obj_shader.set_float("spotLights[0].linear", 0.09f);
+		//obj_shader.set_float("spotLights[0].quadratic", 0.032f);
 		
 		obj_shader.set_mat4("model", model);
 
@@ -199,3 +285,11 @@ int main() {
 	return 0;
 }
 
+int32_t get_uniform_block_size(shader& s, const char* block_name) {
+	uint32_t ubi = glGetUniformBlockIndex(s.id(), block_name);
+	int32_t ubs;
+	glGetActiveUniformBlockiv(s.id(), ubi,
+		GL_UNIFORM_BLOCK_DATA_SIZE,
+		&ubs);
+	return ubs;
+}

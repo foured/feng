@@ -34,4 +34,10 @@ namespace feng {
 		return glm::vec2(ndc_pos.x * window::win_width, ndc_pos.y * window::win_height);
 	}
 
+	int32_t utilities::round_to(int32_t val, int32_t align) {
+		if (val % align == 0)
+			return val;
+		return (val / align + 1) * align;
+	}
+
 }

@@ -126,4 +126,8 @@ namespace feng {
 		glUniformBlockBinding(_shader_program, glGetUniformBlockIndex(_shader_program, name.c_str()), v);
 	}
 
+	uint32_t shader::id() const {
+		return _shader_program;
+	}
+
 }
