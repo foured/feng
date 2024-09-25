@@ -41,11 +41,6 @@ std::vector<std::string> skybox_faces{
 
 int32_t get_uniform_block_size(shader& s, const char* block_name);
 
-struct A {
-	int iv = 1;
-	float fv = 0.5f;
-};
-
 int main() {
 	window win("Feng", 800, 600);
 
@@ -95,15 +90,19 @@ int main() {
 		}
 	};
 
-	obj_shader.set_ubo_index("Matrices", 0);
-	obj_shader.set_ubo_index("Lights", 1);
-	obj_batch_shader.set_ubo_index("Matrices", 0);
-	skybox_shader.set_ubo_index("Matrices", 0);
-
 	ssbo matrices_ssbo;
-	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 3);
-	ssbo dirlight_ssbo;
-	dirlight_ssbo.allocate(sizeof(DirLight), 2);
+	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
+
+	glstd::buffer_structure dirlight_buffer_structure;
+	dirlight_buffer_structure.add_elements<glm::vec3, glm::vec3, glm::vec3, glm::vec3>();
+	glstd::buffer_structure spotlight_buffer_structure;
+	spotlight_buffer_structure.add_elements<glm::vec3, glm::vec3, float, float, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
+	glstd::buffer_structure lighs_final_buffer_structure;
+	lighs_final_buffer_structure.add_struct(dirlight_buffer_structure);
+	lighs_final_buffer_structure.add_element<int>();
+	lighs_final_buffer_structure.add_struct(spotlight_buffer_structure);
+	ssbo lights_ssbo;
+	lights_ssbo.allocate(lighs_final_buffer_structure, 2);
 
 	// Broken UBOs: 
 	
@@ -163,10 +162,8 @@ int main() {
 	bool is_spot_light_working = false;
 	bool use_normal_mapping = true;
 	ui.start();
-
 	double time = 0;
 	uint64_t frames_count = 0, fps = 0;
-
 	while (!win.should_close())
 	{
 		utilities::update_delta_time();
@@ -188,9 +185,20 @@ int main() {
 		projection = glm::perspective(
 			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.1f, 100.0f);
 
-		dirlight_ssbo.update(0, sizeof(DirLight), &dir_light);
-		matrices_ssbo.update(0, sizeof(glm::mat4), glm::value_ptr(projection));
-		matrices_ssbo.update(sizeof(glm::mat4), sizeof(glm::mat4), (void*)glm::value_ptr(cam.get_view_matrix()));
+		matrices_ssbo.start_block();
+		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(projection));
+		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)value_ptr(cam.get_view_matrix()));
+		matrices_ssbo.end_block();
+
+		spot_lights[0].position = cam.position();
+		spot_lights[0].direction = cam.front();
+
+		int32_t no_spotlights = 1;
+		lights_ssbo.start_block();
+		lights_ssbo.add_structure(dirlight_buffer_structure, &dir_light);
+		lights_ssbo.add_element(&no_spotlights);
+		lights_ssbo.add_structure(spotlight_buffer_structure, &spot_lights[0]);
+		lights_ssbo.end_block();
 
 		// More UBOs:
 		

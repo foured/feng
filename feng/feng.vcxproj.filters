@@ -218,6 +218,9 @@
     <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\gl_buffers\glstandards.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />

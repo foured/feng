@@ -61,24 +61,17 @@ out VS_OUT{
 uniform mat4 model;
 uniform vec3 viewPos;
 
-layout (std430, binding = 3) readonly buffer Matrices
+layout (std430, binding = 1) buffer Matrices
 {
     mat4 projection;
     mat4 view;
 };
 
-layout (std140) uniform Lights
-{
-    DirLight directionalLight;
-    int noPointLights;
-	PointLight pointLights[MAX_POINT_LIGHTS];
-	int noSpotLights;
-	SpotLight spotLights[MAX_SPOT_LIGHTS];
-};
-
-layout (std430, binding = 2) readonly buffer DirLightBuffer
+layout (std430, binding = 2) buffer DirLightBuffer
 {
     DirLight dirLight;
+    int noSpotLights;
+    SpotLight spotLights[1];
 };
 
 void main()
@@ -88,9 +81,9 @@ void main()
     vs_out.TexCoords = aTexCoords;
     vs_out.ViewPos = viewPos;
 
-    vs_out.DirectionalLight = directionalLight;
-    vs_out.NoPointLights = noPointLights;
-    vs_out.PointLights = pointLights;
+    vs_out.DirectionalLight = dirLight;
+    //vs_out.NoPointLights = noPointLights;
+    //vs_out.PointLights = pointLights;
     vs_out.NoSpotLights = noSpotLights;
     vs_out.SpotLights = spotLights;
 

@@ -182,6 +182,7 @@
     <ClInclude Include="src\graphics\batching\text_batcher.h" />
     <ClInclude Include="src\graphics\gl_buffers\arraybuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\elementarraybuffer.hpp" />
+    <ClInclude Include="src\graphics\gl_buffers\glstandards.h" />
     <ClInclude Include="src\graphics\gl_buffers\gl_buffer.hpp" />
     <ClInclude Include="src\graphics\cubemap.h" />
     <ClInclude Include="src\graphics\gl_buffers\framebuffer.hpp" />

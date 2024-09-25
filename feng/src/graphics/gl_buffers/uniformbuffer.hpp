@@ -3,11 +3,9 @@
 #include <map>
 #include <typeindex>
 
+#include "glstandards.h"
 #include "gl_buffer.hpp"
 #include "../light/lights.h"
-
-#define TID typeid
-#define TS sizeof
 
 #define __IS_T_NOT_UBO_STRUCT(T) !std::is_same_v<uniformbuffer_struct, T> && !std::is_base_of<uniformbuffer_struct, T>
 
@@ -20,11 +18,6 @@
 
 namespace feng {
 
-	struct uniformbuffer_element {
-		uint32_t size = 0;
-		uint32_t aligned_size = 0;
-	};
-
 	class uniformbuffer_struct {
 	public:
 		template <typename... Ts>
@@ -35,10 +28,10 @@ namespace feng {
 		template<typename T>
 		__ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T) add_element() {
 			const auto& t = TID(T);
-			if (_base_aligments.contains(t)) {
-				_children.emplace_back(TS(T), _base_aligments[t]);
-				_size += _base_aligments[t];
-				_max_child_size = std::max(_max_child_size, _base_aligments[t]);
+			if (glstd::base_aligments.contains(t)) {
+				_children.emplace_back(TS(T), glstd::base_aligments[t]);
+				_size += glstd::base_aligments[t];
+				_max_child_size = std::max(_max_child_size, glstd::base_aligments[t]);
 			}
 			else {
 				THROW_ERROR("Error to find 'base aligment' for type: " + std::string(t.name()));
@@ -48,8 +41,8 @@ namespace feng {
 		template<typename T, int Len>
 		__ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T) add_array() {
 			auto t = TID(T);
-			if (_base_aligments.contains(t)) {
-				uint32_t ats = utilities::round_to(_base_aligments[t], 16);
+			if (glstd::base_aligments.contains(t)) {
+				uint32_t ats = utilities::round_to(glstd::base_aligments[t], 16);
 				_children.reserve(Len);
 				for(int32_t i = 0; i < Len; i++)
 					_children.emplace_back(TS(T), ats );
@@ -66,23 +59,12 @@ namespace feng {
 		}
 
 	private:
-		std::vector<uniformbuffer_element> _children;
+		std::vector<glstd::buffer_element> _children;
 		uint32_t _size = 0;
 		uint32_t _max_child_size = 0;
 
 		friend struct uniformbuffer_pack;
 		friend struct uniformbuffer;
-		static std::map<std::type_index, uint32_t> _base_aligments;
-
-	};
-
-	std::map<std::type_index, uint32_t> uniformbuffer_struct::_base_aligments{
-		{ TID(int), 4 },
-		{ TID(float), 4 },
-		{ TID(glm::vec2), 8 },
-		{ TID(glm::vec3), 16 },
-		{ TID(glm::vec4), 16 },
-		{ TID(glm::mat4), 64 }
 	};
 
 	struct uniformbuffer_pack {
@@ -90,8 +72,8 @@ namespace feng {
 		template<typename T>
 		__ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T) add_element() {
 			const auto& t = TID(T);
-			if (uniformbuffer_struct::_base_aligments.contains(t)) {
-				_size += uniformbuffer_struct::_base_aligments[t];
+			if (glstd::base_aligments.contains(t)) {
+				_size += glstd::base_aligments[t];
 			}
 			else {
 				THROW_ERROR("Error to find 'base aligment' for type: " + std::string(t.name()));
@@ -105,8 +87,8 @@ namespace feng {
 		template<typename T, int Len>
 		__ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T) add_array() {
 			auto t = TID(T);
-			if (uniformbuffer_struct::_base_aligments.contains(t)) {
-				uint32_t ats = utilities::round_to(uniformbuffer_struct::_base_aligments[t], 16);
+			if (glstd::base_aligments.contains(t)) {
+				uint32_t ats = utilities::round_to(glstd::base_aligments[t], 16);
 				_size += ats * Len;
 			}
 			else {
@@ -159,13 +141,13 @@ namespace feng {
 		template<typename T>
 		__ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T) buffer_block_element(T* data) {
 			const auto& t = TID(T);
-			if (uniformbuffer_struct::_base_aligments.contains(t)) {
+			if (uniformbuffer_struct::glstd::base_aligments.contains(t)) {
 				buffer_sub_data(_offset, sizeof(T), data);
-				_offset += uniformbuffer_struct::_base_aligments[t];
+				_offset += uniformbuffer_struct::glstd::base_aligments[t];
 
 				if(!_did_output)
 					std::cout << "Buffered element size of: " << sizeof(T) << " aligment: "
-						<< uniformbuffer_struct::_base_aligments[TID(T)] << 
+						<< uniformbuffer_struct::glstd::base_aligments[TID(T)] << 
 					" offset: " << _offset << '\n';
 			}
 			else {
@@ -195,8 +177,8 @@ namespace feng {
 		template<typename T, int Len>
 		__ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T) buffer_block_array(T* first_element) {
 			auto t = TID(T);
-			if (uniformbuffer_struct::_base_aligments.contains(t)) {
-				uint32_t ats = utilities::round_to(uniformbuffer_struct::_base_aligments[t], 16);
+			if (uniformbuffer_struct::glstd::base_aligments.contains(t)) {
+				uint32_t ats = utilities::round_to(uniformbuffer_struct::glstd::base_aligments[t], 16);
 				for (int32_t i = 0; i < Len; i++) {
 					buffer_sub_data(_offset, sizeof(T), first_element + i);
 					_offset += ats;
