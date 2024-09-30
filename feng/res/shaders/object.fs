@@ -61,12 +61,11 @@ in VS_OUT{
 	PointLight PointLights[MAX_POINT_LIGHTS];
 	flat int NoSpotLights;
 	SpotLight SpotLights[MAX_SPOT_LIGHTS];
+
+    mat3 TBN;
 } fs_in;
 
 uniform int has_tex;
-//uniform DirLight dirLight;
-//uniform PointLight pointLights[MAX_POINT_LIGHTS];
-//uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform Material material;
 uniform int isSLWorking;
 
@@ -77,10 +76,19 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec);
 
+uniform int useNormalMapping;
+
 void main()
 {    
     vec3 norm = normalize(fs_in.Normal);
-    vec3 viewDir = normalize(fs_in.ViewPos - fs_in.FragPos);
+
+    if(useNormalMapping == 1){
+        norm = texture(material.normal0, fs_in.TexCoords).rgb;
+        norm = (norm * 2.0 - 1.0) * fs_in.TBN;
+        norm = normalize(norm);
+    }
+
+    vec3 viewDir = fs_in.TBN * normalize(fs_in.ViewPos - fs_in.FragPos);
     
     vec3 c_dif;
     vec3 c_spec;
@@ -105,6 +113,7 @@ void main()
     //vec3 reflection = texture(skybox, R).rgb;
 
     FragColor = vec4(result, 1.0);
+    //FragColor = vec4(norm, 1.0);
     // gamma correction
     //float gamma = 2.2;
     //FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));

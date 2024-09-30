@@ -14,7 +14,7 @@
 		__IS_T_NOT_UBO_STRUCT(T)\
 	::value, void>::type
 
-//#define PRINT_BUFFERING_INFO(T) 
+#define WORK_IN_PROGRESS_CODE
 
 namespace feng {
 

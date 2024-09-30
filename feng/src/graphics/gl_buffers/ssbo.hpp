@@ -2,6 +2,7 @@
 
 #include "gl_buffer.hpp"
 #include "../../logging/logging.h"
+#include "glstandards.h"
 
 /*
 
@@ -53,28 +54,6 @@ namespace feng {
 					LOG_WARNING("Untested part of code was used xD (ssbo->add_structure (empty element))");
 				struct_offset += e.size;
 			}
-			rount_to_vec4();
-		}
-
-		void add_structure(const DirLight& dir_light) {
-			add_element(&dir_light.direction);
-			add_element(&dir_light.ambient);
-			add_element(&dir_light.diffuse);
-			add_element(&dir_light.specular);
-			rount_to_vec4();
-		}
-
-		void add_structure(const SpotLight& spot_light) {
-			add_element(&spot_light.position);
-			add_element(&spot_light.direction);
-			add_element(&spot_light.cutOff);
-			add_element(&spot_light.outerCutOff);
-			add_element(&spot_light.constant);
-			add_element(&spot_light.linear);
-			add_element(&spot_light.quadratic);
-			add_element(&spot_light.ambient);
-			add_element(&spot_light.diffuse);
-			add_element(&spot_light.specular);
 			rount_to_vec4();
 		}
 

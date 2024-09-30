@@ -14,7 +14,6 @@
 #include "graphics/model.h"
 #include "graphics/gl_buffers/framebuffer.hpp"
 #include "graphics/skybox.h"
-#include "graphics/gl_buffers/uniformbuffer.hpp"
 #include "graphics/model2d.h"
 #include "graphics/primitives2d.h"
 #include "graphics/uimodel.h"
@@ -39,9 +38,12 @@ std::vector<std::string> skybox_faces{
 	"res/textures/skyboxes/1/back.jpg"
 };
 
-int32_t get_uniform_block_size(shader& s, const char* block_name);
-
 int main() {
+#ifdef WORK_IN_PROGRESS_CODE
+	LOG_WARNING("'WORK_IN_PROGRESS_CODE' was detected!");
+#endif // WORK_IN_PROGRESS_CODE
+
+
 	window win("Feng", 800, 600);
 
 	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
@@ -67,12 +69,12 @@ int main() {
 	PointLight point_lights[MAX_POINT_LIGHTS] { 
 		{ 
 			glm::vec3(1.0f),
-			1.0f,
-			1.0f,
-			1.0f,
-			glm::vec3(1.0f),
-			glm::vec3(1.0f),
-			glm::vec3(1.0f)
+			2.0f,
+			3.0f,
+			4.0f,
+			glm::vec3(5.0f),
+			glm::vec3(6.0f),
+			glm::vec3(7.0f)
 		} 
 	};
 	SpotLight spot_lights[MAX_SPOT_LIGHTS] {
@@ -97,10 +99,15 @@ int main() {
 	dirlight_buffer_structure.add_elements<glm::vec3, glm::vec3, glm::vec3, glm::vec3>();
 	glstd::buffer_structure spotlight_buffer_structure;
 	spotlight_buffer_structure.add_elements<glm::vec3, glm::vec3, float, float, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
+	glstd::buffer_structure pointlight_buffer_structure;
+	pointlight_buffer_structure.add_elements<glm::vec3, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
+
 	glstd::buffer_structure lighs_final_buffer_structure;
 	lighs_final_buffer_structure.add_struct(dirlight_buffer_structure);
 	lighs_final_buffer_structure.add_element<int>();
 	lighs_final_buffer_structure.add_struct(spotlight_buffer_structure);
+	lighs_final_buffer_structure.add_element<int>();
+	lighs_final_buffer_structure.add_struct(pointlight_buffer_structure);
 	ssbo lights_ssbo;
 	lights_ssbo.allocate(lighs_final_buffer_structure, 2);
 
@@ -193,11 +200,13 @@ int main() {
 		spot_lights[0].position = cam.position();
 		spot_lights[0].direction = cam.front();
 
-		int32_t no_spotlights = 1;
+		int32_t no_spotlights = MAX_SPOT_LIGHTS, no_pointlights = MAX_POINT_LIGHTS;
 		lights_ssbo.start_block();
 		lights_ssbo.add_structure(dirlight_buffer_structure, &dir_light);
 		lights_ssbo.add_element(&no_spotlights);
 		lights_ssbo.add_structure(spotlight_buffer_structure, &spot_lights[0]);
+		lights_ssbo.add_element(&no_pointlights);
+		lights_ssbo.add_structure(pointlight_buffer_structure, &point_lights[0]);
 		lights_ssbo.end_block();
 
 		// More UBOs:
@@ -291,13 +300,4 @@ int main() {
 
 	fb.delete_buffer();
 	return 0;
-}
-
-int32_t get_uniform_block_size(shader& s, const char* block_name) {
-	uint32_t ubi = glGetUniformBlockIndex(s.id(), block_name);
-	int32_t ubs;
-	glGetActiveUniformBlockiv(s.id(), ubi,
-		GL_UNIFORM_BLOCK_DATA_SIZE,
-		&ubs);
-	return ubs;
 }
