@@ -232,7 +232,7 @@ int main() {
 		
 		obj_shader.set_3float("viewPos", cam.position());
 		obj_shader.set_int("isSLWorking", is_spot_light_working);
-		obj_shader.set_int("useNormalMapping", use_normal_mapping);
+		obj_shader.set_bool("useNormalMapping", use_normal_mapping);
 		obj_shader.set_float("material.shininess", 32.0f);
 		
 		//obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);

@@ -56,8 +56,6 @@ out VS_OUT{
 	PointLight PointLights[MAX_POINT_LIGHTS];
 	flat int NoSpotLights;
 	SpotLight SpotLights[MAX_SPOT_LIGHTS];
-
-    mat3 TBN;
 } vs_out;
 
 uniform mat4 model;
@@ -78,12 +76,13 @@ layout (std430, binding = 2) buffer Lights
     PointLight pointLights[MAX_POINT_LIGHTS];
 };
 
-uniform int useNormalMapping;
+uniform bool useNormalMapping;
 
 void main()
 {
-    vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
-    vec3 N = normalize(vec3(model * vec4(aNormal, 0.0)));
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    vec3 T = normalize(normalMatrix * aTangent);
+    vec3 N = normalize(normalMatrix * aNormal);
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
     mat3 TBN = transpose(mat3(T, B, N));
@@ -91,8 +90,7 @@ void main()
     vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
     vs_out.TexCoords = aTexCoords;
-    vs_out.ViewPos = viewPos;
-    vs_out.TBN = TBN;
+    vs_out.ViewPos = TBN * viewPos;
 
     vs_out.DirectionalLight = dirLight;
     vs_out.NoPointLights = noPointLights;
@@ -100,17 +98,17 @@ void main()
     vs_out.NoSpotLights = noSpotLights;
     vs_out.SpotLights = spotLights;
 
-    if(useNormalMapping == 1){
-        vs_out.FragPos = vs_out.FragPos * TBN;
-        vs_out.ViewPos = viewPos * TBN;
+    if(useNormalMapping){
+        vs_out.FragPos = TBN * vs_out.FragPos;
+        vs_out.ViewPos = TBN * viewPos;
 
-        vs_out.DirectionalLight.direction = vec3(dirLight.direction * TBN);
+        vs_out.DirectionalLight.direction = TBN * vec3(dirLight.direction);
         for(int i = 0; i < MAX_POINT_LIGHTS; i++){
-            vs_out.PointLights[i].position = vec3(pointLights[i].position * TBN);
+            vs_out.PointLights[i].position = TBN * vec3(pointLights[i].position);
         }
         for(int i = 0; i < MAX_SPOT_LIGHTS; i++){
-            vs_out.SpotLights[i].position = vec3(spotLights[i].position * TBN);
-            vs_out.SpotLights[i].direction = vec3(spotLights[i].direction * TBN);
+            vs_out.SpotLights[i].position = TBN * vec3(spotLights[i].position);
+            vs_out.SpotLights[i].direction = TBN * vec3(spotLights[i].direction);
         }
     }
 

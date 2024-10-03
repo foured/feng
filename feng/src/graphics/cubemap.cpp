@@ -32,7 +32,7 @@ namespace feng {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		LOG_ACTION("Created cubemap texture.");
+		LOG_ACTION("Created cubemap texture: '" + faces[0] + "'.");
 	}
 
 	uint32_t cubemap::id() {
