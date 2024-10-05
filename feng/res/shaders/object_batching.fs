@@ -1,5 +1,11 @@
-#version 330 core
+#version 460 core
+
 out vec4 FragColor;
+
+
+#define MAX_POINT_LIGHTS 1
+#define MAX_SPOT_LIGHTS 1
+#define NULL_TEXTURE_IDX 255
 
 struct Material {
     float shininess;
@@ -40,23 +46,29 @@ struct SpotLight {
     vec3 specular;       
 };
 
-#define MAX_POINT_LIGHTS 1
+in VS_OUT{
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+    vec3 ViewPos;
 
-in vec3 FragPos;
-in vec3 Normal;
-in vec2 TexCoords;
-in vec4 DiffuseCol;
-in vec4 SpecCol;
-flat in int d_map_idx;
-flat in int s_map_idx;
+    DirLight DirectionalLight;
+    flat int NoPointLights;
+	PointLight PointLights[MAX_POINT_LIGHTS];
+	flat int NoSpotLights;
+	SpotLight SpotLights[MAX_SPOT_LIGHTS];
+
+    flat int d_map_idx;
+    flat int s_map_idx;
+    flat int n_map_idx;
+    vec4 DiffuseCol;
+    vec4 SpecCol;
+} fs_in;
 
 uniform int has_tex;
-uniform vec3 viewPos;
-uniform DirLight dirLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform SpotLight spotLight;
 uniform Material material;
 uniform int isSLWorking;
+uniform bool useNormalMapping;
 
 uniform sampler2D textures[32];
 
@@ -69,32 +81,39 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
 
 void main()
 {    
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
-    
-    vec3 c_dif;
-    vec3 c_spec;
-    if(d_map_idx != -1){
-        c_dif = texture(textures[d_map_idx], TexCoords).rgb;
-        //c_spec = texture(textures[s_map_idx == -1 ? d_map_idx : s_map_idx], TexCoords).rgb;
-        c_spec = texture(textures[s_map_idx], TexCoords).rgb;
-    }
-    else{
-        c_dif = vec3(DiffuseCol);
-        c_spec = vec3(SpecCol);
+    vec3 norm = normalize(fs_in.Normal);
+
+    if(useNormalMapping){
+        norm = texture(textures[fs_in.n_map_idx], fs_in.TexCoords).rgb;
+        norm = normalize(norm * 2.0 - 1.0);
     }
 
-    vec3 result = CalcDirLight(dirLight, norm, viewDir, c_dif, c_spec);
+    vec3 viewDir = normalize(fs_in.ViewPos - fs_in.FragPos);
+
+    vec3 c_dif;
+    vec3 c_spec;
+    if(fs_in.d_map_idx != NULL_TEXTURE_IDX){
+        c_dif = texture(textures[fs_in.d_map_idx], fs_in.TexCoords).rgb;
+        c_spec = texture(textures[fs_in.s_map_idx], fs_in.TexCoords).rgb;
+    }
+    else{
+        c_dif = vec3(fs_in.DiffuseCol);
+        c_spec = vec3(fs_in.SpecCol);
+    }
+
+    vec3 result = CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
     //for(int i = 0; i < MAX_POINT_LIGHTS; i++)
     //       result += CalcPointLight(pointLights[i], norm, FragPos, viewDir, c_dif, c_spec); 
-    if(isSLWorking == 1){      
-        result += CalcSpotLight(spotLight, norm, FragPos, viewDir, c_dif, c_spec);    
-    }
     
+    if(isSLWorking == 1){      
+        result += CalcSpotLight(fs_in.SpotLights[0], norm, fs_in.FragPos, viewDir, c_dif, c_spec);    
+    }
+
     //vec3 I = normalize(FragPos - viewPos);
     //vec3 R = reflect(I, normalize(Normal));
     //vec3 reflection = texture(skybox, R).rgb;
 
+    result = pow(result, vec3(1.0 / 2.2));
     FragColor = vec4(result, 1.0);
     // gamma correction
     //float gamma = 2.2;

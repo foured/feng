@@ -87,7 +87,7 @@ void main()
     vec3 B = cross(N, T);
     mat3 TBN = transpose(mat3(T, B, N));
 
-    vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
+    vs_out.FragPos = vec3(model * vec4(aPos + aOffset, 1.0));
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
     vs_out.TexCoords = aTexCoords;
     vs_out.ViewPos = TBN * viewPos;

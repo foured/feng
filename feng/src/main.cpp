@@ -43,7 +43,6 @@ int main() {
 	LOG_WARNING("'WORK_IN_PROGRESS_CODE' was detected!");
 #endif // WORK_IN_PROGRESS_CODE
 
-
 	window win("Feng", 800, 600);
 
 	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
@@ -57,14 +56,14 @@ int main() {
 	framebuffer fb(&framebuffer_shader);
 	skybox sb(&skybox_shader, skybox_faces);
 
-	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::mesh_by_mesh);
+	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
 	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
 
 	DirLight dir_light{
 		{ -0.2f, -1.0f, -0.3f },
-		glm::vec3(0.5f),
-		glm::vec3(0.5f),
-		glm::vec3(1.0f)
+		glm::vec3(0.1f),
+		glm::vec3(0.6f),
+		glm::vec3(0.7f)
 	};
 	PointLight point_lights[MAX_POINT_LIGHTS] { 
 		{ 
@@ -110,30 +109,6 @@ int main() {
 	lighs_final_buffer_structure.add_struct(pointlight_buffer_structure);
 	ssbo lights_ssbo;
 	lights_ssbo.allocate(lighs_final_buffer_structure, 2);
-
-	// Broken UBOs: 
-	
-	//uniformbuffer_struct dir_light_ubo_struct;
-	//dir_light_ubo_struct.add_elements<glm::vec3, glm::vec3, glm::vec3, glm::vec3>();
-	//uniformbuffer_struct point_light_ubo_struct;
-	//point_light_ubo_struct.add_elements<glm::vec3, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
-	//uniformbuffer_struct spot_light_ubo_struct;
-	//spot_light_ubo_struct.add_elements<glm::vec3, glm::vec3, float, float, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
-	//
-	//uniformbuffer_pack matrices_ubuffer_pack;
-	//matrices_ubuffer_pack.add_element<glm::mat4>();
-	//matrices_ubuffer_pack.add_element<glm::mat4>();
-	//uniformbuffer matrices_ubuffer;
-	//matrices_ubuffer.fast_setup(0, matrices_ubuffer_pack);
-	//
-	//uniformbuffer_pack lights_ubuffer_pack;
-	//lights_ubuffer_pack.add_element(dir_light_ubo_struct);
-	//lights_ubuffer_pack.add_element<int32_t>();
-	//lights_ubuffer_pack.add_array<MAX_POINT_LIGHTS>(point_light_ubo_struct);
-	//lights_ubuffer_pack.add_element<int32_t>();
-	//lights_ubuffer_pack.add_array<MAX_SPOT_LIGHTS>(spot_light_ubo_struct);
-	//uniformbuffer lights_ubuffer;
-	//lights_ubuffer.fast_setup(1, lights_ubuffer_pack);
 
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
@@ -209,59 +184,18 @@ int main() {
 		lights_ssbo.add_structure(pointlight_buffer_structure, &point_lights[0]);
 		lights_ssbo.end_block();
 
-		// More UBOs:
-		
-		//matrices_ubuffer.start_block();
-		//matrices_ubuffer.buffer_block_element((glm::mat4*)glm::value_ptr(projection));
-		//matrices_ubuffer.buffer_block_element((glm::mat4*)glm::value_ptr(cam.get_view_matrix()));
-		//matrices_ubuffer.end_block();
-		//
-		//lights_ubuffer.start_block();
-		//lights_ubuffer.buffer_block_struct(dir_light_ubo_struct, &dir_light);
-		//int32_t pls = 0;
-		//lights_ubuffer.buffer_block_element(&pls);
-		//lights_ubuffer.buffer_block_struct_array(point_light_ubo_struct, &point_lights[0], MAX_POINT_LIGHTS);
-		//int32_t sls = 1;
-		//lights_ubuffer.buffer_block_element(&sls);
-		//lights_ubuffer.buffer_block_struct_array(spot_light_ubo_struct, &spot_lights[0], MAX_SPOT_LIGHTS);
-		//lights_ubuffer.end_block();
-
 		// start render
 
-		obj_shader.activate();
+		obj_batch_shader.activate();
 		
-		obj_shader.set_3float("viewPos", cam.position());
-		obj_shader.set_int("isSLWorking", is_spot_light_working);
-		obj_shader.set_bool("useNormalMapping", use_normal_mapping);
-		obj_shader.set_float("material.shininess", 32.0f);
+		obj_batch_shader.set_3float("viewPos", cam.position());
+		obj_batch_shader.set_int("isSLWorking", is_spot_light_working);
+		obj_batch_shader.set_bool("useNormalMapping", use_normal_mapping);
+		obj_batch_shader.set_float("material.shininess", 32.0f);
 		
-		//obj_shader.set_3float("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		//obj_shader.set_3float("dirLight.ambient", glm::vec3(0.5f));
-		//obj_shader.set_3float("dirLight.diffuse", glm::vec3(0.5f));
-		//obj_shader.set_3float("dirLight.specular", glm::vec3(1.0f));
+		obj_batch_shader.set_mat4("model", model);
 
-		//obj_shader.set_3float("pointLights[0].position", 1.2f, 1.0f, 2.0f);
-		//obj_shader.set_3float("pointLights[0].ambient", glm::vec3(0.2f));
-		//obj_shader.set_3float("pointLights[0].diffuse", glm::vec3(0.5f));
-		//obj_shader.set_3float("pointLights[0].specular", glm::vec3(1.0f));
-		//obj_shader.set_float("pointLights[0].constant", 1.0f);
-		//obj_shader.set_float("pointLights[0].linear", 0.09f);
-		//obj_shader.set_float("pointLights[0].quadratic", 0.032f);
-
-		//obj_shader.set_3float("spotLights[0].position", cam.position());
-		//obj_shader.set_3float("spotLights[0].direction", cam.front());
-		//obj_shader.set_float("spotLights[0].cutOff", glm::cos(glm::radians(12.5f)));
-		//obj_shader.set_float("spotLights[0].outerCutOff", glm::cos(glm::radians(17.5f)));
-		//obj_shader.set_3float("spotLights[0].ambient", glm::vec3(0.1));
-		//obj_shader.set_3float("spotLights[0].diffuse", glm::vec3(0.8f));
-		//obj_shader.set_3float("spotLights[0].specular", glm::vec3(1.0f));
-		//obj_shader.set_float("spotLights[0].constant", 1.0f);
-		//obj_shader.set_float("spotLights[0].linear", 0.09f);
-		//obj_shader.set_float("spotLights[0].quadratic", 0.032f);
-		
-		obj_shader.set_mat4("model", model);
-
-		backpack.render(obj_shader);
+		backpack.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());
 		

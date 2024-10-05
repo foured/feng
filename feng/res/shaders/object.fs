@@ -75,7 +75,6 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec);
 
 uniform bool useNormalMapping;
-
 void main()
 {    
     vec3 norm = normalize(fs_in.Normal);
@@ -108,12 +107,9 @@ void main()
     //vec3 I = normalize(FragPos - viewPos);
     //vec3 R = reflect(I, normalize(Normal));
     //vec3 reflection = texture(skybox, R).rgb;
-
+    result =  pow(result, vec3(1.0 / 2.2));
     FragColor = vec4(result, 1.0);
     //FragColor = vec4(norm, 1.0);
-    // gamma correction
-    //float gamma = 2.2;
-    //FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_spec)

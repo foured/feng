@@ -42,7 +42,7 @@ namespace feng {
 		for (mesh& m : _meshes) {
 			m.vertex_array.bind();
 			_pos_array_buffer.bind();
-			m.vertex_array.set_attrib_pointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			m.vertex_array.set_attrib_pointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			vertexarray::unbind();
 		}
 	}
@@ -55,7 +55,7 @@ namespace feng {
 		for (mesh_batch& batch : _batches) {
 			batch.vertex_array.bind();
 			_pos_array_buffer.bind();
-			batch.vertex_array.set_attrib_pointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			batch.vertex_array.set_attrib_pointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			vertexarray::unbind;
 		}
 
@@ -252,7 +252,7 @@ namespace feng {
 	}
 
 	void mesh_batch::add_mesh(mesh& mesh) {
-		int8_t d_idx = -1, s_idx = -1;
+		uint8_t d_idx = NULL_TEXTURE_IDX, s_idx = NULL_TEXTURE_IDX, n_idx = NULL_TEXTURE_IDX;
 		for (int i = 0; i < textures.size(); i++) {
 			for (texture& mtex : mesh._textures) {
 				if (mtex == textures[i]) {
@@ -264,11 +264,14 @@ namespace feng {
 					case aiTextureType_SPECULAR:
 						s_idx = i;
 						break;
+					case aiTextureType_NORMALS:
+						n_idx = i;
+						break;
 					}
 				}
 			}
 		}
-		if (d_idx == -1) {
+		if (d_idx == NULL_TEXTURE_IDX) {
 			for (texture& mtex : mesh._textures) {
 				if (mtex.type() == aiTextureType_DIFFUSE) {
 					d_idx = textures.size();
@@ -277,10 +280,19 @@ namespace feng {
 				}
 			}
 		}
-		if (s_idx == -1) {
+		if (s_idx == NULL_TEXTURE_IDX) {
 			for (texture& mtex : mesh._textures) {
 				if (mtex.type() == aiTextureType_SPECULAR) {
 					s_idx = textures.size();
+					textures.push_back(mtex);
+					break;
+				}
+			}
+		}
+		if (n_idx == NULL_TEXTURE_IDX) {
+			for (texture& mtex : mesh._textures) {
+				if (mtex.type() == aiTextureType_NORMALS) {
+					n_idx = textures.size();
 					textures.push_back(mtex);
 					break;
 				}
@@ -294,7 +306,7 @@ namespace feng {
 			indices.emplace_back(v + v_offset);
 		}
 
-		int32_t textures_idxs = d_idx | s_idx << 8;
+		int32_t textures_idxs = d_idx | s_idx << 8 | n_idx << 16;
 		advanced_static_vertex_data nasvd;
 		if (mesh._has_textures) {
 			nasvd.diffuse = mesh._diffuse;
@@ -325,9 +337,10 @@ namespace feng {
 		vertex_array.set_attrib_pointer(0, 3, GL_FLOAT, GL_FALSE, s, 0);
 		vertex_array.set_attrib_pointer(1, 3, GL_FLOAT, GL_FALSE, s, (3 * sizeof(float)));
 		vertex_array.set_attrib_pointer(2, 2, GL_FLOAT, GL_FALSE, s, (6 * sizeof(float)));
-		vertex_array.set_attrib_pointer(3, 4, GL_FLOAT, GL_FALSE, s, (8 * sizeof(float)));
-		vertex_array.set_attrib_pointer(4, 4, GL_FLOAT, GL_FALSE, s, (12 * sizeof(float)));
-		vertex_array.set_attrib_pointer(5, 1, GL_FLOAT, GL_FALSE, s, (16 * sizeof(float)));
+		vertex_array.set_attrib_pointer(3, 3, GL_FLOAT, GL_FALSE, s, (8 * sizeof(float)));
+		vertex_array.set_attrib_pointer(4, 4, GL_FLOAT, GL_FALSE, s, (11 * sizeof(float)));
+		vertex_array.set_attrib_pointer(5, 4, GL_FLOAT, GL_FALSE, s, (15 * sizeof(float)));
+		vertex_array.set_attrib_pointer(6, 1, GL_FLOAT, GL_FALSE, s, (19 * sizeof(float)));
 
 		vertexarray::unbind();
 	}
