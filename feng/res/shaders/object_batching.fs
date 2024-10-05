@@ -83,7 +83,7 @@ void main()
 {    
     vec3 norm = normalize(fs_in.Normal);
 
-    if(useNormalMapping){
+    if(useNormalMapping && fs_in.n_map_idx != NULL_TEXTURE_IDX){
         norm = texture(textures[fs_in.n_map_idx], fs_in.TexCoords).rgb;
         norm = normalize(norm * 2.0 - 1.0);
     }

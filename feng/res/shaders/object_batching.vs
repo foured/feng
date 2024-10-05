@@ -9,9 +9,11 @@ layout (location = 5) in vec4 aSpecular;
 layout (location = 6) in float aTexIdxs;
 // dynamic
 layout (location = 7) in vec3 aOffset;
+layout (location = 8) in vec3 aSize;
 
 #define MAX_POINT_LIGHTS 1
 #define MAX_SPOT_LIGHTS 1
+#define NULL_TEXTURE_IDX 255
 
 struct DirLight {
     vec3 direction;
@@ -103,7 +105,7 @@ void main()
     vec3 B = cross(N, T);
     mat3 TBN = transpose(mat3(T, B, N));
 
-    vs_out.FragPos = vec3(model * vec4(aPos + aOffset, 1.0));
+    vs_out.FragPos = vec3(model * vec4(aPos * aSize + aOffset, 1.0));
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
     vs_out.TexCoords = aTexCoords;
     vs_out.ViewPos = TBN * viewPos;
@@ -114,7 +116,7 @@ void main()
     vs_out.NoSpotLights = noSpotLights;
     vs_out.SpotLights = spotLights;
 
-    if(useNormalMapping){
+    if(useNormalMapping && vs_out.n_map_idx != NULL_TEXTURE_IDX){
         vs_out.FragPos = TBN * vs_out.FragPos;
         vs_out.ViewPos = TBN * viewPos;
 
@@ -128,5 +130,5 @@ void main()
         }
     }
     
-    gl_Position = projection * view * vec4(vec3(model * vec4(aPos + aOffset, 1.0)), 1.0);
+    gl_Position = projection * view * vec4(vec3(model * vec4(aPos * aSize + aOffset, 1.0)), 1.0);
 }

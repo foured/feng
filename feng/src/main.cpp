@@ -24,6 +24,7 @@
 #include "graphics/batching/text_batcher.h"
 #include "graphics/light/lights.h"
 #include "graphics/gl_buffers/ssbo.hpp"
+#include "graphics/primitives.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -58,6 +59,7 @@ int main() {
 
 	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
 	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
+	model cube(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0)), model_render_type::batched);
 
 	DirLight dir_light{
 		{ -0.2f, -1.0f, -0.3f },
@@ -162,7 +164,7 @@ int main() {
 		if (input::get_key_down(GLFW_KEY_E)) inst1->uitransform.set_pos_pix({ 300, 300 });
 
 		glm::mat4 model(1.0f);
-		model = glm::scale(model, glm::vec3(0.01f));
+		//model = glm::scale(model, glm::vec3(0.01f));
 		glm::mat4 projection;
 		projection = glm::perspective(
 			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.1f, 100.0f);
@@ -195,7 +197,8 @@ int main() {
 		
 		obj_batch_shader.set_mat4("model", model);
 
-		backpack.render(obj_batch_shader);
+		//backpack.render(obj_batch_shader);
+		cube.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());
 		

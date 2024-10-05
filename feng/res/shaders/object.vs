@@ -5,6 +5,7 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aOffset;
+layout (location = 5) in vec3 aSize;
 
 #define MAX_POINT_LIGHTS 1
 #define MAX_SPOT_LIGHTS 1
@@ -87,7 +88,7 @@ void main()
     vec3 B = cross(N, T);
     mat3 TBN = transpose(mat3(T, B, N));
 
-    vs_out.FragPos = vec3(model * vec4(aPos + aOffset, 1.0));
+    vs_out.FragPos = vec3(model * vec4(aPos * aSize + aOffset, 1.0));
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
     vs_out.TexCoords = aTexCoords;
     vs_out.ViewPos = TBN * viewPos;
@@ -112,5 +113,5 @@ void main()
         }
     }
 
-    gl_Position = projection * view * vec4(vec3(model * vec4(aPos + aOffset, 1.0)), 1.0);
+    gl_Position = projection * view * vec4(vec3(model * vec4(aPos * aSize + aOffset, 1.0)), 1.0);
 }

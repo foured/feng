@@ -10,10 +10,18 @@ namespace feng {
 
 	model::model(std::string filepath, model_render_type render_type) 
 		: _render_type(render_type) {
-		//START_TIMER();
 		load_model(filepath);
 		add_instance(glm::vec3(0.0f));
+		setup();
+	}
 
+	model::model(std::vector<mesh> meshes, model_render_type render_type)
+		: _render_type(render_type), _meshes(meshes){
+		add_instance(glm::vec3(0.0f), glm::vec3(0.5f));
+		setup();
+	}
+
+	void model::setup() {
 		switch (_render_type)
 		{
 		case feng::batched:
@@ -28,42 +36,49 @@ namespace feng {
 			setup_mesh_by_mesh();
 			break;
 		}
-
-		//setup();
-
-		//LOG_INFO("Model at '" + filepath + "' has " + std::to_string(_meshes.size()) + " meshes.");
 	}
 
-	void model::setup_mesh_by_mesh() {
+	void model::allocate_buffers() {
 		_pos_array_buffer.generate();
 		_pos_array_buffer.bind();
 		_pos_array_buffer.buffer_data(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), &_positions[0], GL_DYNAMIC_DRAW);
+
+		_size_array_buffer.generate();
+		_size_array_buffer.bind();
+		_size_array_buffer.buffer_data(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), &_sizes[0], GL_DYNAMIC_DRAW);
+	}
+
+	void model::setup_mesh_by_mesh() {
+		allocate_buffers();
 
 		for (mesh& m : _meshes) {
 			m.vertex_array.bind();
 			_pos_array_buffer.bind();
 			m.vertex_array.set_attrib_pointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			_size_array_buffer.bind();
+			m.vertex_array.set_attrib_pointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			vertexarray::unbind();
 		}
 	}
 
 	void model::setup_batched() {
-		_pos_array_buffer.generate();
-		_pos_array_buffer.bind();
-		_pos_array_buffer.buffer_data(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), &_positions[0], GL_DYNAMIC_DRAW);
+		allocate_buffers();
 
 		for (mesh_batch& batch : _batches) {
 			batch.vertex_array.bind();
 			_pos_array_buffer.bind();
 			batch.vertex_array.set_attrib_pointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			_size_array_buffer.bind();
+			batch.vertex_array.set_attrib_pointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			vertexarray::unbind;
 		}
 
 	}
 
-	void model::add_instance(glm::vec3 position) {
+	void model::add_instance(glm::vec3 position, glm::vec3 size) {
 		_no_instances++;
 		_positions.push_back(position);
+		_sizes.push_back(size);
 	}
 
 	void model::load_model(std::string path) {
@@ -308,7 +323,7 @@ namespace feng {
 
 		int32_t textures_idxs = d_idx | s_idx << 8 | n_idx << 16;
 		advanced_static_vertex_data nasvd;
-		if (mesh._has_textures) {
+		if (!mesh._has_textures) {
 			nasvd.diffuse = mesh._diffuse;
 			nasvd.specular = mesh._specular;
 		}

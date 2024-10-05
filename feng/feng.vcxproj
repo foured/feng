@@ -156,6 +156,7 @@
     <ClCompile Include="src\graphics\model.cpp" />
     <ClCompile Include="src\graphics\model2d.cpp" />
     <ClCompile Include="src\graphics\model2d_renderer.cpp" />
+    <ClCompile Include="src\graphics\primitives.cpp" />
     <ClCompile Include="src\graphics\primitives2d.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
     <ClCompile Include="src\graphics\skybox.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="src\graphics\model.h" />
     <ClInclude Include="src\graphics\model2d.h" />
     <ClInclude Include="src\graphics\model2d_renderer.h" />
+    <ClInclude Include="src\graphics\primitives.h" />
     <ClInclude Include="src\graphics\primitives2d.h" />
     <ClInclude Include="src\graphics\shader.h" />
     <ClInclude Include="src\graphics\skybox.h" />

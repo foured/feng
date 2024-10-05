@@ -11,7 +11,6 @@ namespace feng {
 	void model2d::setup() {
 		_pos_array_buffer.generate();
 		_pos_array_buffer.bind();
-		// переделать с использованием nullptr
 		_pos_array_buffer.buffer_data(MAX_NO_MODEL2D_INSTANCES * sizeof(glm::vec3), &_positions[0], GL_DYNAMIC_DRAW);
 		
 		for (mesh2d& m : _meshes) {
