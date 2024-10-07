@@ -48,7 +48,6 @@ namespace feng {
     };
 
 	struct primitives {
-		static void print_vertex_data(const model& model);
         static std::vector<mesh> generate_cube_mesh(std::vector<texture> textures);
         static std::vector<mesh> generate_cube_mesh(glm::vec3 diffuse, glm::vec3 specular);
 	};

@@ -47,8 +47,7 @@ namespace feng {
 			_renderbuffer.renderbuffer_storage(GL_DEPTH24_STENCIL8, window::win_width, window::win_height);
 			_renderbuffer.attach_to_framebuffer(GL_DEPTH_STENCIL_ATTACHMENT);
 
-			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-				LOG_ERROR("Framebuffer is not complete.");
+			framebuffer::check_status();
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			_shader->activate();
@@ -69,6 +68,26 @@ namespace feng {
 			vertexarray::unbind();
 		}
 
+		static void check_status() {
+			uint32_t dfb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (dfb_status == GL_FRAMEBUFFER_UNDEFINED)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_UNDEFINED'." );
+			else if (dfb_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT'.");
+			else if (dfb_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT'.");
+			else if (dfb_status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER'.");
+			else if (dfb_status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER'.");
+			else if (dfb_status == GL_FRAMEBUFFER_UNSUPPORTED)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_UNSUPPORTED'.");
+			else if (dfb_status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE'.");
+			else if (dfb_status == GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS)
+				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS'.");
+		}
+		
 		void delete_buffer() {
 			glDeleteFramebuffers(1, &_FBO);
 		}

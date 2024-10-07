@@ -33,7 +33,6 @@ namespace feng {
 	private:
 		friend class model;
 		friend struct mesh_batch;
-		friend struct primitives;
 
 		std::vector<texture> _textures;
 		std::vector<uint32_t> _indices;

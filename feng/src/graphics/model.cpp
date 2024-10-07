@@ -8,16 +8,16 @@
 
 namespace feng {
 
-	model::model(std::string filepath, model_render_type render_type) 
+	model::model(std::string filepath, model_render_type render_type, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size)
 		: _render_type(render_type) {
 		load_model(filepath);
-		add_instance(glm::vec3(0.0f));
+		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
 	}
 
-	model::model(std::vector<mesh> meshes, model_render_type render_type)
+	model::model(std::vector<mesh> meshes, model_render_type render_type, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size)
 		: _render_type(render_type), _meshes(meshes){
-		add_instance(glm::vec3(0.0f), glm::vec3(0.5f));
+		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
 	}
 
@@ -46,6 +46,14 @@ namespace feng {
 		_size_array_buffer.generate();
 		_size_array_buffer.bind();
 		_size_array_buffer.buffer_data(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), &_sizes[0], GL_DYNAMIC_DRAW);
+	}
+
+	void model::update_instances_buffers() {
+		_pos_array_buffer.bind();
+		_pos_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_positions[0]);
+
+		_size_array_buffer.bind();
+		_size_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_sizes[0]);
 	}
 
 	void model::setup_mesh_by_mesh() {
@@ -222,8 +230,7 @@ namespace feng {
 	}
 
 	void model::render_mesh_by_mesh(shader& shader) {
-		_pos_array_buffer.bind();
-		_pos_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_positions[0]);
+		update_instances_buffers();
 
 		for (mesh& m : _meshes) {
 			m.render(shader, _no_instances);
@@ -231,8 +238,8 @@ namespace feng {
 	}
 
 	void model::render_batched(shader& shader) {
-		_pos_array_buffer.bind();
-		_pos_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_positions[0]);
+		update_instances_buffers();
+
 		for (mesh_batch& batch : _batches) {
 			batch.render(shader, _no_instances);
 		}

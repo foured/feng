@@ -40,15 +40,20 @@ namespace feng {
 
 	class model {
 	public:
-		model(std::string filepath, model_render_type render_type = model_render_type::batched);
-		model(std::vector<mesh> meshes, model_render_type render_type = model_render_type::batched);
+		model(std::string filepath, 
+			model_render_type render_type = model_render_type::batched, 
+			glm::vec3 initial_instance_pos = glm::vec3(0),
+			glm::vec3 initial_instance_size = glm::vec3(1));
+
+		model(std::vector<mesh> meshes,
+			model_render_type render_type = model_render_type::batched,
+			glm::vec3 initial_instance_pos = glm::vec3(0),
+			glm::vec3 initial_instance_size = glm::vec3(1));
 
 		void render(shader& shader);
-		void add_instance(glm::vec3 position, glm::vec3 size = glm::vec3(1));
+		void add_instance(glm::vec3 position = glm::vec3(0), glm::vec3 size = glm::vec3(1));
 
 	private:
-		friend struct primitives;
-
 		std::vector<mesh> _meshes;
 		std::vector<mesh_batch> _batches;
 		std::string _directory;
@@ -63,6 +68,7 @@ namespace feng {
 		std::vector<texture> _textures_loaded;
 
 		void allocate_buffers();
+		void update_instances_buffers();
 		void render_batched(shader& shader);
 		void render_mesh_by_mesh(shader& shader);
 		void setup();

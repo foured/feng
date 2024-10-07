@@ -230,5 +230,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
+    <None Include="res\shaders\depth.vs" />
+    <None Include="res\shaders\depth.fs" />
   </ItemGroup>
 </Project>

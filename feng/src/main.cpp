@@ -39,10 +39,16 @@ std::vector<std::string> skybox_faces{
 	"res/textures/skyboxes/1/back.jpg"
 };
 
+void check_errors();
+
 int main() {
 #ifdef WORK_IN_PROGRESS_CODE
 	LOG_WARNING("'WORK_IN_PROGRESS_CODE' was detected!");
-#endif // WORK_IN_PROGRESS_CODE
+#endif
+
+	//========================
+	//    CREATING OBJECTS
+	//========================
 
 	window win("Feng", 800, 600);
 
@@ -52,14 +58,24 @@ int main() {
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
+	shader depth_shader("res/shaders/depth.vs", "res/shaders/depth.fs");
+
+	framebuffer fb(&framebuffer_shader);
+
+	//======================
+	//    CREATING SCENE
+	//======================
 
 	camera cam;
-	framebuffer fb(&framebuffer_shader);
 	skybox sb(&skybox_shader, skybox_faces);
 
-	model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
+	//model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
 	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
-	model cube(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0)), model_render_type::batched);
+	model cube1(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)), model_render_type::batched);
+	model cube2(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)), model_render_type::batched, 
+		glm::vec3(0, -3, 0), glm::vec3(20, 0.5f, 20));
+	cube1.add_instance(glm::vec3(2, 3, 2));
+	//cube1.add_instance()
 
 	DirLight dir_light{
 		{ -0.2f, -1.0f, -0.3f },
@@ -93,6 +109,32 @@ int main() {
 		}
 	};
 
+	//===============
+	//    BUFFERS
+	//===============
+
+	const uint32_t SHADOW_WIDTH = 4 * 1024, SHADOW_HEIGHT = 4 * 1024;
+	uint32_t depth_map;
+	glGenTextures(1, &depth_map);
+	glBindTexture(GL_TEXTURE_2D, depth_map);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	uint32_t depth_map_fb;
+	glGenFramebuffers(1, &depth_map_fb);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fb);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	framebuffer::check_status();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	ssbo matrices_ssbo;
 	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
 
@@ -112,6 +154,10 @@ int main() {
 	ssbo lights_ssbo;
 	lights_ssbo.allocate(lighs_final_buffer_structure, 2);
 
+	//============
+	//    TEXT
+	//============
+
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
 	{
@@ -124,6 +170,10 @@ int main() {
 	text_renderer text1(atlas1), text2(atlas2);
 
 	FT_Done_FreeType(ft);
+
+	//==========
+	//    UI
+	//==========
 
 	ui::ui ui(ui_shader);
 	auto layer1 = ui.create_layer();
@@ -143,6 +193,20 @@ int main() {
 
 	text_batcher tb;
 
+	//============================
+	//    PREPARATIONS TO LOOP
+	//============================
+
+	float border = 5;
+	float dlm_near_plane = 0.0f, dlm_far_plane = 7.5f;
+	glm::mat4 dir_light_projection = glm::ortho(-border, border, -border, border, dlm_near_plane, dlm_far_plane);
+	//glm::vec3 dl_pos = glm::vec3(0, 10, 0);
+	glm::vec3 dl_pos = -2.0f * dir_light.direction;
+	glm::mat4 dir_light_view = glm::lookAt(dl_pos,
+										   glm::vec3(0.0f, 0.0f, 0.0f),
+										   glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 dir_lightspace_matrix = dir_light_projection * dir_light_view;
+
 	bool is_spot_light_working = false;
 	bool use_normal_mapping = true;
 	ui.start();
@@ -155,16 +219,16 @@ int main() {
 		win.process_input();
 		ui.update();
 
-		// prepare to render
-
-		fb.set();
+		//==================
+		//    SETUP DATA
+		//==================
 
 		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
 		if (input::get_key_down(GLFW_KEY_N)) use_normal_mapping = !use_normal_mapping;
 		if (input::get_key_down(GLFW_KEY_E)) inst1->uitransform.set_pos_pix({ 300, 300 });
 
 		glm::mat4 model(1.0f);
-		//model = glm::scale(model, glm::vec3(0.01f));
+		model = glm::scale(model, glm::vec3(0.2f));
 		glm::mat4 projection;
 		projection = glm::perspective(
 			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.1f, 100.0f);
@@ -186,23 +250,47 @@ int main() {
 		lights_ssbo.add_structure(pointlight_buffer_structure, &point_lights[0]);
 		lights_ssbo.end_block();
 
-		// start render
+		//=================
+		//    RENDERING
+		//=================
+
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fb);
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glCullFace(GL_FRONT);
+		depth_shader.activate();
+		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		depth_shader.set_mat4("model", model);
+		cube1.render(depth_shader);
+		cube2.render(depth_shader);
+		glCullFace(GL_BACK);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, window::win_width, window::win_height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		fb.set();
 
 		obj_batch_shader.activate();
-		
 		obj_batch_shader.set_3float("viewPos", cam.position());
 		obj_batch_shader.set_int("isSLWorking", is_spot_light_working);
 		obj_batch_shader.set_bool("useNormalMapping", use_normal_mapping);
 		obj_batch_shader.set_float("material.shininess", 32.0f);
-		
+		obj_batch_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		obj_batch_shader.set_mat4("model", model);
+		obj_batch_shader.set_int("shadowMap", 4);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, depth_map);
 
 		//backpack.render(obj_batch_shader);
-		cube.render(obj_batch_shader);
+		cube1.render(obj_batch_shader);
+		cube2.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());
 		
-		// render ui
+		//====================
+		//    UI RENDERING
+		//====================
 
 		//ui.render();
 		//glClear(GL_DEPTH_BUFFER_BIT);
@@ -227,7 +315,9 @@ int main() {
 		tb.render(text_shader);
 		glDisable(GL_BLEND);
 
-		// end render
+		//=====================
+		//    END RENDERING
+		//=====================
 
 		fb.render();
 
@@ -237,4 +327,10 @@ int main() {
 
 	fb.delete_buffer();
 	return 0;
+}
+
+void check_errors() {
+	uint32_t gl_error = glGetError();
+	if (gl_error != GL_NO_ERROR)
+		LOG_ERROR("OpenGL error: '" + std::to_string(gl_error) + "'.");
 }

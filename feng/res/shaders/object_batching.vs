@@ -68,10 +68,13 @@ out VS_OUT{
     flat int n_map_idx;
     vec4 DiffuseCol;
     vec4 SpecCol;
+
+    vec4 FragPosLightSpace;
 } vs_out;
 
 uniform mat4 model;
 uniform vec3 viewPos;
+uniform mat4 lightSpaceMatrix;
 
 layout (std430, binding = 1) buffer Matrices
 {
@@ -115,6 +118,8 @@ void main()
     vs_out.PointLights = pointLights;
     vs_out.NoSpotLights = noSpotLights;
     vs_out.SpotLights = spotLights;
+
+    vs_out.FragPosLightSpace = lightSpaceMatrix * model * vec4(aPos * aSize + aOffset, 1.0);
 
     if(useNormalMapping && vs_out.n_map_idx != NULL_TEXTURE_IDX){
         vs_out.FragPos = TBN * vs_out.FragPos;
