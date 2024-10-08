@@ -52,11 +52,11 @@ namespace feng {
 			glBindBuffer(_type, 0);
 		}
 
-		uint32_t id() override {
+		uint32_t id() const override {
 			return _id;
 		}
 
-		int32_t type() override {
+		int32_t type() const override {
 			return _type;
 		}
 

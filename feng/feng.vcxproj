@@ -180,6 +180,7 @@
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\fng.h" />
     <ClInclude Include="src\graphics\batching\text_batcher.h" />
     <ClInclude Include="src\graphics\gl_buffers\arraybuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\elementarraybuffer.hpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="src\graphics\gl_buffers\renderbuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
+    <ClInclude Include="src\graphics\helpers\texture_quad.hpp" />
     <ClInclude Include="src\graphics\light\lights.h" />
     <ClInclude Include="src\graphics\mesh.h" />
     <ClInclude Include="src\graphics\mesh2d.h" />

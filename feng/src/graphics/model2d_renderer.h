@@ -2,9 +2,8 @@
 
 #include <vector>
 
+#include "../fng.h"
 #include "mesh2d.h"
-
-#define MAX_NO_MODEL2D_INSTANCES 10
 
 namespace feng {
 

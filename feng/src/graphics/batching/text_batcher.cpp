@@ -3,7 +3,6 @@
 namespace feng {
 
 	unsigned short text_batcher::max_no_characters_in_line = 100;
-	unsigned char text_batcher::max_no_texture_units = 32;
 
 	text_batcher::text_batcher() {
 		_batches.emplace_back();
@@ -37,7 +36,7 @@ namespace feng {
 	void text_batcher::add_data_to_batcher(std::vector<text_vertex>& data, uint32_t texture_id) {
 		bool setup = false;
 		for (text_batch& batch : _batches) {
-			if (batch.textures_ids.size() < max_no_texture_units &&
+			if (batch.textures_ids.size() < MAX_NO_TEXTURE_UNITS &&
 				data.size() <= get_max_buffer_len() - batch.data.size())
 			{
 				setup = true;
@@ -83,7 +82,7 @@ namespace feng {
 	}
 
 	unsigned int text_batcher::get_max_buffer_len() {
-		return 6 * text_batcher::max_no_characters_in_line * text_batcher::max_no_texture_units;
+		return 6 * text_batcher::max_no_characters_in_line * MAX_NO_TEXTURE_UNITS;
 	}
 
 	void text_batcher::clear_bathces() {

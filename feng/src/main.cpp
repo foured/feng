@@ -25,6 +25,7 @@
 #include "graphics/light/lights.h"
 #include "graphics/gl_buffers/ssbo.hpp"
 #include "graphics/primitives.h"
+#include "graphics/helpers/texture_quad.hpp"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -54,13 +55,13 @@ int main() {
 
 	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
 	shader obj_batch_shader("res/shaders/object_batching.vs", "res/shaders/object_batching.fs");
-	shader framebuffer_shader("res/shaders/framebuffer.vs", "res/shaders/framebuffer.fs");
+	shader fullscreen_quad_shader("res/shaders/fullscreen_quad.vs", "res/shaders/fullscreen_quad.fs");
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
 	shader depth_shader("res/shaders/depth.vs", "res/shaders/depth.fs");
 
-	framebuffer fb(&framebuffer_shader);
+	helpers::texture_quad fullscreen_quad;
 
 	//======================
 	//    CREATING SCENE
@@ -73,9 +74,8 @@ int main() {
 	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
 	model cube1(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)), model_render_type::batched);
 	model cube2(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)), model_render_type::batched, 
-		glm::vec3(0, -3, 0), glm::vec3(20, 0.5f, 20));
+		glm::vec3(0, -2, 0), glm::vec3(20, 0.5f, 20));
 	cube1.add_instance(glm::vec3(2, 3, 2));
-	//cube1.add_instance()
 
 	DirLight dir_light{
 		{ -0.2f, -1.0f, -0.3f },
@@ -113,27 +113,26 @@ int main() {
 	//    BUFFERS
 	//===============
 
-	const uint32_t SHADOW_WIDTH = 4 * 1024, SHADOW_HEIGHT = 4 * 1024;
-	uint32_t depth_map;
-	glGenTextures(1, &depth_map);
-	glBindTexture(GL_TEXTURE_2D, depth_map);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	uint32_t depth_map_fb;
-	glGenFramebuffers(1, &depth_map_fb);
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fb);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
+	framebuffer main_framebuffer(window::win_width, window::win_height);
+	main_framebuffer.bind();
+	texture main_render_texture = main_framebuffer.allocate_and_attach_texture(
+		GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB, GL_UNSIGNED_BYTE);
+	renderbuffer main_renderbuffer = main_framebuffer.allocate_and_attach_renderbuffer(
+		GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT);
 	framebuffer::check_status();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	main_framebuffer.unbind();
+
+	const uint32_t SHADOW_WIDTH = 2 * 1024, SHADOW_HEIGHT = 2 * 1024;
+	framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
+	depth_map_framebuffer.bind();
+	texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
+		GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT, GL_FLOAT);
+	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
+	depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
+	depth_map_framebuffer.set_draw_buffer(GL_NONE);
+	depth_map_framebuffer.set_read_buffer(GL_NONE);
+	framebuffer::check_status();
+	depth_map_framebuffer.unbind();
 
 	ssbo matrices_ssbo;
 	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
@@ -231,7 +230,7 @@ int main() {
 		model = glm::scale(model, glm::vec3(0.2f));
 		glm::mat4 projection;
 		projection = glm::perspective(
-			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.1f, 100.0f);
+			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.01f, 100.0f);
 
 		matrices_ssbo.start_block();
 		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(projection));
@@ -255,21 +254,25 @@ int main() {
 		//=================
 
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fb);
+		depth_map_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glCullFace(GL_FRONT);
-		depth_shader.activate();
-		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
-		depth_shader.set_mat4("model", model);
-		cube1.render(depth_shader);
-		cube2.render(depth_shader);
+		{
+			depth_shader.activate();
+			depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+			depth_shader.set_mat4("model", model);
+			cube1.render(depth_shader);
+			cube2.render(depth_shader);
+		}
 		glCullFace(GL_BACK);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		depth_map_framebuffer.unbind();
 
 		glViewport(0, 0, window::win_width, window::win_height);
+		main_framebuffer.bind();
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		fb.set();
 
 		obj_batch_shader.activate();
 		obj_batch_shader.set_3float("viewPos", cam.position());
@@ -278,9 +281,9 @@ int main() {
 		obj_batch_shader.set_float("material.shininess", 32.0f);
 		obj_batch_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		obj_batch_shader.set_mat4("model", model);
-		obj_batch_shader.set_int("shadowMap", 4);
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, depth_map);
+		obj_batch_shader.set_int("shadowMap", 32);
+		texture::activate_slot(32);
+		depth_map_texture.bind();
 
 		//backpack.render(obj_batch_shader);
 		cube1.render(obj_batch_shader);
@@ -319,13 +322,19 @@ int main() {
 		//    END RENDERING
 		//=====================
 
-		fb.render();
+		//fb.render();
+
+		main_framebuffer.unbind();
+		glDisable(GL_DEPTH_TEST);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		fullscreen_quad.render(fullscreen_quad_shader, main_render_texture);
 
 		win.swap_buffers();
 		glfwPollEvents();
 	}
 
-	fb.delete_buffer();
+	//fb.delete_buffer();
 	return 0;
 }
 

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "../text/text_renderer.h"
+#include "../../fng.h"
 
 namespace feng {
 
@@ -28,7 +29,6 @@ namespace feng {
 		text_batcher();
 
 		static unsigned short max_no_characters_in_line;
-		static unsigned char max_no_texture_units;
 		
 		static unsigned int get_max_buffer_len();
 

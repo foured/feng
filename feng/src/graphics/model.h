@@ -4,11 +4,8 @@
 
 #include <string>
 
+#include "../fng.h"
 #include "mesh.h"
-
-#define MAX_NO_MODEL_INSTANCES 10
-#define MAX_NO_TEXTURE_UNITS_M 32
-#define NULL_TEXTURE_IDX 255
 
 namespace feng {
 

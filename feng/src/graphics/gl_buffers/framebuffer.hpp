@@ -20,6 +20,11 @@ namespace feng {
 
 	class framebuffer : public i_gl_buffer{
 	public:
+		framebuffer(uint32_t width, uint32_t height)
+			: _width(width), _height(height){
+			generate();
+		}
+
 		framebuffer(shader* fb_shader) 
 			: _shader(fb_shader) {
 			generate();
@@ -51,11 +56,42 @@ namespace feng {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			_shader->activate();
-			_shader->set_int("screenTexture", 0);
+			_shader->set_int("quad_texture", 0);
+		}
+
+		void attach_texture(const texture& tex, uint32_t attachment_mode) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_mode, GL_TEXTURE_2D, tex.id(), 0);
+		}
+
+		void attach_renderbuffer(const renderbuffer& rb, uint32_t attachment_mode) {
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment_mode, GL_RENDERBUFFER, rb.id());
+		}
+
+		texture allocate_and_attach_texture(uint32_t attachment_mode, uint32_t min_filter, uint32_t mag_filter, 
+			uint32_t wrap_s, uint32_t wrap_t, uint32_t format, uint32_t type = GL_FLOAT) {
+			texture fb_texture;
+			fb_texture.generate();
+			fb_texture.bind();
+			fb_texture.allocate(_width, _height, format, type, NULL);
+			fb_texture.set_params(min_filter, mag_filter, wrap_s, wrap_t);
+			attach_texture(fb_texture, attachment_mode);
+
+			return fb_texture;
+		}
+
+		renderbuffer allocate_and_attach_renderbuffer(uint32_t format, 
+			uint32_t attachment_mode) {
+			renderbuffer fb_renderbuffer;
+			fb_renderbuffer.generate();
+			fb_renderbuffer.bind();
+			fb_renderbuffer.renderbuffer_storage(format, _width, _height);
+			attach_renderbuffer(fb_renderbuffer, attachment_mode);
+
+			return fb_renderbuffer;
 		}
 
 		void render() {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			framebuffer::unbind();
 			glDisable(GL_DEPTH_TEST);
 			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -88,6 +124,14 @@ namespace feng {
 				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS'.");
 		}
 		
+		void set_draw_buffer(uint32_t mode) {
+			glDrawBuffer(mode);
+		}
+
+		void set_read_buffer(uint32_t mode) {
+			glReadBuffer(mode);
+		}
+
 		void delete_buffer() {
 			glDeleteFramebuffers(1, &_FBO);
 		}
@@ -111,16 +155,18 @@ namespace feng {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 
-		uint32_t id() override {
+		uint32_t id() const override {
 			return _FBO;
 		}
 
-		int32_t type() override {
+		int32_t type() const override {
 			return GL_FRAMEBUFFER;
 		}
 
 	private:
 		shader* _shader;
+
+		uint32_t _width, _height;
 
 		uint32_t _FBO, _render_texture;
 		arraybuffer _vertexbuffer;

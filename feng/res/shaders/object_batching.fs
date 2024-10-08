@@ -125,30 +125,58 @@ void main()
     //FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 }
 
+//float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
+//{
+//	return step(compare, texture2D(shadowMap, coords.xy).r);
+//}
+//
+//float SampleShadowMapLinear(vec2 coords, float compare, vec2 texelSize)
+//{
+//	vec2 pixelPos = coords/texelSize + vec2(0.5);
+//	vec2 fracPart = fract(pixelPos);
+//	vec2 startTexel = (pixelPos - fracPart) * texelSize;
+//	
+//	float blTexel = SampleShadowMap(shadowMap, startTexel, compare);
+//	float brTexel = SampleShadowMap(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare);
+//	float tlTexel = SampleShadowMap(shadowMap, startTexel + vec2(0.0, texelSize.y), compare);
+//	float trTexel = SampleShadowMap(shadowMap, startTexel + texelSize, compare);
+//	
+//	float mixA = mix(blTexel, tlTexel, fracPart.y);
+//	float mixB = mix(brTexel, trTexel, fracPart.y);
+//	
+//	return mix(mixA, mixB, fracPart.x);
+//}
+
+
 float ShadowCalculation(vec3 normal, vec3 lightDir)
 {
     vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    //float closestDepth = texture(shadowMap, projCoords.xy).r; 
     float currentDepth = projCoords.z;
     float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);  
-    
+
+    if(projCoords.z > 1.0){
+        return 0.0;
+    }
+
+    const float NO_SAMPLES = 5.0;
+    const float SAMPLE_START = (NO_SAMPLES - 1.0) / 2.0;
+    const float NO_SAMPLES_SQUARED = NO_SAMPLES * NO_SAMPLES;
+
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    for(int x = -1; x <= 1; ++x)
+    for(float x = -SAMPLE_START; x <= SAMPLE_START; ++x)
     {
-        for(int y = -1; y <= 1; ++y)
+        for(float y = -SAMPLE_START; y <= SAMPLE_START; ++y)
         {
             float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            //vec2 coordsOffset = vec2(x,y)*texelSize;
+			//shadow += SampleShadowMapLinear(projCoords.xy + coordsOffset, currentDepth - bias, texelSize);
         }    
     }
-    shadow /= 9.0;
-
-    
-    if(projCoords.z > 1.0){
-        shadow = 0.0;
-    }
+    shadow /= NO_SAMPLES_SQUARED;
 
     return shadow;
 }

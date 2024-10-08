@@ -2,8 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#define MAX_POINT_LIGHTS 1
-#define MAX_SPOT_LIGHTS 1
+#include "../../fng.h"
 
 namespace feng {
 

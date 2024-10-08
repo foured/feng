@@ -18,19 +18,19 @@ namespace feng {
 			glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		}
 
-		uint32_t id() override {
+		uint32_t id() const override {
 			return _id;
 		}
 
-		int32_t type() override {
+		int32_t type() const override {
 			return GL_RENDERBUFFER;
 		}
 
-		void renderbuffer_storage(int32_t format, uint32_t width, uint32_t height) {
+		void renderbuffer_storage(uint32_t format, uint32_t width, uint32_t height) {
 			glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
 		}
 
-		void attach_to_framebuffer(int32_t attachment_mode) {
+		void attach_to_framebuffer(uint32_t attachment_mode) {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment_mode, GL_RENDERBUFFER, _id);
 		}
 
