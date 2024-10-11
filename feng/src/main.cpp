@@ -55,7 +55,7 @@ int main() {
 
 	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
 	shader obj_batch_shader("res/shaders/object_batching.vs", "res/shaders/object_batching.fs");
-	shader fullscreen_quad_shader("res/shaders/fullscreen_quad.vs", "res/shaders/fullscreen_quad.fs");
+	shader fullscreen_quad_shader("res/shaders/fullscreen_quad.vs", "res/shaders/main_framebuffer.fs");
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
@@ -70,28 +70,28 @@ int main() {
 	camera cam;
 	skybox sb(&skybox_shader, skybox_faces);
 
+	//model vampire("res/models/vampire/dancing_vampire.dae", model_render_type::batched);
 	//model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
-	//model brickwall("res/models/brickwall/brickwall.gltf", model_render_type::mesh_by_mesh);
 	model cube1(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)), model_render_type::batched);
 	model cube2(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)), model_render_type::batched, 
 		glm::vec3(0, -2, 0), glm::vec3(20, 0.5f, 20));
 	cube1.add_instance(glm::vec3(2, 3, 2));
 
 	DirLight dir_light{
-		{ -0.2f, -1.0f, -0.3f },
+		{ 0.2f, -1.0f, -0.3f },
 		glm::vec3(0.1f),
 		glm::vec3(0.6f),
 		glm::vec3(0.7f)
 	};
 	PointLight point_lights[MAX_POINT_LIGHTS] { 
 		{ 
-			glm::vec3(1.0f),
-			2.0f,
-			3.0f,
-			4.0f,
-			glm::vec3(5.0f),
-			glm::vec3(6.0f),
-			glm::vec3(7.0f)
+			glm::vec3(2, 0, 2),
+			1,
+			0.09f,
+			0.032f,
+			glm::vec3(0.1f),
+			glm::vec3(0.8f),
+			glm::vec3(1.0f)
 		} 
 	};
 	SpotLight spot_lights[MAX_SPOT_LIGHTS] {
@@ -105,34 +105,62 @@ int main() {
 			0.032f,
 			glm::vec3(0.1f),
 			glm::vec3(0.8f),
-			glm::vec3(1.0f)
+			glm::vec3(0.5f)
 		}
 	};
+
+	//model point_light_cube(primitives::generate_cube_mesh(glm::vec3(1), glm::vec3(0)), model_render_type::batched, 
+	//	point_lights[0].position, glm::vec3(0.1f));
 
 	//===============
 	//    BUFFERS
 	//===============
 
+	//int32_t width, height, no_channels;
+	//stbi_set_flip_vertically_on_load(false);
+	//void* data = stbi_load("res/depth_map.png", &width, &height, &no_channels, 0);
+
+	//uint32_t test_depth_texture_id;
+	//glGenTextures(1, &test_depth_texture_id);
+	//glBindTexture(GL_TEXTURE_2D, test_depth_texture_id);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data) ;
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+	//free(data);
+
+	texture test_depth_texture;
+	test_depth_texture.generate();
+	test_depth_texture.bind();
+	texture_base_data tdt_tbd = texture::get_texture_data_form_file("res/depth_map.png");
+	test_depth_texture.allocate(tdt_tbd.width, tdt_tbd.height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, tdt_tbd.data);
+	test_depth_texture.set_params(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
+	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
+	test_depth_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
+	free(tdt_tbd.data);
+
 	framebuffer main_framebuffer(window::win_width, window::win_height);
 	main_framebuffer.bind();
 	texture main_render_texture = main_framebuffer.allocate_and_attach_texture(
-		GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB, GL_UNSIGNED_BYTE);
+		GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB16F, GL_RGB);
 	renderbuffer main_renderbuffer = main_framebuffer.allocate_and_attach_renderbuffer(
 		GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT);
 	framebuffer::check_status();
 	main_framebuffer.unbind();
 
 	const uint32_t SHADOW_WIDTH = 2 * 1024, SHADOW_HEIGHT = 2 * 1024;
-	framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
-	depth_map_framebuffer.bind();
-	texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
-		GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT, GL_FLOAT);
-	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
-	depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
-	depth_map_framebuffer.set_draw_buffer(GL_NONE);
-	depth_map_framebuffer.set_read_buffer(GL_NONE);
-	framebuffer::check_status();
-	depth_map_framebuffer.unbind();
+	//framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
+	//depth_map_framebuffer.bind();
+	//texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
+	//	GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
+	//float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
+	//depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
+	//depth_map_framebuffer.set_draw_buffer(GL_NONE);
+	//depth_map_framebuffer.set_read_buffer(GL_NONE);
+	//framebuffer::check_status();
+	//depth_map_framebuffer.unbind();
 
 	ssbo matrices_ssbo;
 	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
@@ -195,16 +223,10 @@ int main() {
 	//============================
 	//    PREPARATIONS TO LOOP
 	//============================
+	
+	glm::mat4 dir_lightspace_matrix = dir_light.generate_lightspace_matrix();
 
-	float border = 5;
-	float dlm_near_plane = 0.0f, dlm_far_plane = 7.5f;
-	glm::mat4 dir_light_projection = glm::ortho(-border, border, -border, border, dlm_near_plane, dlm_far_plane);
-	//glm::vec3 dl_pos = glm::vec3(0, 10, 0);
-	glm::vec3 dl_pos = -2.0f * dir_light.direction;
-	glm::mat4 dir_light_view = glm::lookAt(dl_pos,
-										   glm::vec3(0.0f, 0.0f, 0.0f),
-										   glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 dir_lightspace_matrix = dir_light_projection * dir_light_view;
+	bool did_save_texture = false;
 
 	bool is_spot_light_working = false;
 	bool use_normal_mapping = true;
@@ -253,20 +275,27 @@ int main() {
 		//    RENDERING
 		//=================
 
-		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		depth_map_framebuffer.bind();
-		glEnable(GL_DEPTH_TEST);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glCullFace(GL_FRONT);
-		{
-			depth_shader.activate();
-			depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
-			depth_shader.set_mat4("model", model);
-			cube1.render(depth_shader);
-			cube2.render(depth_shader);
-		}
-		glCullFace(GL_BACK);
-		depth_map_framebuffer.unbind();
+		//glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		//depth_map_framebuffer.bind();
+		//glEnable(GL_DEPTH_TEST);
+		//glClear(GL_DEPTH_BUFFER_BIT);
+		//glCullFace(GL_FRONT);
+		//
+		//depth_shader.activate();
+		//depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		//depth_shader.set_mat4("model", model);
+		//cube1.render(depth_shader);
+		//cube2.render(depth_shader);
+		//
+		//glCullFace(GL_BACK);
+		//depth_map_framebuffer.unbind();
+
+
+		//if (!did_save_texture) {
+		//	did_save_texture = true;
+		//	depth_map_texture.bind();
+		//	depth_map_texture.save_to_png("res/depth_map.png");
+		//}
 
 		glViewport(0, 0, window::win_width, window::win_height);
 		main_framebuffer.bind();
@@ -281,16 +310,30 @@ int main() {
 		obj_batch_shader.set_float("material.shininess", 32.0f);
 		obj_batch_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		obj_batch_shader.set_mat4("model", model);
-		obj_batch_shader.set_int("shadowMap", 32);
-		texture::activate_slot(32);
-		depth_map_texture.bind();
-
+		obj_batch_shader.set_int("shadowMap", 31);
+		texture::activate_slot(31);
+		//depth_map_texture.bind();
+		test_depth_texture.bind();
+		//vampire.render(obj_batch_shader, false);
 		//backpack.render(obj_batch_shader);
 		cube1.render(obj_batch_shader);
 		cube2.render(obj_batch_shader);
+		//point_light_cube.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());
-		
+
+		//==================================
+		//    RENDERING THE FINAL RESULT
+		//==================================
+
+		//fb.render();
+
+		main_framebuffer.unbind();
+		glDisable(GL_DEPTH_TEST);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		fullscreen_quad.render(fullscreen_quad_shader, main_render_texture);
+
 		//====================
 		//    UI RENDERING
 		//====================
@@ -303,7 +346,7 @@ int main() {
 		float hw = window::win_width / 2.0f;
 		float hh = window::win_height / 2.0f;
 		text_shader.set_mat4("projection", glm::ortho(-hw, hw, -hh, hh, 0.0f, (float)UCHAR_MAX));
-		
+
 		time += utilities::delta_time();
 		frames_count++;
 		if (time >= 0.5) {
@@ -313,22 +356,10 @@ int main() {
 		}
 
 		text2.render(&tb, std::to_string(fps), { -400, 280, 0 }, glm::vec3(0, 1, 0));
-		text1.render(&tb, "normalmapping: " + std::to_string(use_normal_mapping), {-400, 260, 0}, glm::vec3(0, 1, 0));
+		text1.render(&tb, "normalmapping: " + std::to_string(use_normal_mapping), { -400, 260, 0 }, glm::vec3(0, 1, 0));
 		//text1.render(&tb, std::to_string(sl.get_value()), glm::vec3(0), glm::vec3(0));
 		tb.render(text_shader);
 		glDisable(GL_BLEND);
-
-		//=====================
-		//    END RENDERING
-		//=====================
-
-		//fb.render();
-
-		main_framebuffer.unbind();
-		glDisable(GL_DEPTH_TEST);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		fullscreen_quad.render(fullscreen_quad_shader, main_render_texture);
 
 		win.swap_buffers();
 		glfwPollEvents();

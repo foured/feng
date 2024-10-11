@@ -41,7 +41,7 @@ namespace feng {
 			{
 				glActiveTexture(GL_TEXTURE0 + i);
 				std::string name;
-				switch (_textures[i].type()) {
+				switch (_textures[i].aiTtype()) {
 				case aiTextureType_DIFFUSE:
 					name = "diffuse" + std::to_string(diff_idx++);
 					break;

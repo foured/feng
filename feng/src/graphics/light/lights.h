@@ -12,6 +12,8 @@ namespace feng {
         glm::vec3 ambient;
         glm::vec3 diffuse;
         glm::vec3 specular;
+
+        glm::mat4 generate_lightspace_matrix();
     };
 
     struct PointLight {

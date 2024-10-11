@@ -151,6 +151,7 @@
     <ClCompile Include="lib\stb.cpp" />
     <ClCompile Include="src\graphics\batching\text_batcher.cpp" />
     <ClCompile Include="src\graphics\cubemap.cpp" />
+    <ClCompile Include="src\graphics\light\lights.cpp" />
     <ClCompile Include="src\graphics\mesh.cpp" />
     <ClCompile Include="src\graphics\mesh2d.cpp" />
     <ClCompile Include="src\graphics\model.cpp" />

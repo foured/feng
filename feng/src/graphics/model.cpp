@@ -13,12 +13,14 @@ namespace feng {
 		load_model(filepath);
 		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
+		LOG_ACTION("Loaded model: '" + filepath + "'.");
 	}
 
 	model::model(std::vector<mesh> meshes, model_render_type render_type, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size)
 		: _render_type(render_type), _meshes(meshes){
 		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
+		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes.");
 	}
 
 	void model::setup() {
@@ -217,7 +219,9 @@ namespace feng {
 		return textures;
 	}
 
-	void model::render(shader& shader) {
+	void model::render(shader& shader, bool face_culling) {
+		if (!face_culling)
+			glDisable(GL_CULL_FACE);
 		switch (_render_type)
 		{
 		case feng::batched:
@@ -227,6 +231,8 @@ namespace feng {
 			render_mesh_by_mesh(shader);
 			break;
 		}
+		if (!face_culling)
+			glEnable(GL_CULL_FACE);
 	}
 
 	void model::render_mesh_by_mesh(shader& shader) {
@@ -278,7 +284,7 @@ namespace feng {
 		for (int i = 0; i < textures.size(); i++) {
 			for (texture& mtex : mesh._textures) {
 				if (mtex == textures[i]) {
-					switch (mtex.type())
+					switch (mtex.aiTtype())
 					{
 					case aiTextureType_DIFFUSE:
 						d_idx = i;
@@ -295,7 +301,7 @@ namespace feng {
 		}
 		if (d_idx == NULL_TEXTURE_IDX) {
 			for (texture& mtex : mesh._textures) {
-				if (mtex.type() == aiTextureType_DIFFUSE) {
+				if (mtex.aiTtype() == aiTextureType_DIFFUSE) {
 					d_idx = textures.size();
 					textures.push_back(mtex);
 					break;
@@ -304,7 +310,7 @@ namespace feng {
 		}
 		if (s_idx == NULL_TEXTURE_IDX) {
 			for (texture& mtex : mesh._textures) {
-				if (mtex.type() == aiTextureType_SPECULAR) {
+				if (mtex.aiTtype() == aiTextureType_SPECULAR) {
 					s_idx = textures.size();
 					textures.push_back(mtex);
 					break;
@@ -313,7 +319,7 @@ namespace feng {
 		}
 		if (n_idx == NULL_TEXTURE_IDX) {
 			for (texture& mtex : mesh._textures) {
-				if (mtex.type() == aiTextureType_NORMALS) {
+				if (mtex.aiTtype() == aiTextureType_NORMALS) {
 					n_idx = textures.size();
 					textures.push_back(mtex);
 					break;

@@ -6,6 +6,14 @@
 #define FENG_LOGGIN 1
 #define LOG_FUNC_NAME 0
 
+#define WIN_LOGGIN_COLOR_NORMAL 15
+#define WIN_LOGGIN_COLOR_DARK_BLUE 9
+#define WIN_LOGGIN_COLOR_GREEN 10
+#define WIN_LOGGIN_COLOR_BLUE 11
+#define WIN_LOGGIN_COLOR_RED 12
+#define WIN_LOGGIN_COLOR_PINK 13
+#define WIN_LOGGIN_COLOR_YELLOW 14
+
 #if FENG_LOGGIN
 	#define LOG_INFO(msg) feng::logger::log_info(msg, __FUNCTION__)
 	#define LOG_ACTION(msg) feng::logger::log_action(msg, __FUNCTION__)
@@ -36,8 +44,9 @@ namespace feng {
 
 	private:
 		static void log_time();
-		static void log(const std::string& msg, const std::string& type_name, 
+		static void log(const std::string& msg, const std::string& type_name, char color,
 			std::string f_name);
+		static void set_color(char color);
 	};
 
 	class timer {

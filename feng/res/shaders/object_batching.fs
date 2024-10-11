@@ -106,9 +106,11 @@ void main()
         c_spec = vec3(fs_in.SpecCol);
     }
 
-    vec3 result = CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
-    //for(int i = 0; i < MAX_POINT_LIGHTS; i++)
-    //       result += CalcPointLight(pointLights[i], norm, FragPos, viewDir, c_dif, c_spec); 
+    vec3 result = vec3(0);
+    result += CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
+    //for(int i = 0; i < MAX_POINT_LIGHTS; i++){
+    //       result += CalcPointLight(fs_in.PointLights[i], norm, fs_in.FragPos, viewDir, c_dif, c_spec); 
+    //}
     
     if(isSLWorking == 1){      
         result += CalcSpotLight(fs_in.SpotLights[0], norm, fs_in.FragPos, viewDir, c_dif, c_spec);    
@@ -118,11 +120,16 @@ void main()
     //vec3 R = reflect(I, normalize(Normal));
     //vec3 reflection = texture(skybox, R).rgb;
 
-    result = pow(result, vec3(1.0 / 2.2));
+    // DEPTH EFFECT
+
+    //float near = 0.1;
+	//float far = 100.0;
+	//float z = gl_FragCoord.z * 2.0 - 1.0; // transform to NDC [0, 1] => [-1, 1]
+	//float linearDepth = (2.0 * near * far) / (z * (far - near) - (far + near)); // take inverse of the projection matrix (perspective)
+	//float factor = (near + linearDepth) / (near - far); // convert back to [0, 1]
+	//result.rgb *= 1 - factor;
+
     FragColor = vec4(result, 1.0);
-    // gamma correction
-    //float gamma = 2.2;
-    //FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 }
 
 //float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
@@ -147,14 +154,13 @@ void main()
 //	return mix(mixA, mixB, fracPart.x);
 //}
 
-
 float ShadowCalculation(vec3 normal, vec3 lightDir)
 {
     vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
     //float closestDepth = texture(shadowMap, projCoords.xy).r; 
     float currentDepth = projCoords.z;
-    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);  
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
 
     if(projCoords.z > 1.0){
         return 0.0;
@@ -188,11 +194,6 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 specular = vec3(0.0, 0.0, 0.0);
     if(diff > 0){
-        // specular shading
-        //
-        //vec3 reflectDir = reflect(-lightDir, normal);
-        //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-        //
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float spec = pow(max(dot(viewDir, halfwayDir), 0.0), material.shininess);
         specular = light.specular * spec * c_spec;
@@ -204,6 +205,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     float shadow = ShadowCalculation(normal, lightDir);
 
     return (ambient + (1.0 - shadow ) * (diffuse + specular));
+    //return (ambient + diffuse + specular);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec)
@@ -226,10 +228,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     // combine results
     vec3 ambient = light.ambient * c_dif;
     vec3 diffuse = light.diffuse * diff * c_dif;
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular) * attenuation;
 }
 
 // calculates the color when using a spot light.

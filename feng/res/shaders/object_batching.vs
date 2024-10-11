@@ -101,17 +101,11 @@ void main()
     vs_out.s_map_idx = (int(aTexIdxs) >> 8) & 0xFF;
     vs_out.n_map_idx = (int(aTexIdxs) >> 16) & 0xFF;
 
-    mat3 normalMatrix = transpose(inverse(mat3(model)));
-    vec3 T = normalize(normalMatrix * aTangent);
-    vec3 N = normalize(normalMatrix * aNormal);
-    T = normalize(T - dot(T, N) * N);
-    vec3 B = cross(N, T);
-    mat3 TBN = transpose(mat3(T, B, N));
-
     vs_out.FragPos = vec3(model * vec4(aPos * aSize + aOffset, 1.0));
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
     vs_out.TexCoords = aTexCoords;
-    vs_out.ViewPos = TBN * viewPos;
+    //vs_out.ViewPos = vec3(model * vec4(viewPos, 1.0));
+    vs_out.ViewPos = viewPos;
 
     vs_out.DirectionalLight = dirLight;
     vs_out.NoPointLights = noPointLights;
@@ -121,7 +115,18 @@ void main()
 
     vs_out.FragPosLightSpace = lightSpaceMatrix * model * vec4(aPos * aSize + aOffset, 1.0);
 
+    for(int i = 0; i < MAX_POINT_LIGHTS; i++){
+        vs_out.PointLights[i].position = vec3(model * vec4(pointLights[i].position, 1.0));
+    }
+
     if(useNormalMapping && vs_out.n_map_idx != NULL_TEXTURE_IDX){
+        mat3 normalMatrix = transpose(inverse(mat3(model)));
+        vec3 T = normalize(normalMatrix * aTangent);
+        vec3 N = normalize(normalMatrix * aNormal);
+        T = normalize(T - dot(T, N) * N);
+        vec3 B = cross(N, T);
+        mat3 TBN = transpose(mat3(T, B, N));
+
         vs_out.FragPos = TBN * vs_out.FragPos;
         vs_out.ViewPos = TBN * viewPos;
 
@@ -134,6 +139,7 @@ void main()
             vs_out.SpotLights[i].direction = TBN * vec3(spotLights[i].direction);
         }
     }
+
     
     gl_Position = projection * view * vec4(vec3(model * vec4(aPos * aSize + aOffset, 1.0)), 1.0);
 }

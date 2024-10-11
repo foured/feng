@@ -25,40 +25,6 @@ namespace feng {
 			generate();
 		}
 
-		framebuffer(shader* fb_shader) 
-			: _shader(fb_shader) {
-			generate();
-			bind();
-
-			_vertexarray.generate();
-			_vertexarray.bind();
-
-			_vertexbuffer.generate();
-			_vertexbuffer.bind();
-			_vertexbuffer.buffer_data(sizeof(screen_quad_vertices), screen_quad_vertices, GL_STATIC_DRAW);
-
-			_vertexarray.set_attrib_pointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-			_vertexarray.set_attrib_pointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (2 * sizeof(float)));
-
-			glGenTextures(1, &_render_texture);
-			glBindTexture(GL_TEXTURE_2D, _render_texture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window::win_width, window::win_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _render_texture, 0);
-
-			_renderbuffer.generate();
-			_renderbuffer.bind();
-			_renderbuffer.renderbuffer_storage(GL_DEPTH24_STENCIL8, window::win_width, window::win_height);
-			_renderbuffer.attach_to_framebuffer(GL_DEPTH_STENCIL_ATTACHMENT);
-
-			framebuffer::check_status();
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			_shader->activate();
-			_shader->set_int("quad_texture", 0);
-		}
-
 		void attach_texture(const texture& tex, uint32_t attachment_mode) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_mode, GL_TEXTURE_2D, tex.id(), 0);
 		}
@@ -68,11 +34,13 @@ namespace feng {
 		}
 
 		texture allocate_and_attach_texture(uint32_t attachment_mode, uint32_t min_filter, uint32_t mag_filter, 
-			uint32_t wrap_s, uint32_t wrap_t, uint32_t format, uint32_t type = GL_FLOAT) {
+			uint32_t wrap_s, uint32_t wrap_t, int32_t internalformat, uint32_t format = NULL, uint32_t type = GL_FLOAT) {
+			if (format == NULL)
+				format = internalformat;
 			texture fb_texture;
 			fb_texture.generate();
 			fb_texture.bind();
-			fb_texture.allocate(_width, _height, format, type, NULL);
+			fb_texture.allocate(_width, _height, internalformat, format,  type, NULL);
 			fb_texture.set_params(min_filter, mag_filter, wrap_s, wrap_t);
 			attach_texture(fb_texture, attachment_mode);
 
@@ -88,20 +56,6 @@ namespace feng {
 			attach_renderbuffer(fb_renderbuffer, attachment_mode);
 
 			return fb_renderbuffer;
-		}
-
-		void render() {
-			framebuffer::unbind();
-			glDisable(GL_DEPTH_TEST);
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			_shader->activate();
-			_vertexarray.bind();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, _render_texture);
-			_vertexarray.draw_arrays(GL_TRIANGLES, 6);
-			vertexarray::unbind();
 		}
 
 		static void check_status() {
@@ -136,13 +90,6 @@ namespace feng {
 			glDeleteFramebuffers(1, &_FBO);
 		}
 
-		void set() {
-			bind();
-			glEnable(GL_DEPTH_TEST);
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
-
 		void generate() override {
 			glGenFramebuffers(1, &_FBO);
 		}
@@ -164,14 +111,9 @@ namespace feng {
 		}
 
 	private:
-		shader* _shader;
-
 		uint32_t _width, _height;
 
-		uint32_t _FBO, _render_texture;
-		arraybuffer _vertexbuffer;
-		renderbuffer _renderbuffer;
-		vertexarray _vertexarray;
+		uint32_t _FBO;
 	};
 
 }

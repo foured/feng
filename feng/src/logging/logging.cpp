@@ -5,24 +5,28 @@
 #include <iomanip>
 #include <exception>
 
+#ifdef _WIN32
+	#include "Windows.h"
+#endif
+
 #pragma warning(disable : 4996)
 
 namespace feng {
 
 	void logger::log_action(const std::string& msg, const std::string& func_name) {
-		log(msg, "ACTION", func_name);
+		log(msg, "ACTION", WIN_LOGGIN_COLOR_GREEN, func_name);
 	}
 
 	void logger::log_info(const std::string& msg, const std::string& func_name) {
-		log(msg, "INFO", func_name);
+		log(msg, "INFO", WIN_LOGGIN_COLOR_BLUE, func_name);
 	}
 
 	void logger::log_error(const std::string& msg, const std::string& func_name) {
-		log(msg, "ERROR", func_name);
+		log(msg, "ERROR", WIN_LOGGIN_COLOR_RED, func_name);
 	}
 
 	void logger::log_warning(const std::string& msg, const std::string& func_name) {
-		log(msg, "WARNING", func_name);
+		log(msg, "WARNING", WIN_LOGGIN_COLOR_PINK, func_name);
 	}
 
 	void logger::log_time() {
@@ -30,7 +34,9 @@ namespace feng {
 		std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 		std::tm now_tm = *localtime(&now_c);
 		std::cout << '[';
+		set_color(WIN_LOGGIN_COLOR_YELLOW);
 		std::cout << std::put_time(&now_tm, "%H:%M:%S");
+		set_color(WIN_LOGGIN_COLOR_NORMAL);
 		std::cout << ']';
 	}
 
@@ -39,15 +45,26 @@ namespace feng {
 		throw std::exception(msg.c_str());
 	}
 
-	void logger::log(const std::string& msg, const std::string& type_name, std::string func_name) {
+	void logger::log(const std::string& msg, const std::string& type_name, char color, std::string func_name) {
 		log_time();
 		std::cout << " | [";
+		set_color(color);
 		std::cout << type_name;
 #if LOG_FUNC_NAME
+		set_color(WIN_LOGGIN_COLOR_NORMAL);
 		std::cout << "] | [";
+		set_color(WIN_LOGGIN_COLOR_DARK_BLUE);
 		std::cout << func_name;
 #endif
+		set_color(WIN_LOGGIN_COLOR_NORMAL);
 		std::cout << "] -> " << msg << std::endl;
+	}
+
+	void logger::set_color(char color) {
+#ifdef _WIN32
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(hConsole, color);
+#endif // _WIN32
 	}
 
 	timer::timer(const char* name)
