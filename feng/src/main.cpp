@@ -26,6 +26,7 @@
 #include "graphics/gl_buffers/ssbo.hpp"
 #include "graphics/primitives.h"
 #include "graphics/helpers/texture_quad.hpp"
+#include "utilities/uuid.hpp"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -43,8 +44,8 @@ std::vector<std::string> skybox_faces{
 void check_errors();
 
 int main() {
-#ifdef WORK_IN_PROGRESS_CODE
-	LOG_WARNING("'WORK_IN_PROGRESS_CODE' was detected!");
+#ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
+	LOG_WARNING("'IMPLEMENT_WORK_IN_PROGRESS_CODE' was detected!");
 #endif
 
 	//========================
@@ -116,30 +117,15 @@ int main() {
 	//    BUFFERS
 	//===============
 
-	//int32_t width, height, no_channels;
-	//stbi_set_flip_vertically_on_load(false);
-	//void* data = stbi_load("res/depth_map.png", &width, &height, &no_channels, 0);
-
-	//uint32_t test_depth_texture_id;
-	//glGenTextures(1, &test_depth_texture_id);
-	//glBindTexture(GL_TEXTURE_2D, test_depth_texture_id);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data) ;
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-	//free(data);
-
-	texture test_depth_texture;
-	test_depth_texture.generate();
-	test_depth_texture.bind();
-	texture_base_data tdt_tbd = texture::get_texture_data_form_file("res/depth_map.png");
-	test_depth_texture.allocate(tdt_tbd.width, tdt_tbd.height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, tdt_tbd.data);
-	test_depth_texture.set_params(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
-	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
-	test_depth_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
-	free(tdt_tbd.data);
+	//texture test_depth_texture;
+	//test_depth_texture.generate();
+	//test_depth_texture.bind();
+	//texture_base_data tdt_tbd = texture::get_texture_data_form_file("res/depth_map.png");
+	//test_depth_texture.allocate(tdt_tbd.width, tdt_tbd.height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, tdt_tbd.data);
+	//test_depth_texture.set_params(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
+	//float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
+	//test_depth_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
+	//free(tdt_tbd.data);
 
 	framebuffer main_framebuffer(window::win_width, window::win_height);
 	main_framebuffer.bind();
@@ -151,16 +137,16 @@ int main() {
 	main_framebuffer.unbind();
 
 	const uint32_t SHADOW_WIDTH = 2 * 1024, SHADOW_HEIGHT = 2 * 1024;
-	//framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
-	//depth_map_framebuffer.bind();
-	//texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
-	//	GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
-	//float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
-	//depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
-	//depth_map_framebuffer.set_draw_buffer(GL_NONE);
-	//depth_map_framebuffer.set_read_buffer(GL_NONE);
-	//framebuffer::check_status();
-	//depth_map_framebuffer.unbind();
+	framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
+	depth_map_framebuffer.bind();
+	texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
+		GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
+	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
+	depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
+	depth_map_framebuffer.set_draw_buffer(GL_NONE);
+	depth_map_framebuffer.set_read_buffer(GL_NONE);
+	framebuffer::check_status();
+	depth_map_framebuffer.unbind();
 
 	ssbo matrices_ssbo;
 	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
@@ -275,27 +261,27 @@ int main() {
 		//    RENDERING
 		//=================
 
-		//glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		//depth_map_framebuffer.bind();
-		//glEnable(GL_DEPTH_TEST);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		//glCullFace(GL_FRONT);
-		//
-		//depth_shader.activate();
-		//depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
-		//depth_shader.set_mat4("model", model);
-		//cube1.render(depth_shader);
-		//cube2.render(depth_shader);
-		//
-		//glCullFace(GL_BACK);
-		//depth_map_framebuffer.unbind();
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		depth_map_framebuffer.bind();
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glCullFace(GL_FRONT);
+		
+		depth_shader.activate();
+		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		depth_shader.set_mat4("model", model);
+		cube1.render(depth_shader);
+		cube2.render(depth_shader);
+		
+		glCullFace(GL_BACK);
+		depth_map_framebuffer.unbind();
 
 
-		//if (!did_save_texture) {
-		//	did_save_texture = true;
-		//	depth_map_texture.bind();
-		//	depth_map_texture.save_to_png("res/depth_map.png");
-		//}
+		if (!did_save_texture) {
+			did_save_texture = true;
+			depth_map_texture.bind();
+			depth_map_texture.save_to_png("res/depth_map.png");
+		}
 
 		glViewport(0, 0, window::win_width, window::win_height);
 		main_framebuffer.bind();
@@ -312,8 +298,9 @@ int main() {
 		obj_batch_shader.set_mat4("model", model);
 		obj_batch_shader.set_int("shadowMap", 31);
 		texture::activate_slot(31);
-		//depth_map_texture.bind();
-		test_depth_texture.bind();
+		depth_map_texture.bind();
+		//test_depth_texture.bind();
+		
 		//vampire.render(obj_batch_shader, false);
 		//backpack.render(obj_batch_shader);
 		cube1.render(obj_batch_shader);

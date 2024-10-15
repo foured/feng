@@ -132,27 +132,27 @@ void main()
     FragColor = vec4(result, 1.0);
 }
 
-//float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
-//{
-//	return step(compare, texture2D(shadowMap, coords.xy).r);
-//}
-//
-//float SampleShadowMapLinear(vec2 coords, float compare, vec2 texelSize)
-//{
-//	vec2 pixelPos = coords/texelSize + vec2(0.5);
-//	vec2 fracPart = fract(pixelPos);
-//	vec2 startTexel = (pixelPos - fracPart) * texelSize;
-//	
-//	float blTexel = SampleShadowMap(shadowMap, startTexel, compare);
-//	float brTexel = SampleShadowMap(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare);
-//	float tlTexel = SampleShadowMap(shadowMap, startTexel + vec2(0.0, texelSize.y), compare);
-//	float trTexel = SampleShadowMap(shadowMap, startTexel + texelSize, compare);
-//	
-//	float mixA = mix(blTexel, tlTexel, fracPart.y);
-//	float mixB = mix(brTexel, trTexel, fracPart.y);
-//	
-//	return mix(mixA, mixB, fracPart.x);
-//}
+float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
+{
+	return step(compare, texture2D(shadowMap, coords.xy).r);
+}
+
+float SampleShadowMapLinear(vec2 coords, float compare, vec2 texelSize)
+{
+	vec2 pixelPos = coords/texelSize + vec2(0.5);
+	vec2 fracPart = fract(pixelPos);
+	vec2 startTexel = (pixelPos - fracPart) * texelSize;
+	
+	float blTexel = SampleShadowMap(shadowMap, startTexel, compare);
+	float brTexel = SampleShadowMap(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare);
+	float tlTexel = SampleShadowMap(shadowMap, startTexel + vec2(0.0, texelSize.y), compare);
+	float trTexel = SampleShadowMap(shadowMap, startTexel + texelSize, compare);
+	
+	float mixA = mix(blTexel, tlTexel, fracPart.y);
+	float mixB = mix(brTexel, trTexel, fracPart.y);
+	
+	return mix(mixA, mixB, fracPart.x);
+}
 
 float ShadowCalculation(vec3 normal, vec3 lightDir)
 {
@@ -176,15 +176,15 @@ float ShadowCalculation(vec3 normal, vec3 lightDir)
     {
         for(float y = -SAMPLE_START; y <= SAMPLE_START; ++y)
         {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-            //vec2 coordsOffset = vec2(x,y)*texelSize;
-			//shadow += SampleShadowMapLinear(projCoords.xy + coordsOffset, currentDepth - bias, texelSize);
+            //float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            vec2 coordsOffset = vec2(x,y)*texelSize;
+			shadow += SampleShadowMapLinear(projCoords.xy + coordsOffset, currentDepth - bias, texelSize);
         }    
     }
     shadow /= NO_SAMPLES_SQUARED;
 
-    return shadow;
+    return 1 - shadow;
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_spec)

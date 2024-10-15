@@ -7,6 +7,8 @@
 #include "gl_buffer.hpp"
 #include "../light/lights.h"
 
+#ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
+
 #define __IS_T_NOT_UBO_STRUCT(T) !std::is_same_v<uniformbuffer_struct, T> && !std::is_base_of<uniformbuffer_struct, T>
 
 #define __ENABLE_IF_T_NOT_UBO_STRUCT_RET_VOID(T)\
@@ -14,7 +16,6 @@
 		__IS_T_NOT_UBO_STRUCT(T)\
 	::value, void>::type
 
-#define WORK_IN_PROGRESS_CODE
 
 namespace feng {
 
@@ -205,3 +206,4 @@ namespace feng {
 	};
 
 }
+#endif

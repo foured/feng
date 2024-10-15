@@ -213,6 +213,7 @@
     <ClInclude Include="src\io\camera.h" />
     <ClInclude Include="src\io\input.h" />
     <ClInclude Include="src\logging\logging.h" />
+    <ClInclude Include="src\logic\containers\binary_tree.hpp" />
     <ClInclude Include="src\logic\event.hpp" />
     <ClInclude Include="src\logic\ui\components\slider.h" />
     <ClInclude Include="src\logic\ui\ui.h" />
@@ -221,7 +222,9 @@
     <ClInclude Include="src\logic\ui\uiinstance.h" />
     <ClInclude Include="src\logic\ui\uitransform.h" />
     <ClInclude Include="src\logic\ui\ui_layer.h" />
+    <ClInclude Include="src\utilities\singleton.hpp" />
     <ClInclude Include="src\utilities\utilities.h" />
+    <ClInclude Include="src\utilities\uuid.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />
