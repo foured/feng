@@ -30,20 +30,13 @@ namespace feng {
 		void render(shader& shader, uint32_t no_instances);
 	};
 
-	enum model_render_type {
-		batched,
-		mesh_by_mesh
-	};
-
 	class model {
 	public:
 		model(std::string filepath, 
-			model_render_type render_type = model_render_type::batched, 
 			glm::vec3 initial_instance_pos = glm::vec3(0),
 			glm::vec3 initial_instance_size = glm::vec3(1));
 
 		model(std::vector<mesh> meshes,
-			model_render_type render_type = model_render_type::batched,
 			glm::vec3 initial_instance_pos = glm::vec3(0),
 			glm::vec3 initial_instance_size = glm::vec3(1));
 
@@ -54,7 +47,6 @@ namespace feng {
 		std::vector<mesh> _meshes;
 		std::vector<mesh_batch> _batches;
 		std::string _directory;
-		model_render_type _render_type;
 		uint32_t _no_instances = 0;
 
 		std::vector<glm::vec3> _positions;
@@ -66,11 +58,7 @@ namespace feng {
 
 		void allocate_buffers();
 		void update_instances_buffers();
-		void render_batched(shader& shader);
-		void render_mesh_by_mesh(shader& shader);
 		void setup();
-		void setup_batched();
-		void setup_mesh_by_mesh();
 		void load_model(std::string path);
 		void process_node(aiNode* node, const aiScene* scene, glm::mat4 matrix);
 		mesh process_mesh(aiMesh* mesh, const aiScene* scene, glm::mat4 matrix);

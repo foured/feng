@@ -177,6 +177,7 @@
     <ClCompile Include="src\logic\ui\uiinstance.cpp" />
     <ClCompile Include="src\logic\ui\uitransform.cpp" />
     <ClCompile Include="src\logic\ui\ui_layer.cpp" />
+    <ClCompile Include="src\logic\world\transform.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
@@ -215,6 +216,8 @@
     <ClInclude Include="src\logging\logging.h" />
     <ClInclude Include="src\logic\containers\binary_tree.hpp" />
     <ClInclude Include="src\logic\event.hpp" />
+    <ClInclude Include="src\logic\world\instance.h" />
+    <ClInclude Include="src\logic\world\scene.h" />
     <ClInclude Include="src\logic\ui\components\slider.h" />
     <ClInclude Include="src\logic\ui\ui.h" />
     <ClInclude Include="src\logic\ui\uibounds.h" />
@@ -222,6 +225,7 @@
     <ClInclude Include="src\logic\ui\uiinstance.h" />
     <ClInclude Include="src\logic\ui\uitransform.h" />
     <ClInclude Include="src\logic\ui\ui_layer.h" />
+    <ClInclude Include="src\logic\world\transform.h" />
     <ClInclude Include="src\utilities\singleton.hpp" />
     <ClInclude Include="src\utilities\utilities.h" />
     <ClInclude Include="src\utilities\uuid.hpp" />

@@ -54,8 +54,7 @@ int main() {
 
 	window win("Feng", 800, 600);
 
-	shader obj_shader("res/shaders/object.vs", "res/shaders/object.fs");
-	shader obj_batch_shader("res/shaders/object_batching.vs", "res/shaders/object_batching.fs");
+	shader obj_shader("res/shaders/object_batching.vs", "res/shaders/object_batching.fs");
 	shader fullscreen_quad_shader("res/shaders/fullscreen_quad.vs", "res/shaders/main_framebuffer.fs");
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
@@ -72,9 +71,9 @@ int main() {
 	skybox sb(&skybox_shader, skybox_faces);
 
 	//model vampire("res/models/vampire/dancing_vampire.dae", model_render_type::batched);
-	//model backpack("res/models/survival_guitar_backpack/scene.gltf", model_render_type::batched);
-	model cube1(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)), model_render_type::batched);
-	model cube2(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)), model_render_type::batched, 
+	//model backpack("res/models/survival_guitar_backpack/scene.gltf");
+	model cube1(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
+	model cube2(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)), 
 		glm::vec3(0, -2, 0), glm::vec3(20, 0.5f, 20));
 	cube1.add_instance(glm::vec3(2, 3, 2));
 
@@ -289,22 +288,22 @@ int main() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		obj_batch_shader.activate();
-		obj_batch_shader.set_3float("viewPos", cam.position());
-		obj_batch_shader.set_int("isSLWorking", is_spot_light_working);
-		obj_batch_shader.set_bool("useNormalMapping", use_normal_mapping);
-		obj_batch_shader.set_float("material.shininess", 32.0f);
-		obj_batch_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
-		obj_batch_shader.set_mat4("model", model);
-		obj_batch_shader.set_int("shadowMap", 31);
+		obj_shader.activate();
+		obj_shader.set_3float("viewPos", cam.position());
+		obj_shader.set_int("isSLWorking", is_spot_light_working);
+		obj_shader.set_bool("useNormalMapping", use_normal_mapping);
+		obj_shader.set_float("material.shininess", 32.0f);
+		obj_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		obj_shader.set_mat4("model", model);
+		obj_shader.set_int("shadowMap", 31);
 		texture::activate_slot(31);
 		depth_map_texture.bind();
 		//test_depth_texture.bind();
 		
 		//vampire.render(obj_batch_shader, false);
 		//backpack.render(obj_batch_shader);
-		cube1.render(obj_batch_shader);
-		cube2.render(obj_batch_shader);
+		cube1.render(obj_shader);
+		cube2.render(obj_shader);
 		//point_light_cube.render(obj_batch_shader);
 
 		sb.render(cam.get_view_matrix());

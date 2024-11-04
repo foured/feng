@@ -8,35 +8,34 @@
 
 namespace feng {
 
-	model::model(std::string filepath, model_render_type render_type, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size)
-		: _render_type(render_type) {
+	model::model(std::string filepath, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size) {
 		load_model(filepath);
 		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
 		LOG_ACTION("Loaded model: '" + filepath + "'.");
 	}
 
-	model::model(std::vector<mesh> meshes, model_render_type render_type, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size)
-		: _render_type(render_type), _meshes(meshes){
+	model::model(std::vector<mesh> meshes, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size) 
+		: _meshes(meshes) {
 		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
 		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes.");
 	}
 
 	void model::setup() {
-		switch (_render_type)
-		{
-		case feng::batched:
-			batch_meshes();
-			for (mesh_batch& batch : _batches)
-				batch.setup_data();
-			setup_batched();
-			break;
-		case feng::mesh_by_mesh:
-			for (mesh& mesh : _meshes)
-				mesh.setup();
-			setup_mesh_by_mesh();
-			break;
+		batch_meshes();
+		for (mesh_batch& batch : _batches)
+			batch.setup_data();
+
+		allocate_buffers();
+
+		for (mesh_batch& batch : _batches) {
+			batch.vertex_array.bind();
+			_pos_array_buffer.bind();
+			batch.vertex_array.set_attrib_pointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			_size_array_buffer.bind();
+			batch.vertex_array.set_attrib_pointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			vertexarray::unbind;
 		}
 	}
 
@@ -56,33 +55,6 @@ namespace feng {
 
 		_size_array_buffer.bind();
 		_size_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_sizes[0]);
-	}
-
-	void model::setup_mesh_by_mesh() {
-		allocate_buffers();
-
-		for (mesh& m : _meshes) {
-			m.vertex_array.bind();
-			_pos_array_buffer.bind();
-			m.vertex_array.set_attrib_pointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
-			_size_array_buffer.bind();
-			m.vertex_array.set_attrib_pointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
-			vertexarray::unbind();
-		}
-	}
-
-	void model::setup_batched() {
-		allocate_buffers();
-
-		for (mesh_batch& batch : _batches) {
-			batch.vertex_array.bind();
-			_pos_array_buffer.bind();
-			batch.vertex_array.set_attrib_pointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
-			_size_array_buffer.bind();
-			batch.vertex_array.set_attrib_pointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
-			vertexarray::unbind;
-		}
-
 	}
 
 	void model::add_instance(glm::vec3 position, glm::vec3 size) {
@@ -222,33 +194,15 @@ namespace feng {
 	void model::render(shader& shader, bool face_culling) {
 		if (!face_culling)
 			glDisable(GL_CULL_FACE);
-		switch (_render_type)
-		{
-		case feng::batched:
-			render_batched(shader);
-			break;
-		case feng::mesh_by_mesh:
-			render_mesh_by_mesh(shader);
-			break;
-		}
-		if (!face_culling)
-			glEnable(GL_CULL_FACE);
-	}
 
-	void model::render_mesh_by_mesh(shader& shader) {
-		update_instances_buffers();
-
-		for (mesh& m : _meshes) {
-			m.render(shader, _no_instances);
-		}
-	}
-
-	void model::render_batched(shader& shader) {
 		update_instances_buffers();
 
 		for (mesh_batch& batch : _batches) {
 			batch.render(shader, _no_instances);
 		}
+
+		if (!face_culling)
+			glEnable(GL_CULL_FACE);
 	}
 
 	void model::batch_meshes() {
@@ -276,7 +230,7 @@ namespace feng {
 			}
 		}
 
-		//std::cout << batches.size() << std::endl;
+		//std::cout << "size: " << _batches.size() << std::endl;
 	}
 
 	void mesh_batch::add_mesh(mesh& mesh) {
