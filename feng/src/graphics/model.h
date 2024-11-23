@@ -7,6 +7,7 @@
 #include "../fng.h"
 #include "mesh.h"
 #include "../utilities/uuid.hpp"
+#include "../logic/world/instance.h"
 
 namespace feng {
 
@@ -33,30 +34,24 @@ namespace feng {
 
 	class model : public util::uuid_owner {
 	public:
-		model(std::string filepath, 
-			glm::vec3 initial_instance_pos = glm::vec3(0),
-			glm::vec3 initial_instance_size = glm::vec3(1));
+		model(std::string filepath, bool disable_faceculling = false);
+		model(std::vector<mesh> meshes, bool disable_faceculling = false);
 
-		model(std::vector<mesh> meshes,
-			glm::vec3 initial_instance_pos = glm::vec3(0),
-			glm::vec3 initial_instance_size = glm::vec3(1));
-
-		void render(shader& shader, bool face_culling = true);
+		void render_ready_data(shader& shader);
+		void render(shader& shader);
 		void render_flag(shader& shader, inst_flag_type flag);
-		void add_instance(glm::vec3 position = glm::vec3(0), glm::vec3 size = glm::vec3(1), glm::vec3 rotation = glm::vec3(0));
+		void add_instance(instance* i);
+		void clear_instances();
 
 	private:
 		std::vector<mesh> _meshes;
 		std::vector<mesh_batch> _batches;
 		std::string _directory;
-		uint32_t _no_instances = 0;
+		bool _disable_faceculling;
 
-		std::vector<glm::vec3> _positions;
-		arraybuffer _pos_array_buffer;
-		std::vector<glm::vec3> _sizes;
-		arraybuffer _size_array_buffer;
-		std::vector<glm::vec3> _rotations;
-		arraybuffer _rot_array_buffer;
+		std::vector<glm::vec3> _positions, _sizes, _rotations;
+		arraybuffer _pos_array_buffer, _size_array_buffer, _rot_array_buffer;
+		std::vector<instance*> _instances;
 
 		std::vector<texture> _textures_loaded;
 
@@ -68,6 +63,7 @@ namespace feng {
 		mesh process_mesh(aiMesh* mesh, const aiScene* scene, glm::mat4 matrix);
 		std::vector<texture> load_material_textures(aiMaterial* mat, aiTextureType type);
 		void batch_meshes();
+		void clear_instances_data();
 	};
 
 }

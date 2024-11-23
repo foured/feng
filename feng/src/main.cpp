@@ -27,8 +27,7 @@
 #include "graphics/primitives.h"
 #include "graphics/helpers/texture_quad.hpp"
 #include "utilities/uuid.hpp"
-
-#include "logic/world/instance.h"
+#include "logic/world/scene.h"
 #include "logic/world/components/model_instance.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
@@ -70,15 +69,25 @@ int main() {
 	//    CREATING SCENE
 	//======================
 
+	scene sc1;
 	camera cam;
 	skybox sb(&skybox_shader, skybox_faces);
 
 	//model vampire("res/models/vampire/dancing_vampire.dae", model_render_type::batched);
 	//model backpack("res/models/survival_guitar_backpack/scene.gltf");
-	model cube1(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
-	model cube2(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)), 
-		glm::vec3(0, -2, 0), glm::vec3(20, 0.5f, 20));
-	cube1.add_instance(glm::vec3(2, 3, 2));
+	sptr_mdl cube1 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
+	sptr_mdl cube2 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(0, 1, 0), glm::vec3(0.6)));
+
+	sptr_ins cube1_i1 = sc1.add_instance();
+	cube1_i1.get()->add_component<model_instance>(cube1);
+	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
+	cube1_i2.get()->transform.set_position(glm::vec3(2, 3, 2));
+
+	sptr_ins cube2_i1 = sc1.add_instance();
+	cube2_i1.get()->add_component<model_instance>(cube2);
+	cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
+	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
 
 	DirLight dir_light{
 		{ 0.2f, -1.0f, -0.3f },
@@ -118,16 +127,6 @@ int main() {
 	//===============
 	//    BUFFERS
 	//===============
-
-	//texture test_depth_texture;
-	//test_depth_texture.generate();
-	//test_depth_texture.bind();
-	//texture_base_data tdt_tbd = texture::get_texture_data_form_file("res/depth_map.png");
-	//test_depth_texture.allocate(tdt_tbd.width, tdt_tbd.height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, tdt_tbd.data);
-	//test_depth_texture.set_params(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
-	//float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
-	//test_depth_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
-	//free(tdt_tbd.data);
 
 	framebuffer main_framebuffer(window::win_width, window::win_height);
 	main_framebuffer.bind();
@@ -217,6 +216,7 @@ int main() {
 	bool is_spot_light_working = false;
 	bool use_normal_mapping = true;
 	ui.start();
+	sc1.start();
 	double time = 0;
 	uint64_t frames_count = 0, fps = 0;
 	while (!win.should_close())
@@ -225,6 +225,7 @@ int main() {
 		cam.move();
 		win.process_input();
 		ui.update();
+		sc1.update();
 
 		//==================
 		//    SETUP DATA
@@ -272,8 +273,7 @@ int main() {
 		depth_shader.activate();
 		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		depth_shader.set_mat4("model", model);
-		cube1.render(depth_shader);
-		cube2.render(depth_shader);
+		sc1.render_flag(depth_shader, INST_FLAG_CAST_SHADOWS);
 		
 		glCullFace(GL_BACK);
 		depth_map_framebuffer.unbind();
@@ -296,13 +296,8 @@ int main() {
 		obj_shader.set_int("shadowMap", 31);
 		texture::activate_slot(31);
 		depth_map_texture.bind();
-		//test_depth_texture.bind();
 		
-		//vampire.render(obj_batch_shader, false);
-		//backpack.render(obj_batch_shader);
-		cube1.render(obj_shader);
-		cube2.render(obj_shader);
-		//point_light_cube.render(obj_batch_shader);
+		sc1.render_models(obj_shader);
 
 		sb.render(cam.get_view_matrix());
 
@@ -323,7 +318,7 @@ int main() {
 		//====================
 
 		//ui.render();
-		//glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		text_shader.activate();

@@ -7,14 +7,15 @@
 #include "transform.h"
 #include "component.h"
 #include "../../logging/logging.h"
+#include "../../utilities/uuid.hpp"
 
-#define INST_FLAG_STATIC				0b0000000000000001
-#define INST_FLAG_CAST_SHADOWS			0b0000000000000010
-#define INST_FLAG_CAST_RCV_SHADOWS		0b0000000000000100
+#define INST_FLAG_STATIC			0b0000000000000001
+#define INST_FLAG_CAST_SHADOWS		0b0000000000000010
+#define INST_FLAG_RCV_SHADOWS		0b0000000000000100
 
 namespace feng {
 
-	class instance_flags {
+	class instance_flags{
 	public:
 		void set(inst_flag_type pos, bool value) {
 			if (value)
@@ -28,10 +29,10 @@ namespace feng {
 		}
 
 	private:
-		uint16_t _flags;
+		uint16_t _flags = (INST_FLAG_STATIC | INST_FLAG_CAST_SHADOWS | INST_FLAG_RCV_SHADOWS);
 	};
 
-	class instance {
+	class instance : public util::uuid_owner {
 	public:
 		transform transform;
 
@@ -48,6 +49,8 @@ namespace feng {
 			_components.emplace_back(spc);
 			return spc;
 		}
+
+		std::shared_ptr<instance> copy() const;
 
 	private:
 		std::vector<std::shared_ptr<component>> _components;

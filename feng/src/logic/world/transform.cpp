@@ -1,5 +1,7 @@
 #include "transform.h"
 
+#include <iostream>
+
 namespace feng {
 
 	transform::transform(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation)

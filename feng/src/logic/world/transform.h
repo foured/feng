@@ -6,7 +6,7 @@ namespace feng {
 
 	class transform {
 	public:
-		transform(glm::vec3 pos = glm::vec3(0), glm::vec3 size = glm::vec3(0), glm::vec3 rotation = glm::vec3(0));
+		transform(glm::vec3 pos = glm::vec3(0.0), glm::vec3 size = glm::vec3(1.0), glm::vec3 rotation = glm::vec3(0.0));
 		
 		void set_position(glm::vec3 val);
 		void set_size(glm::vec3 val);

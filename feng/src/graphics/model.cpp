@@ -8,16 +8,15 @@
 
 namespace feng {
 
-	model::model(std::string filepath, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size) {
+	model::model(std::string filepath, bool disable_faceculling) 
+		: _disable_faceculling(disable_faceculling) {
 		load_model(filepath);
-		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
 		LOG_ACTION("Loaded model: '" + filepath + "'. " + get_uuid_string());
 	}
 
-	model::model(std::vector<mesh> meshes, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size) 
-		: _meshes(meshes) {
-		add_instance(initial_instance_pos, initial_instance_size);
+	model::model(std::vector<mesh> meshes, bool disable_faceculling)
+		: _meshes(meshes), _disable_faceculling(disable_faceculling) {
 		setup();
 		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes. " + get_uuid_string());
 	}
@@ -42,26 +41,37 @@ namespace feng {
 	void model::allocate_buffers() {
 		_pos_array_buffer.generate();
 		_pos_array_buffer.bind();
-		_pos_array_buffer.buffer_data(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), &_positions[0], GL_DYNAMIC_DRAW);
+		_pos_array_buffer.buffer_data<glm::vec3>(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
 
 		_size_array_buffer.generate();
 		_size_array_buffer.bind();
-		_size_array_buffer.buffer_data(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), &_sizes[0], GL_DYNAMIC_DRAW);
+		_size_array_buffer.buffer_data<glm::vec3>(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
+
+		_rot_array_buffer.generate();
+		_rot_array_buffer.bind();
+		_rot_array_buffer.buffer_data<glm::vec3>(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
 	}
 
 	void model::update_instances_buffers() {
+		uint32_t no_instances = _positions.size();
 		_pos_array_buffer.bind();
-		_pos_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_positions[0]);
+		_pos_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * no_instances, &_positions[0]);
 
 		_size_array_buffer.bind();
-		_size_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_sizes[0]);
+		_size_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * no_instances, &_sizes[0]);
+
+		_rot_array_buffer.bind();
+		_rot_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * no_instances, &_rotations[0]);
 	}
 
-	void model::add_instance(glm::vec3 position, glm::vec3 size, glm::vec3 rotation) {
-		_no_instances++;
-		_positions.push_back(position);
-		_sizes.push_back(size);
+	void model::add_instance(instance* i) {
+		_instances.push_back(i);
 	}
+
+	void model::clear_instances() {
+		_instances.clear();
+	}
+
 
 	void model::load_model(std::string path) {
 		Assimp::Importer importer;
@@ -191,22 +201,42 @@ namespace feng {
 		return textures;
 	}
 
-	void model::render(shader& shader, bool face_culling) {
-		if (!face_culling)
-			glDisable(GL_CULL_FACE);
+	void model::render_ready_data(shader& shader) {
+		uint32_t no_instances = _positions.size();
+		if (no_instances > 0) {
+			if (!_disable_faceculling) glDisable(GL_CULL_FACE);
 
-		update_instances_buffers();
+			update_instances_buffers();
 
-		for (mesh_batch& batch : _batches) {
-			batch.render(shader, _no_instances);
+			for (mesh_batch& batch : _batches) {
+				batch.render(shader, no_instances);
+			}
+
+			if (!_disable_faceculling) glEnable(GL_CULL_FACE);
 		}
+	}
 
-		if (!face_culling)
-			glEnable(GL_CULL_FACE);
+	void model::render(shader& shader) {
+		clear_instances_data();
+		for (const auto& i : _instances) {
+			_positions.push_back(i->transform.get_position());
+			_sizes.push_back(i->transform.get_size());
+			_rotations.push_back(i->transform.get_rotation());
+		}
+		render_ready_data(shader);
 	}
 
 	void model::render_flag(shader& shader, inst_flag_type flag) {
-
+		clear_instances_data();
+		for (const auto& i : _instances) {
+			if (i->flags.get(flag)) {
+				_positions.push_back(i->transform.get_position());
+				_sizes.push_back(i->transform.get_size());
+				_rotations.push_back(i->transform.get_rotation());
+			}
+		}
+		uint32_t no_instances = _positions.size();
+		render_ready_data(shader);
 	}
 
 	void model::batch_meshes() {
@@ -343,6 +373,12 @@ namespace feng {
 
 		vertexarray::unbind();
 		glActiveTexture(GL_TEXTURE0);
+	}
+
+	void model::clear_instances_data() {
+		_positions.clear();
+		_sizes.clear();
+		_rotations.clear();
 	}
 
 }

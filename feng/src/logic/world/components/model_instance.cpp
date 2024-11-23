@@ -4,7 +4,7 @@
 
 namespace feng {
 
-	model_instance::model_instance(instance* instance, model* model)
+	model_instance::model_instance(instance* instance, std::shared_ptr<model> model)
 		: component(instance), _model(model) {}
 
 	void model_instance::start() {
@@ -12,10 +12,11 @@ namespace feng {
 	}
 
 	void model_instance::update() {
-		_model->add_instance(
-			_instance->transform.get_position(),
-			_instance->transform.get_size(),
-			_instance->transform.get_rotation());
+		_model.get()->add_instance(_instance);
+	}
+
+	std::shared_ptr<component> model_instance::copy(instance* new_instance) {
+		return std::make_shared<model_instance>(new_instance, _model);
 	}
 
 }

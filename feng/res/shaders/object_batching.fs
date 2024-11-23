@@ -195,7 +195,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     vec3 specular = vec3(0.0, 0.0, 0.0);
     if(diff > 0){
         vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(viewDir, halfwayDir), 0.0), material.shininess);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
         specular = light.specular * spec * c_spec;
     }
     // combine results
@@ -219,7 +219,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     if(diff > 0){
         // specular shading
         vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(viewDir, halfwayDir), 0.0), material.shininess);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
         specular = light.specular * spec * c_spec;
     }
     // attenuation
@@ -241,13 +241,8 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
     //
     vec3 specular = vec3(0.0, 0.0, 0.0);
     if(diff > 0){
-        // specular shading
-        //
-        //vec3 reflectDir = reflect(-lightDir, normal);
-        //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-        //
         vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(viewDir, halfwayDir), 0.0), material.shininess);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
         specular = light.specular * spec * c_spec;
     }
     // attenuation

@@ -7,13 +7,14 @@ namespace feng {
 
 	class model_instance : public component {
 	public:
-		model_instance(instance* instance, model* model);
+		model_instance(instance* instance, std::shared_ptr<model> model);
 
 		void start();
 		void update();
+		std::shared_ptr<component> copy(instance* new_instance);
 
 	private:
-		model* _model;
+		std::shared_ptr<model> _model;
 
 	};
 
