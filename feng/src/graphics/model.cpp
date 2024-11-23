@@ -12,14 +12,14 @@ namespace feng {
 		load_model(filepath);
 		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
-		LOG_ACTION("Loaded model: '" + filepath + "'.");
+		LOG_ACTION("Loaded model: '" + filepath + "'. " + get_uuid_string());
 	}
 
 	model::model(std::vector<mesh> meshes, glm::vec3 initial_instance_pos, glm::vec3 initial_instance_size) 
 		: _meshes(meshes) {
 		add_instance(initial_instance_pos, initial_instance_size);
 		setup();
-		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes.");
+		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes. " + get_uuid_string());
 	}
 
 	void model::setup() {
@@ -57,7 +57,7 @@ namespace feng {
 		_size_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * _no_instances, &_sizes[0]);
 	}
 
-	void model::add_instance(glm::vec3 position, glm::vec3 size) {
+	void model::add_instance(glm::vec3 position, glm::vec3 size, glm::vec3 rotation) {
 		_no_instances++;
 		_positions.push_back(position);
 		_sizes.push_back(size);
@@ -203,6 +203,10 @@ namespace feng {
 
 		if (!face_culling)
 			glEnable(GL_CULL_FACE);
+	}
+
+	void model::render_flag(shader& shader, inst_flag_type flag) {
+
 	}
 
 	void model::batch_meshes() {

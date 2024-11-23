@@ -6,6 +6,7 @@
 
 #include "../fng.h"
 #include "mesh.h"
+#include "../utilities/uuid.hpp"
 
 namespace feng {
 
@@ -30,7 +31,7 @@ namespace feng {
 		void render(shader& shader, uint32_t no_instances);
 	};
 
-	class model {
+	class model : public util::uuid_owner {
 	public:
 		model(std::string filepath, 
 			glm::vec3 initial_instance_pos = glm::vec3(0),
@@ -41,7 +42,8 @@ namespace feng {
 			glm::vec3 initial_instance_size = glm::vec3(1));
 
 		void render(shader& shader, bool face_culling = true);
-		void add_instance(glm::vec3 position = glm::vec3(0), glm::vec3 size = glm::vec3(1));
+		void render_flag(shader& shader, inst_flag_type flag);
+		void add_instance(glm::vec3 position = glm::vec3(0), glm::vec3 size = glm::vec3(1), glm::vec3 rotation = glm::vec3(0));
 
 	private:
 		std::vector<mesh> _meshes;
@@ -53,6 +55,8 @@ namespace feng {
 		arraybuffer _pos_array_buffer;
 		std::vector<glm::vec3> _sizes;
 		arraybuffer _size_array_buffer;
+		std::vector<glm::vec3> _rotations;
+		arraybuffer _rot_array_buffer;
 
 		std::vector<texture> _textures_loaded;
 

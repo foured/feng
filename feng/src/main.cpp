@@ -28,6 +28,9 @@
 #include "graphics/helpers/texture_quad.hpp"
 #include "utilities/uuid.hpp"
 
+#include "logic/world/instance.h"
+#include "logic/world/components/model_instance.h"
+
 #define PRINT(msg) std::cout << msg << '\n'
 
 using namespace feng;
@@ -211,8 +214,6 @@ int main() {
 	
 	glm::mat4 dir_lightspace_matrix = dir_light.generate_lightspace_matrix();
 
-	bool did_save_texture = false;
-
 	bool is_spot_light_working = false;
 	bool use_normal_mapping = true;
 	ui.start();
@@ -260,12 +261,14 @@ int main() {
 		//    RENDERING
 		//=================
 
+		//shadow preparations
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		depth_map_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glCullFace(GL_FRONT);
 		
+		//shadow pass
 		depth_shader.activate();
 		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		depth_shader.set_mat4("model", model);
@@ -275,19 +278,14 @@ int main() {
 		glCullFace(GL_BACK);
 		depth_map_framebuffer.unbind();
 
-
-		if (!did_save_texture) {
-			did_save_texture = true;
-			depth_map_texture.bind();
-			depth_map_texture.save_to_png("res/depth_map.png");
-		}
-
+		//main render pass preparations
 		glViewport(0, 0, window::win_width, window::win_height);
 		main_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//main render pass
 		obj_shader.activate();
 		obj_shader.set_3float("viewPos", cam.position());
 		obj_shader.set_int("isSLWorking", is_spot_light_working);

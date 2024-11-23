@@ -27,4 +27,20 @@ namespace feng::util {
 
 	};
 
+	class uuid_owner {
+	public:
+		uuid_owner() : _uuid(uuid::get_instance()->generate()) { }
+
+		std::string get_uuid_string() {
+			return "uuid: [" + std::to_string(_uuid) + "]";
+		}
+
+		uint64_t get_uuid() const {
+			return _uuid;
+		}
+
+	private:
+		uint64_t _uuid;
+	};
+
 }
