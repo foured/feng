@@ -35,6 +35,8 @@ namespace feng {
 	private:
 		std::string load_shader_from_file(const char* filepath);
 		uint32_t compile_shader(const char* filepath, uint32_t shader_type);
+		std::string include_headers(std::string& shader_code);
+
 	};
 
 }

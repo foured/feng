@@ -11,45 +11,8 @@ layout (location = 6) in float aTexIdxs;
 layout (location = 7) in vec3 aOffset;
 layout (location = 8) in vec3 aSize;
 
-#define MAX_POINT_LIGHTS 1
-#define MAX_SPOT_LIGHTS 1
-#define NULL_TEXTURE_IDX 255
-
-struct DirLight {
-    vec3 direction;
-	
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
-
-struct PointLight {
-    vec3 position;
-    
-    float constant;
-    float linear;
-    float quadratic;
-	
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
-
-struct SpotLight {
-    vec3 position;
-    vec3 direction;
-
-    float cutOff;
-    float outerCutOff;
-  
-    float constant;
-    float linear;
-    float quadratic;
-  
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;       
-};
+#include<lights_structures.glsl>
+#include<defines.glsl>
 
 out VS_OUT{
     vec3 FragPos;
@@ -76,20 +39,8 @@ uniform mat4 model;
 uniform vec3 viewPos;
 uniform mat4 lightSpaceMatrix;
 
-layout (std430, binding = 1) buffer Matrices
-{
-    mat4 projection;
-    mat4 view;
-};
-
-layout (std430, binding = 2) buffer Lights
-{
-    DirLight dirLight;
-    int noSpotLights;
-    SpotLight spotLights[MAX_SPOT_LIGHTS];
-    int noPointLights;
-    PointLight pointLights[MAX_POINT_LIGHTS];
-};
+#include<matrices_layout.glsl>
+#include<lights_layout.glsl>
 
 uniform bool useNormalMapping;
 

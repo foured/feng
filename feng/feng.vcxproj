@@ -220,6 +220,7 @@
     <ClInclude Include="src\io\input.h" />
     <ClInclude Include="src\logging\logging.h" />
     <ClInclude Include="src\logic\containers\binary_tree.hpp" />
+    <ClInclude Include="src\logic\data_management\assets_manager.h" />
     <ClInclude Include="src\logic\event.hpp" />
     <ClInclude Include="src\logic\world\component.h" />
     <ClInclude Include="src\logic\world\components\line_animator.h" />
@@ -234,6 +235,7 @@
     <ClInclude Include="src\logic\ui\uitransform.h" />
     <ClInclude Include="src\logic\ui\ui_layer.h" />
     <ClInclude Include="src\logic\world\transform.h" />
+    <ClInclude Include="src\utilities\files_in_folder.hpp" />
     <ClInclude Include="src\utilities\singleton.hpp" />
     <ClInclude Include="src\utilities\utilities.h" />
     <ClInclude Include="src\utilities\uuid.hpp" />
@@ -242,6 +244,10 @@
     <None Include="glfw3.dll" />
     <None Include="res\shaders\depth.fs" />
     <None Include="res\shaders\depth.vs" />
+    <None Include="res\shaders\includes\defines.glsl" />
+    <None Include="res\shaders\includes\layouts\lights_layout.glsl" />
+    <None Include="res\shaders\includes\layouts\matrices_layout.glsl" />
+    <None Include="res\shaders\includes\lights_structures.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

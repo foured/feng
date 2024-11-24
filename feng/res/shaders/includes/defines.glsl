@@ -1,0 +1,3 @@
+#define NULL_TEXTURE_IDX 255
+#define MAX_POINT_LIGHTS 1
+#define MAX_SPOT_LIGHTS 1

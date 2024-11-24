@@ -40,4 +40,15 @@ namespace feng {
 		return (val / align + 1) * align;
 	}
 
+	std::string utilities::strip(const std::string& str) {
+		size_t start = str.find_first_not_of(' ');
+		if (start == std::string::npos) {
+			return "";
+		}
+
+		size_t end = str.find_last_not_of(' ');
+		return str.substr(start, end - start + 1);
+	}
+
+
 }

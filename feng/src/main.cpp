@@ -30,6 +30,7 @@
 #include "logic/world/scene.h"
 #include "logic/world/components/model_instance.h"
 #include "logic/world/components/line_animator.h"
+#include "logic/data_management/assets_manager.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
 

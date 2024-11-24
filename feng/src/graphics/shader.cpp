@@ -5,8 +5,15 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #include "../logging/logging.h"
+#include "../utilities/utilities.h"
+#include "../logic/data_management/assets_manager.h"
+
+#define SHADER_INCLUDE_WORD "#include"
+#define SHADER_INCLUDE_OPEN_BRACKET_CHAR '<'
+#define SHADER_INCLUDE_CLOSE_BRACKET_CHAR '>'
 
 namespace feng {
 
@@ -53,7 +60,31 @@ namespace feng {
 
 		file.close();
 
-		return ret;
+		return include_headers(ret);
+	}
+
+	std::string shader::include_headers(std::string& shader_code) {
+		size_t include_pos = shader_code.find(SHADER_INCLUDE_WORD);
+		std::vector<std::string> included_headers;
+		while (include_pos != std::string::npos) {
+			uint32_t ob_pos = shader_code.find(SHADER_INCLUDE_OPEN_BRACKET_CHAR, include_pos);
+			uint32_t cb_pos = shader_code.find(SHADER_INCLUDE_CLOSE_BRACKET_CHAR, include_pos);
+			if ((ob_pos == std::string::npos) || (cb_pos == std::string::npos)) {
+				LOG_ERROR("Error to find include brackets in shader.");
+				return shader_code;
+			}
+			std::string include_name = utilities::strip(shader_code.substr(ob_pos + 1, cb_pos - ob_pos - 1));
+			if (std::find(included_headers.begin(), included_headers.end(), include_name) == included_headers.end()) {
+				shader_code.replace(
+					include_pos, cb_pos - include_pos + 1, '\n' + assets_manager::get_instance()->get_shader(include_name) + '\n');
+				included_headers.emplace_back(include_name);
+			}
+			else {
+				shader_code.replace(include_pos, cb_pos - include_pos + 1, "");
+			}
+			include_pos = shader_code.find(SHADER_INCLUDE_WORD);
+		}
+		return shader_code;
 	}
 
 	uint32_t shader::compile_shader(const char* filepath, uint32_t shader_type) {
