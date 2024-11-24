@@ -1,0 +1,24 @@
+#include "__CLASS_NAME__.h"
+
+#include "../instance.h"
+
+namespace feng {
+
+	__CLASS_NAME__::__CLASS_NAME__(instance* instance)
+		: component(instance) {
+
+	}
+
+	void __CLASS_NAME__::start() {
+
+	}
+
+	void __CLASS_NAME__::update() {
+
+	}
+
+	std::shared_ptr<component> __CLASS_NAME__::copy(instance* new_instance) {
+		return std::make_shared<__CLASS_NAME__>(new_instance /* CHANGE THIS */);
+	}
+
+}

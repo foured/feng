@@ -1,0 +1,17 @@
+#pragma once
+
+#include "../component.h"
+
+namespace feng {
+
+	class __CLASS_NAME__ : public component {
+	public:
+		__CLASS_NAME__(instance* instance);
+		
+		void start();
+		void update();
+		std::shared_ptr<component> copy(instance* new_instance);
+
+	};
+
+}

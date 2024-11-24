@@ -29,6 +29,7 @@
 #include "utilities/uuid.hpp"
 #include "logic/world/scene.h"
 #include "logic/world/components/model_instance.h"
+#include "logic/world/components/line_animator.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -82,10 +83,11 @@ int main() {
 	cube1_i1.get()->add_component<model_instance>(cube1);
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
 	cube1_i2.get()->transform.set_position(glm::vec3(2, 3, 2));
+	cube1_i1.get()->add_component<line_animator>(glm::vec3(0.0), glm::vec3(0.0, 4.0, 0.0), 1);
 
 	sptr_ins cube2_i1 = sc1.add_instance();
 	cube2_i1.get()->add_component<model_instance>(cube2);
-	cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
 
@@ -137,7 +139,7 @@ int main() {
 	framebuffer::check_status();
 	main_framebuffer.unbind();
 
-	const uint32_t SHADOW_WIDTH = 2 * 1024, SHADOW_HEIGHT = 2 * 1024;
+	const uint32_t SHADOW_WIDTH = 8 * 1024, SHADOW_HEIGHT = 8 * 1024;
 	framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
 	depth_map_framebuffer.bind();
 	texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(

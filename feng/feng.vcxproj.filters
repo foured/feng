@@ -126,6 +126,9 @@
     <ClCompile Include="src\logic\world\instance.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\logic\world\components\line_animator.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\logging\logging.h">
@@ -273,6 +276,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\logic\world\components\model_instance.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logic\world\components\line_animator.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

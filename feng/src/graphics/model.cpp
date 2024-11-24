@@ -204,7 +204,7 @@ namespace feng {
 	void model::render_ready_data(shader& shader) {
 		uint32_t no_instances = _positions.size();
 		if (no_instances > 0) {
-			if (!_disable_faceculling) glDisable(GL_CULL_FACE);
+			if (_disable_faceculling) glDisable(GL_CULL_FACE);
 
 			update_instances_buffers();
 
@@ -212,7 +212,7 @@ namespace feng {
 				batch.render(shader, no_instances);
 			}
 
-			if (!_disable_faceculling) glEnable(GL_CULL_FACE);
+			if (_disable_faceculling) glEnable(GL_CULL_FACE);
 		}
 	}
 
@@ -252,7 +252,7 @@ namespace feng {
 					}
 				}
 
-				if ((batch.textures.size() + unique_textures) <= 32) {
+				if ((batch.textures.size() + unique_textures) <= MAX_TEXTURE_SLOT_M) {
 					batched = true;
 					batch.add_mesh(mesh);
 				}
@@ -263,8 +263,6 @@ namespace feng {
 				_batches.back().add_mesh(mesh);
 			}
 		}
-
-		//std::cout << "size: " << _batches.size() << std::endl;
 	}
 
 	void mesh_batch::add_mesh(mesh& mesh) {

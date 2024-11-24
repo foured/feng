@@ -178,6 +178,7 @@
     <ClCompile Include="src\logic\ui\uitransform.cpp" />
     <ClCompile Include="src\logic\ui\ui_layer.cpp" />
     <ClCompile Include="src\logic\world\component.cpp" />
+    <ClCompile Include="src\logic\world\components\line_animator.cpp" />
     <ClCompile Include="src\logic\world\components\model_instance.cpp" />
     <ClCompile Include="src\logic\world\instance.cpp" />
     <ClCompile Include="src\logic\world\scene.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="src\logic\containers\binary_tree.hpp" />
     <ClInclude Include="src\logic\event.hpp" />
     <ClInclude Include="src\logic\world\component.h" />
+    <ClInclude Include="src\logic\world\components\line_animator.h" />
     <ClInclude Include="src\logic\world\components\model_instance.h" />
     <ClInclude Include="src\logic\world\instance.h" />
     <ClInclude Include="src\logic\world\scene.h" />

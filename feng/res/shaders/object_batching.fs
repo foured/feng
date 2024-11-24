@@ -83,6 +83,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec);
 
 float ShadowCalculation(vec3 normal, vec3 lightDir);
+float PCSS(float lightSize);
 
 void main()
 {    
@@ -132,6 +133,42 @@ void main()
     FragColor = vec4(result, 1.0);
 }
 
+float PCSS(float lightSize){
+    float searchRadius = 10.0;
+    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    int blockersCount = 0;
+    float avgBlockerDepth = 0.0;
+    for (float x = -searchRadius; x <= searchRadius; ++x) {
+        for (float y = -searchRadius; y <= searchRadius; ++y) {
+            float currentDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            if (currentDepth < projCoords.z) {
+                avgBlockerDepth += currentDepth;
+                blockersCount++;
+            }
+        }
+    }
+
+    if (blockersCount == 0) 
+        return 0.0;
+
+    avgBlockerDepth /= blockersCount;
+
+    float penumbra = (projCoords.z - avgBlockerDepth) / avgBlockerDepth;
+    float filterRadius = penumbra * lightSize / projCoords.z;
+    float shadow = 0.0;
+    int filterSize = int(filterRadius);
+    for (int x = -filterSize; x <= filterSize; ++x) {
+        for (int y = -filterSize; y <= filterSize; ++y) {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += projCoords.z > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= float((2 * filterSize + 1) * (2 * filterSize + 1));
+    return shadow;
+}
+
 float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
 {
 	return step(compare, texture2D(shadowMap, coords.xy).r);
@@ -139,7 +176,7 @@ float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
 
 float SampleShadowMapLinear(vec2 coords, float compare, vec2 texelSize)
 {
-	vec2 pixelPos = coords/texelSize + vec2(0.5);
+	vec2 pixelPos = coords / texelSize + vec2(0.5);
 	vec2 fracPart = fract(pixelPos);
 	vec2 startTexel = (pixelPos - fracPart) * texelSize;
 	
@@ -166,7 +203,7 @@ float ShadowCalculation(vec3 normal, vec3 lightDir)
         return 0.0;
     }
 
-    const float NO_SAMPLES = 5.0;
+    const float NO_SAMPLES = 3.0;
     const float SAMPLE_START = (NO_SAMPLES - 1.0) / 2.0;
     const float NO_SAMPLES_SQUARED = NO_SAMPLES * NO_SAMPLES;
 
@@ -177,8 +214,8 @@ float ShadowCalculation(vec3 normal, vec3 lightDir)
         for(float y = -SAMPLE_START; y <= SAMPLE_START; ++y)
         {
             //float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-            vec2 coordsOffset = vec2(x,y)*texelSize;
+            //shadow += currentDepth - bias + 0.5 > pcfDepth ? 1.0 : 0.0;
+            vec2 coordsOffset = vec2(x, y) * texelSize;
 			shadow += SampleShadowMapLinear(projCoords.xy + coordsOffset, currentDepth - bias, texelSize);
         }    
     }
@@ -202,7 +239,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     vec3 ambient = light.ambient * c_dif;
     vec3 diffuse = light.diffuse * diff * c_dif;
 
-    float shadow = ShadowCalculation(normal, lightDir);
+    //float shadow = ShadowCalculation(normal, lightDir);
+    float shadow = PCSS(1.2);
 
     return (ambient + (1.0 - shadow ) * (diffuse + specular));
     //return (ambient + diffuse + specular);
