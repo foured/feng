@@ -91,7 +91,7 @@ namespace feng::ui {
 			break;
 
 		case feng::ui::BOTTOM_RIGHT:
-			ret = { -v, v };
+			ret = { v, -v };
 			break;
 
 		default:

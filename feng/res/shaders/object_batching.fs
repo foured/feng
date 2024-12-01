@@ -33,10 +33,10 @@ in VS_OUT{
 uniform int has_tex;
 uniform Material material;
 uniform int isSLWorking;
-uniform bool useNormalMapping;
 
 uniform sampler2D textures[32];
 uniform sampler2D shadowMap;
+uniform sampler2D penumbraMask;
 
 //uniform samplerCube skybox;
 
@@ -46,13 +46,14 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec);
 
 float ShadowCalculation(vec3 normal, vec3 lightDir);
-float PCSS(float lightSize);
+
+#include<shadows.glsl>
 
 void main()
 {    
     vec3 norm = normalize(fs_in.Normal);
 
-    if(useNormalMapping && fs_in.n_map_idx != NULL_TEXTURE_IDX){
+    if(fs_in.n_map_idx != NULL_TEXTURE_IDX){
         norm = texture(textures[fs_in.n_map_idx], fs_in.TexCoords).rgb;
         norm = normalize(norm * 2.0 - 1.0);
     }
@@ -96,97 +97,6 @@ void main()
     FragColor = vec4(result, 1.0);
 }
 
-float PCSS(float lightSize){
-    float searchRadius = 10.0;
-    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    int blockersCount = 0;
-    float avgBlockerDepth = 0.0;
-    for (float x = -searchRadius; x <= searchRadius; ++x) {
-        for (float y = -searchRadius; y <= searchRadius; ++y) {
-            float currentDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-            if (currentDepth < projCoords.z) {
-                avgBlockerDepth += currentDepth;
-                blockersCount++;
-            }
-        }
-    }
-
-    if (blockersCount == 0) 
-        return 0.0;
-
-    avgBlockerDepth /= blockersCount;
-
-    float penumbra = (projCoords.z - avgBlockerDepth) / avgBlockerDepth;
-    float filterRadius = penumbra * lightSize / projCoords.z;
-    float shadow = 0.0;
-    int filterSize = int(filterRadius);
-    for (int x = -filterSize; x <= filterSize; ++x) {
-        for (int y = -filterSize; y <= filterSize; ++y) {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += projCoords.z > pcfDepth ? 1.0 : 0.0;
-        }
-    }
-    shadow /= float((2 * filterSize + 1) * (2 * filterSize + 1));
-    return shadow;
-}
-
-float SampleShadowMap(sampler2D shadowMap, vec2 coords, float compare)
-{
-	return step(compare, texture2D(shadowMap, coords.xy).r);
-}
-
-float SampleShadowMapLinear(vec2 coords, float compare, vec2 texelSize)
-{
-	vec2 pixelPos = coords / texelSize + vec2(0.5);
-	vec2 fracPart = fract(pixelPos);
-	vec2 startTexel = (pixelPos - fracPart) * texelSize;
-	
-	float blTexel = SampleShadowMap(shadowMap, startTexel, compare);
-	float brTexel = SampleShadowMap(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare);
-	float tlTexel = SampleShadowMap(shadowMap, startTexel + vec2(0.0, texelSize.y), compare);
-	float trTexel = SampleShadowMap(shadowMap, startTexel + texelSize, compare);
-	
-	float mixA = mix(blTexel, tlTexel, fracPart.y);
-	float mixB = mix(brTexel, trTexel, fracPart.y);
-	
-	return mix(mixA, mixB, fracPart.x);
-}
-
-float ShadowCalculation(vec3 normal, vec3 lightDir)
-{
-    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5;
-    //float closestDepth = texture(shadowMap, projCoords.xy).r; 
-    float currentDepth = projCoords.z;
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
-
-    if(projCoords.z > 1.0){
-        return 0.0;
-    }
-
-    const float NO_SAMPLES = 3.0;
-    const float SAMPLE_START = (NO_SAMPLES - 1.0) / 2.0;
-    const float NO_SAMPLES_SQUARED = NO_SAMPLES * NO_SAMPLES;
-
-    float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    for(float x = -SAMPLE_START; x <= SAMPLE_START; ++x)
-    {
-        for(float y = -SAMPLE_START; y <= SAMPLE_START; ++y)
-        {
-            //float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            //shadow += currentDepth - bias + 0.5 > pcfDepth ? 1.0 : 0.0;
-            vec2 coordsOffset = vec2(x, y) * texelSize;
-			shadow += SampleShadowMapLinear(projCoords.xy + coordsOffset, currentDepth - bias, texelSize);
-        }    
-    }
-    shadow /= NO_SAMPLES_SQUARED;
-
-    return 1 - shadow;
-}
-
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_spec)
 {
     vec3 lightDir = normalize(-light.direction);
@@ -202,8 +112,20 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     vec3 ambient = light.ambient * c_dif;
     vec3 diffuse = light.diffuse * diff * c_dif;
 
+    // CHSS calculations
+
     //float shadow = ShadowCalculation(normal, lightDir);
-    float shadow = PCSS(1.2);
+    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    //const float lightSize = 1.0 / 500;
+    //float shadow = CHSS(shadowMap, projCoords, lightSize);
+
+    vec2 suv = gl_FragCoord.xy / (2 * textureSize(penumbraMask, 0));
+    float gradientNoise = InterleavedGradientNoise(projCoords.xy);
+    float penumbra = texture(penumbraMask, suv).r;
+    float shadow = 0.0;
+    if (penumbra != 1)
+        shadow = SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
 
     return (ambient + (1.0 - shadow ) * (diffuse + specular));
     //return (ambient + diffuse + specular);

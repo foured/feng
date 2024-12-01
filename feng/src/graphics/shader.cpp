@@ -1,6 +1,6 @@
 #include "shader.h"
 
-#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <fstream>
 #include <sstream>
@@ -104,6 +104,18 @@ namespace feng {
 		if (!success) {
 			glGetShaderInfoLog(shader, 512, NULL, info_log);
 			LOG_ERROR("Error to compile shader '" + std::string(filepath) + "': " + std::string(info_log));
+			std::string log_filename = "log_" + std::filesystem::path(filepath).filename().string();
+			std::ofstream output_file("log/" + log_filename);
+
+			if (!output_file) {
+				LOG_ERROR("Error to create shader log file!");
+			}
+			else {
+				output_file << shader_src_s;
+				output_file.close();
+				LOG_INFO("Saved shader log file: " + log_filename);
+			}
+
 		}
 
 		return shader;

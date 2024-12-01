@@ -29,6 +29,7 @@ namespace feng{
 	private:
 		glm::vec3 _pos;
 		glm::vec3 _up, _right, _front;
+		bool _mouse_movement = true;
 
 		float _sensitivity;
 		float _yaw;

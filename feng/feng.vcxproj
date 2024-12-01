@@ -248,6 +248,10 @@
     <None Include="res\shaders\includes\layouts\lights_layout.glsl" />
     <None Include="res\shaders\includes\layouts\matrices_layout.glsl" />
     <None Include="res\shaders\includes\lights_structures.glsl" />
+    <None Include="res\shaders\includes\random.glsl" />
+    <None Include="res\shaders\includes\shadows.glsl" />
+    <None Include="res\shaders\penumbra_mask.fs" />
+    <None Include="res\shaders\penumbra_mask.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

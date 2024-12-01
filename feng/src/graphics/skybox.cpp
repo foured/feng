@@ -50,7 +50,7 @@ float skybox_vertices[] = {
 
 namespace feng {
 
-	skybox::skybox(shader* skybox_shader, const std::vector<std::string>& faces)
+	skybox::skybox(shader* skybox_shader, const std::array<std::string, 6>& faces)
 		: _shader(skybox_shader), cubemap(faces) {
 		_vertexarray.generate();
 		_vertexarray.bind();

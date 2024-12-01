@@ -8,9 +8,8 @@
 
 namespace feng {
 
-	cubemap::cubemap(const std::vector<std::string>& faces) {
-		glGenTextures(1, &_texture_id
-		);
+	cubemap::cubemap(const std::array<std::string, 6>& faces) {
+		glGenTextures(1, &_texture_id);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, _texture_id);
 
 		int32_t width, height, n_channels;

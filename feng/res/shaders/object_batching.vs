@@ -11,8 +11,10 @@ layout (location = 6) in float aTexIdxs;
 layout (location = 7) in vec3 aOffset;
 layout (location = 8) in vec3 aSize;
 
-#include<lights_structures.glsl>
 #include<defines.glsl>
+#include<lights_structures.glsl>
+#include<lights_layout.glsl>
+#include<matrices_layout.glsl>
 
 out VS_OUT{
     vec3 FragPos;
@@ -38,11 +40,6 @@ out VS_OUT{
 uniform mat4 model;
 uniform vec3 viewPos;
 uniform mat4 lightSpaceMatrix;
-
-#include<matrices_layout.glsl>
-#include<lights_layout.glsl>
-
-uniform bool useNormalMapping;
 
 void main()
 {
@@ -70,7 +67,7 @@ void main()
         vs_out.PointLights[i].position = vec3(model * vec4(pointLights[i].position, 1.0));
     }
 
-    if(useNormalMapping && vs_out.n_map_idx != NULL_TEXTURE_IDX){
+    if(vs_out.n_map_idx != NULL_TEXTURE_IDX){
         mat3 normalMatrix = transpose(inverse(mat3(model)));
         vec3 T = normalize(normalMatrix * aTangent);
         vec3 N = normalize(normalMatrix * aNormal);

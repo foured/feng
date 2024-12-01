@@ -10,7 +10,7 @@ namespace feng {
 
 	class skybox {
 	public:
-		skybox(shader* skybox_shader, const std::vector<std::string>& faces);
+		skybox(shader* skybox_shader, const std::array<std::string, 6>& faces);
 
 		void render(glm::mat4 view_matrix);
 

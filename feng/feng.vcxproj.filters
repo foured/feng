@@ -296,5 +296,9 @@
     <None Include="res\shaders\includes\defines.glsl" />
     <None Include="res\shaders\includes\layouts\matrices_layout.glsl" />
     <None Include="res\shaders\includes\layouts\lights_layout.glsl" />
+    <None Include="res\shaders\includes\shadows.glsl" />
+    <None Include="res\shaders\includes\random.glsl" />
+    <None Include="res\shaders\penumbra_mask.vs" />
+    <None Include="res\shaders\penumbra_mask.fs" />
   </ItemGroup>
 </Project>

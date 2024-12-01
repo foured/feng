@@ -78,6 +78,10 @@ namespace feng {
 				LOG_ERROR("Framebuffer error: 'GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS'.");
 		}
 		
+		void set_viewport() {
+			glViewport(0, 0, _width, _height);
+		}
+
 		void set_draw_buffer(uint32_t mode) {
 			glDrawBuffer(mode);
 		}

@@ -2,6 +2,7 @@
 
 #include "../utilities/utilities.h"
 #include "input.h"
+#include "../graphics/window.h"
 
 namespace feng {
 
@@ -79,8 +80,13 @@ namespace feng {
 		if (input::get_key(GLFW_KEY_D)) controll_keyboard_presses(camera::direction::RIGHT);
 		if (input::get_key(GLFW_KEY_SPACE)) controll_keyboard_presses(camera::direction::UP);
 		if (input::get_key(GLFW_KEY_LEFT_SHIFT)) controll_keyboard_presses(camera::direction::DOWN);
+		if (input::get_key_down(GLFW_KEY_TAB)) {
+			_mouse_movement = !_mouse_movement;
+			window::current_window->set_cursor_mode(!_mouse_movement);
+		}
 
-		controll_mouse_movement();
+		if (_mouse_movement)
+			controll_mouse_movement();
 	}
 
 	glm::vec3 camera::position() {

@@ -23,7 +23,7 @@ namespace feng::ui{
 	public:
 		uiinstance(uimodel* model, ui_layer* layer);
 
-		uint8_t render_order;
+		uint8_t render_order = 1;
 		uitransform uitransform;
 		uibounds bounds;
 		bool is_active = true;

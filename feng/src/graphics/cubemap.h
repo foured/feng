@@ -2,12 +2,13 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
 namespace feng {
 
 	class cubemap {
 	public:
-		cubemap(const std::vector<std::string>& faces);
+		cubemap(const std::array<std::string, 6>& faces);
 
 		uint32_t id();
 		void bind();
