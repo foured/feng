@@ -1,3 +1,5 @@
+#pragma once
+
 #define MAX_NO_MODEL_INSTANCES 10
 #define MAX_NO_MODEL2D_INSTANCES 10
 
@@ -10,3 +12,7 @@
 #define MAX_SPOT_LIGHTS 1
 
 typedef uint16_t inst_flag_type;
+
+#define SHADOWMAP_SIZE 4 * 1024
+
+#define SHADOWMAP_TEXTURE_SLOT 31

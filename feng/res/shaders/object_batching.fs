@@ -73,9 +73,9 @@ void main()
 
     vec3 result = vec3(0);
     result += CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
-    //for(int i = 0; i < MAX_POINT_LIGHTS; i++){
-    //       result += CalcPointLight(fs_in.PointLights[i], norm, fs_in.FragPos, viewDir, c_dif, c_spec); 
-    //}
+    for(int i = 0; i < MAX_POINT_LIGHTS; i++){
+        result += CalcPointLight(fs_in.PointLights[i], norm, fs_in.FragPos, viewDir, c_dif, c_spec); 
+    }
     
     if(isSLWorking == 1){      
         result += CalcSpotLight(fs_in.SpotLights[0], norm, fs_in.FragPos, viewDir, c_dif, c_spec);    

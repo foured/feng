@@ -76,10 +76,10 @@ int main() {
 	camera cam;
 	skybox sb(&skybox_shader, skybox_faces);
 
-	//model vampire("res/models/vampire/dancing_vampire.dae", model_render_type::batched);
-	//model backpack("res/models/survival_guitar_backpack/scene.gltf");
+	//sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
 	sptr_mdl cube1 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
 	sptr_mdl cube2 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(0.6)));
+	sptr_mdl light_cube = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(1)));
 
 	sptr_ins cube1_i1 = sc1.add_instance();
 	cube1_i1.get()->add_component<model_instance>(cube1);
@@ -95,15 +95,18 @@ int main() {
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
 
-	DirLight dir_light{
-		{ 0.2f, -1.0f, -0.3f },
-		glm::vec3(0.1f),
-		glm::vec3(0.6f),
-		glm::vec3(0.7f)
-	};
+	sptr_ins light_cube_i1 = sc1.add_instance();
+	light_cube_i1.get()->add_component<model_instance>(light_cube);
+	light_cube_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
+	light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
+
+
+	DirLight dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f));
 	PointLight point_lights[MAX_POINT_LIGHTS] { 
 		{ 
-			glm::vec3(2, 0, 2),
+			light_cube_i1.get()->transform.get_position(),
 			1,
 			0.09f,
 			0.032f,
@@ -143,18 +146,20 @@ int main() {
 	framebuffer::check_status();
 	main_framebuffer.unbind();
 
-	const uint32_t SHADOW_WIDTH = 4 * 1024, SHADOW_HEIGHT = 4 * 1024;
-	framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
-	depth_map_framebuffer.bind();
-	texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
-		GL_DEPTH_ATTACHMENT, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
-	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
-	depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
-	depth_map_framebuffer.set_draw_buffer(GL_NONE);
-	depth_map_framebuffer.set_read_buffer(GL_NONE);
-	framebuffer::check_status();
-	depth_map_framebuffer.unbind();
-	
+	//const uint32_t SHADOW_WIDTH = 4 * 1024, SHADOW_HEIGHT = 4 * 1024;
+	//framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
+	//depth_map_framebuffer.bind();
+	//texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
+	//	GL_DEPTH_ATTACHMENT, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
+	//float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
+	//depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
+	//depth_map_framebuffer.set_draw_buffer(GL_NONE);
+	//depth_map_framebuffer.set_read_buffer(GL_NONE);
+	//framebuffer::check_status();
+	//depth_map_framebuffer.unbind();
+
+	dir_light.generate_buffers();
+
 	framebuffer penumbra_mask_framebuffer((uint32_t)(window::win_width / 2), (uint32_t)(window::win_height / 2));
 	penumbra_mask_framebuffer.bind();
 	texture penumbra_mask_texture = penumbra_mask_framebuffer.allocate_and_attach_texture(
@@ -284,20 +289,21 @@ int main() {
 		//=================
 
 		//shadow preparations
-		depth_map_framebuffer.set_viewport();
-		depth_map_framebuffer.bind();
-		glEnable(GL_DEPTH_TEST);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glCullFace(GL_FRONT);
+		//depth_map_framebuffer.set_viewport();
+		//depth_map_framebuffer.bind();
+		//glEnable(GL_DEPTH_TEST);
+		//glClear(GL_DEPTH_BUFFER_BIT);
+		//glCullFace(GL_FRONT);
 		
+		dir_light.render_preparations();
+
 		//shadow pass
 		depth_shader.activate();
 		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		depth_shader.set_mat4("model", model);
 		sc1.render_flag(depth_shader, INST_FLAG_CAST_SHADOWS);
 		
-		glCullFace(GL_BACK);
-		depth_map_framebuffer.unbind();
+		dir_light.render_cleanup();
 
 		//penumbra mask pass
 		penumbra_mask_framebuffer.set_viewport();
@@ -310,8 +316,9 @@ int main() {
 		penumbra_mask_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		penumbra_mask_shader.set_mat4("model", model);
 		penumbra_mask_shader.set_int("shadowMap", 31);
-		texture::activate_slot(31);
-		depth_map_texture.bind();
+		//texture::activate_slot(31);
+		//depth_map_texture.bind();
+		dir_light.bind_shadowmap();
 		sc1.render_flag(penumbra_mask_shader,  INST_FLAG_RCV_SHADOWS);
 		//sc1.render_models(penumbra_mask_shader);
 		
@@ -332,8 +339,9 @@ int main() {
 		obj_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		obj_shader.set_mat4("model", model);
 		obj_shader.set_int("shadowMap", 31);
-		texture::activate_slot(31);
-		depth_map_texture.bind();
+		//texture::activate_slot(31);
+		//depth_map_texture.bind();
+		dir_light.bind_shadowmap();
 		obj_shader.set_int("penumbraMask", 30);
 		texture::activate_slot(30);
 		penumbra_mask_texture.bind();

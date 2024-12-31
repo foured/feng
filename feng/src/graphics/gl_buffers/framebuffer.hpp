@@ -5,8 +5,10 @@
 #include "renderbuffer.hpp"
 #include "arraybuffer.hpp"
 #include "../vertexarray.h"
+#include "../../logging/logging.h"
+#include "../texture.h"
 
-float screen_quad_vertices[] = {
+static const inline float screen_quad_vertices[] = {
 	-1.0f,  1.0f,  0.0f, 1.0f,
 	-1.0f, -1.0f,  0.0f, 0.0f,
 	 1.0f, -1.0f,  1.0f, 0.0f,
@@ -20,6 +22,10 @@ namespace feng {
 
 	class framebuffer : public i_gl_buffer{
 	public:
+		framebuffer() {
+
+		}
+
 		framebuffer(uint32_t width, uint32_t height)
 			: _width(width), _height(height){
 			generate();

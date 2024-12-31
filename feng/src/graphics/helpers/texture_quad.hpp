@@ -5,9 +5,7 @@
 #include "../shader.h"
 #include "../texture.h"
 
-namespace feng::helpers {
-
-	float fullscreen_quad_vertices[] = {
+float fullscreen_quad_vertices[] = {
 		-1.0f,  1.0f,  0.0f, 1.0f,
 		-1.0f, -1.0f,  0.0f, 0.0f,
 		 1.0f, -1.0f,  1.0f, 0.0f,
@@ -15,8 +13,9 @@ namespace feng::helpers {
 		-1.0f,  1.0f,  0.0f, 1.0f,
 		 1.0f, -1.0f,  1.0f, 0.0f,
 		 1.0f,  1.0f,  1.0f, 1.0f
-	};
+};
 
+namespace feng::helpers {
 	class texture_quad {
 	public:
 		texture_quad() {
