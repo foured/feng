@@ -221,6 +221,7 @@
     <ClInclude Include="src\logging\logging.h" />
     <ClInclude Include="src\logic\containers\binary_tree.hpp" />
     <ClInclude Include="src\logic\data_management\assets_manager.h" />
+    <ClInclude Include="src\logic\data_management\files.hpp" />
     <ClInclude Include="src\logic\event.hpp" />
     <ClInclude Include="src\logic\world\component.h" />
     <ClInclude Include="src\logic\world\components\line_animator.h" />

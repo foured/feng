@@ -120,14 +120,17 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     //const float lightSize = 1.0 / 500;
     //float shadow = CHSS(shadowMap, projCoords, lightSize);
 
-    vec2 suv = gl_FragCoord.xy / (2 * textureSize(penumbraMask, 0));
-    float gradientNoise = InterleavedGradientNoise(projCoords.xy);
-    float penumbra = texture(penumbraMask, suv).r;
+    // vec2 suv = gl_FragCoord.xy / (2 * textureSize(penumbraMask, 0));
+    //float gradientNoise = InterleavedGradientNoise(projCoords.xy);
+    // float penumbra = texture(penumbraMask, suv).r;
     float shadow = 0.0;
-    if (penumbra != 1)
-        shadow = SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
-
-    return (ambient + (1.0 - shadow ) * (diffuse + specular));
+    // if (penumbra != 1)
+    //     shadow = SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    const int samples = 4;
+    shadow = PCF(shadowMap, projCoords, texelSize, samples, true);
+    
+    return (ambient + (1.0 - shadow) * (diffuse + specular));
     //return (ambient + diffuse + specular);
 }
 

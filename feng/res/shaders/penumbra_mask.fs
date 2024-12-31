@@ -22,7 +22,6 @@ void main(){
     else{
         FragColor = CalculatePenumbra(avgBlockerDepth, lightSize, projCoords.z); 
     }
-
     //float shadow = CHSS(shadowMap, projCoords, lightSize);
     //FragColor = shadow;
 }

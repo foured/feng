@@ -29,7 +29,7 @@ namespace feng {
 		}
 
 	private:
-		uint16_t _flags = (INST_FLAG_STATIC | INST_FLAG_CAST_SHADOWS | INST_FLAG_RCV_SHADOWS);
+		inst_flag_type _flags = (INST_FLAG_STATIC | INST_FLAG_CAST_SHADOWS | INST_FLAG_RCV_SHADOWS);
 	};
 
 	class instance : public util::uuid_owner {

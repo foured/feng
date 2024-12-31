@@ -287,6 +287,9 @@
     <ClInclude Include="src\logic\data_management\assets_manager.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\logic\data_management\files.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />

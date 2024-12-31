@@ -15,7 +15,6 @@ namespace feng {
 
 	class scene : public util::uuid_owner {
 	public:
-
 		void start();
 		void update();
 
@@ -43,9 +42,12 @@ namespace feng {
 
 		sptr_ins copy_instance(sptr_ins instance_to_copy);
 
+
 	private:
 		std::vector<sptr_mdl> _models;
 		std::vector<sptr_ins> _instances;
+
+		friend class scene_saver;
 	};
 
 }

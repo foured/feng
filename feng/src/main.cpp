@@ -83,8 +83,8 @@ int main() {
 
 	sptr_ins cube1_i1 = sc1.add_instance();
 	cube1_i1.get()->add_component<model_instance>(cube1);
-	cube1_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
+	cube1_i2.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2.get()->transform.set_position(glm::vec3(2, 3, -2));
 	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 3, 0.5));
 	//cube1_i2.get()->add_component<line_animator>(glm::vec3(2, 3, -2), glm::vec3(2, 10, -2), 1);
@@ -147,7 +147,7 @@ int main() {
 	framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
 	depth_map_framebuffer.bind();
 	texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
-		GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
+		GL_DEPTH_ATTACHMENT, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
 	float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
 	depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
 	depth_map_framebuffer.set_draw_buffer(GL_NONE);
@@ -158,9 +158,9 @@ int main() {
 	framebuffer penumbra_mask_framebuffer((uint32_t)(window::win_width / 2), (uint32_t)(window::win_height / 2));
 	penumbra_mask_framebuffer.bind();
 	texture penumbra_mask_texture = penumbra_mask_framebuffer.allocate_and_attach_texture(
-		GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RG32F, GL_RED);
+		GL_COLOR_ATTACHMENT0, GL_NEAREST, GL_NEAREST, NULL, NULL, GL_RG32F, GL_RED);
 	renderbuffer penumbra_mask_renderbuffer = penumbra_mask_framebuffer.allocate_and_attach_renderbuffer(
-		GL_DEPTH_COMPONENT24, GL_DEPTH_ATTACHMENT);
+		GL_DEPTH_COMPONENT32, GL_DEPTH_ATTACHMENT);
 	framebuffer::check_status();
 	penumbra_mask_framebuffer.unbind();
 
@@ -208,11 +208,11 @@ int main() {
 	auto layer1 = ui.create_layer();
 	layer1->support_input = true;
 
-	auto square1 = ui.create_model(primitives2d::generate_square_mesh(penumbra_mask_texture));
-	auto inst1 = ui.add_instance(layer1, square1, glm::vec2(0), glm::vec2(0.5f));
-	inst1->uitransform.set_anchor(ui::anchor::BOTTOM_RIGHT);
-	inst1->uitransform.set_size_pix({ 200, 200 });
-	inst1->uitransform.set_pos_pix({ -200, 200 });
+	//auto square1 = ui.create_model(primitives2d::generate_square_mesh(penumbra_mask_texture));
+	//auto inst1 = ui.add_instance(layer1, square1, glm::vec2(0), glm::vec2(0.5f));
+	//inst1->uitransform.set_anchor(ui::anchor::BOTTOM_RIGHT);
+	//inst1->uitransform.set_size_pix({ 200, 200 });
+	//inst1->uitransform.set_pos_pix({ -200, 200 });
 	
 	//auto square2 = ui.create_model(primitives2d::generate_square_mesh({ 1, 1, 1 }));
 	//auto inst2 = ui.add_instance(layer1, square2);
