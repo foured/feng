@@ -8,7 +8,7 @@ namespace feng {
 
 	camera::camera(glm::vec3 pos, float sensitivity) 
 		: 
-		_pos(pos),
+		position(pos),
 		_sensitivity(sensitivity),
 		_yaw(-90.0f),
 		_pitch(0.0f),
@@ -29,7 +29,7 @@ namespace feng {
 	}
 
 	glm::mat4 camera::get_view_matrix() {
-		return glm::lookAt(_pos, _pos + _front, _up);
+		return glm::lookAt(position, position + _front, _up);
 	}
 
 	void camera::controll_keyboard_presses(direction dir) {
@@ -37,22 +37,22 @@ namespace feng {
 		switch (dir)
 		{
 		case direction::FORWARD:
-			_pos += _front * (float)velocity;
+			position += _front * (float)velocity;
 			break;
 		case direction::BACK:
-			_pos -= _front * (float)velocity;
+			position -= _front * (float)velocity;
 			break;
 		case direction::RIGHT:
-			_pos += _right * (float)velocity;
+			position += _right * (float)velocity;
 			break;
 		case direction::LEFT:
-			_pos -= _right * (float)velocity;
+			position -= _right * (float)velocity;
 			break;
 		case direction::UP:
-			_pos += glm::vec3(0.0, 1.0, 0.0) * (float)velocity;
+			position += glm::vec3(0.0, 1.0, 0.0) * (float)velocity;
 			break;
 		case direction::DOWN:
-			_pos -= glm::vec3(0.0, 1.0, 0.0) * (float)velocity;
+			position -= glm::vec3(0.0, 1.0, 0.0) * (float)velocity;
 			break;
 		}
 		update_vectors();
@@ -87,10 +87,6 @@ namespace feng {
 
 		if (_mouse_movement)
 			controll_mouse_movement();
-	}
-
-	glm::vec3 camera::position() {
-		return _pos;
 	}
 
 	glm::vec3 camera::front() {

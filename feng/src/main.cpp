@@ -63,8 +63,9 @@ int main() {
 	shader skybox_shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
-	shader depth_shader("res/shaders/depth.vs", "res/shaders/depth.fs");
+	shader dirlight_depth_shader("res/shaders/depth/dirlight_depth.vs", "res/shaders/depth/dirlight_depth.fs");
 	shader penumbra_mask_shader("res/shaders/penumbra_mask.vs", "res/shaders/penumbra_mask.fs");
+	shader pointlight_depth_shader("res/shaders/depth/pointlight_depth.vs", "res/shaders/depth/pointlight_depth.fs", { shader_sub_program("res/shaders/depth/pointlight_depth.gs", GL_GEOMETRY_SHADER) });
 
 	helpers::texture_quad fullscreen_quad;
 
@@ -89,11 +90,31 @@ int main() {
 	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 3, 0.5));
 	//cube1_i2.get()->add_component<line_animator>(glm::vec3(2, 3, -2), glm::vec3(2, 10, -2), 1);
 
+	//bottom
 	sptr_ins cube2_i1 = sc1.add_instance();
 	cube2_i1.get()->add_component<model_instance>(cube2);
 	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
+	//top
+	sptr_ins cube2_i2 = sc1.copy_instance(cube2_i1);
+	cube2_i2.get()->transform.set_position(glm::vec3(0, 18, 0));
+	//right
+	sptr_ins cube2_i3 = sc1.copy_instance(cube2_i1);
+	cube2_i3.get()->transform.set_position(glm::vec3(20, 10, 0));
+	cube2_i3.get()->transform.set_size(glm::vec3(1, 20, 20));
+	//left
+	sptr_ins cube2_i4 = sc1.copy_instance(cube2_i1);
+	cube2_i4.get()->transform.set_position(glm::vec3(-20, 10, 0));
+	cube2_i4.get()->transform.set_size(glm::vec3(1, 20, 20));
+	//forward
+	sptr_ins cube2_i5 = sc1.copy_instance(cube2_i1);
+	cube2_i5.get()->transform.set_position(glm::vec3(0, 10, -20));
+	cube2_i5.get()->transform.set_size(glm::vec3(20, 20, 1));
+	//back
+	sptr_ins cube2_i6 = sc1.copy_instance(cube2_i1);
+	cube2_i6.get()->transform.set_position(glm::vec3(0, 10, 20));
+	cube2_i6.get()->transform.set_size(glm::vec3(20, 20, 1));
 
 	sptr_ins light_cube_i1 = sc1.add_instance();
 	light_cube_i1.get()->add_component<model_instance>(light_cube);
@@ -101,7 +122,6 @@ int main() {
 	light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
 	light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
-
 
 	DirLight dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f));
 	PointLight point_lights[MAX_POINT_LIGHTS] { 
@@ -117,7 +137,7 @@ int main() {
 	};
 	SpotLight spot_lights[MAX_SPOT_LIGHTS] {
 		{
-			cam.position(),
+			cam.position,
 			cam.front(),
 			glm::cos(glm::radians(12.5f)),
 			glm::cos(glm::radians(17.5f)),
@@ -146,28 +166,25 @@ int main() {
 	framebuffer::check_status();
 	main_framebuffer.unbind();
 
-	//const uint32_t SHADOW_WIDTH = 4 * 1024, SHADOW_HEIGHT = 4 * 1024;
-	//framebuffer depth_map_framebuffer(SHADOW_WIDTH, SHADOW_HEIGHT);
-	//depth_map_framebuffer.bind();
-	//texture depth_map_texture = depth_map_framebuffer.allocate_and_attach_texture(
-	//	GL_DEPTH_ATTACHMENT, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT);
-	//float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
-	//depth_map_texture.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
-	//depth_map_framebuffer.set_draw_buffer(GL_NONE);
-	//depth_map_framebuffer.set_read_buffer(GL_NONE);
-	//framebuffer::check_status();
-	//depth_map_framebuffer.unbind();
-
 	dir_light.generate_buffers();
 
-	framebuffer penumbra_mask_framebuffer((uint32_t)(window::win_width / 2), (uint32_t)(window::win_height / 2));
-	penumbra_mask_framebuffer.bind();
-	texture penumbra_mask_texture = penumbra_mask_framebuffer.allocate_and_attach_texture(
-		GL_COLOR_ATTACHMENT0, GL_NEAREST, GL_NEAREST, NULL, NULL, GL_RG32F, GL_RED);
-	renderbuffer penumbra_mask_renderbuffer = penumbra_mask_framebuffer.allocate_and_attach_renderbuffer(
-		GL_DEPTH_COMPONENT32, GL_DEPTH_ATTACHMENT);
+	cubemap point_light_cm(SHADOWMAP_SIZE, SHADOWMAP_SIZE, GL_DEPTH_COMPONENT);
+	framebuffer point_light_framebuffer(SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+	point_light_framebuffer.bind();
+	point_light_framebuffer.attach_texture(point_light_cm.id(), GL_DEPTH_ATTACHMENT);
+	point_light_framebuffer.set_draw_buffer(GL_NONE);
+	point_light_framebuffer.set_read_buffer(GL_NONE);
 	framebuffer::check_status();
-	penumbra_mask_framebuffer.unbind();
+	point_light_framebuffer.unbind();
+
+	//framebuffer penumbra_mask_framebuffer((uint32_t)(window::win_width / 2), (uint32_t)(window::win_height / 2));
+	//penumbra_mask_framebuffer.bind();
+	//texture penumbra_mask_texture = penumbra_mask_framebuffer.allocate_and_attach_texture(
+	//	GL_COLOR_ATTACHMENT0, GL_NEAREST, GL_NEAREST, NULL, NULL, GL_RG32F, GL_RED);
+	//renderbuffer penumbra_mask_renderbuffer = penumbra_mask_framebuffer.allocate_and_attach_renderbuffer(
+	//	GL_DEPTH_COMPONENT32, GL_DEPTH_ATTACHMENT);
+	//framebuffer::check_status();
+	//penumbra_mask_framebuffer.unbind();
 
 	ssbo matrices_ssbo;
 	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
@@ -238,6 +255,8 @@ int main() {
 	//============================
 	
 	glm::mat4 dir_lightspace_matrix = dir_light.generate_lightspace_matrix();
+	for(auto& pl : point_lights)
+		pl.generate_lightspace_matrices();
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -256,23 +275,23 @@ int main() {
 		//    SETUP DATA
 		//==================
 
-		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
-		//if (input::get_key_down(GLFW_KEY_M)) depth_map_texture.save_to_png("res/shadowmap.png");
-
-		//pcss_sw = slider1.get_value() * 900 + 100;
-
+		
 		glm::mat4 model(1.0f);
 		model = glm::scale(model, glm::vec3(0.2f));
 		glm::mat4 projection;
 		projection = glm::perspective(
 			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.01f, 100.0f);
 
+		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
+		if (input::get_key_down(GLFW_KEY_T)) 
+			cam.position = glm::mat3(model) * light_cube_i1->transform.get_position();
+
 		matrices_ssbo.start_block();
 		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(projection));
 		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)value_ptr(cam.get_view_matrix()));
 		matrices_ssbo.end_block();
 
-		spot_lights[0].position = cam.position();
+		spot_lights[0].position = cam.position;
 		spot_lights[0].direction = cam.front();
 
 		int32_t no_spotlights = MAX_SPOT_LIGHTS, no_pointlights = MAX_POINT_LIGHTS;
@@ -289,40 +308,44 @@ int main() {
 		//=================
 
 		//shadow preparations
-		//depth_map_framebuffer.set_viewport();
-		//depth_map_framebuffer.bind();
-		//glEnable(GL_DEPTH_TEST);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		//glCullFace(GL_FRONT);
-		
 		dir_light.render_preparations();
-
 		//shadow pass
-		depth_shader.activate();
-		depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
-		depth_shader.set_mat4("model", model);
-		sc1.render_flag(depth_shader, INST_FLAG_CAST_SHADOWS);
-		
+		dirlight_depth_shader.activate();
+		dirlight_depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		dirlight_depth_shader.set_mat4("model", model);
+		sc1.render_flag(dirlight_depth_shader, INST_FLAG_CAST_SHADOWS);
+		//end
 		dir_light.render_cleanup();
 
-		//penumbra mask pass
-		penumbra_mask_framebuffer.set_viewport();
-		penumbra_mask_framebuffer.bind();
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//pointlights pass
+		point_light_framebuffer.set_viewport();
+		point_light_framebuffer.bind();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		pointlight_depth_shader.activate();
+		for (uint32_t i = 0; i < 6; i++)
+			pointlight_depth_shader.set_mat4("shadowMatrices[" + std::to_string(i) + "]", point_lights[0].lightspace_matrices[i]);
+		pointlight_depth_shader.set_float("far_plane", PointLight::far_plane);
+		pointlight_depth_shader.set_3float("lightPos", point_lights[0].position);
+		pointlight_depth_shader.set_mat4("model", model);
+		sc1.render_flag(pointlight_depth_shader, INST_FLAG_CAST_SHADOWS);
+		point_light_framebuffer.unbind();
 
-		penumbra_mask_shader.activate();
-		penumbra_mask_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
-		penumbra_mask_shader.set_mat4("model", model);
-		penumbra_mask_shader.set_int("shadowMap", 31);
-		//texture::activate_slot(31);
-		//depth_map_texture.bind();
-		dir_light.bind_shadowmap();
-		sc1.render_flag(penumbra_mask_shader,  INST_FLAG_RCV_SHADOWS);
-		//sc1.render_models(penumbra_mask_shader);
-		
-		penumbra_mask_framebuffer.unbind();
+		//penumbra mask pass
+		//penumbra_mask_framebuffer.set_viewport();
+		//penumbra_mask_framebuffer.bind();
+		//glEnable(GL_DEPTH_TEST);
+		//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//penumbra_mask_shader.activate();
+		//penumbra_mask_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		//penumbra_mask_shader.set_mat4("model", model);
+		//penumbra_mask_shader.set_int("shadowMap", 31);
+		//dir_light.bind_shadowmap();
+		//sc1.render_flag(penumbra_mask_shader,  INST_FLAG_RCV_SHADOWS);
+		////sc1.render_models(penumbra_mask_shader);
+		//
+		//penumbra_mask_framebuffer.unbind();
 
 		//main render pass preparations
 		main_framebuffer.set_viewport();
@@ -333,18 +356,18 @@ int main() {
 
 		//main render pass
 		obj_shader.activate();
-		obj_shader.set_3float("viewPos", cam.position());
+		obj_shader.set_3float("viewPos", cam.position);
 		obj_shader.set_int("isSLWorking", is_spot_light_working);
 		obj_shader.set_float("material.shininess", 32.0f);
 		obj_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
 		obj_shader.set_mat4("model", model);
+		obj_shader.set_float("pointLightFarPlane", PointLight::far_plane);
 		obj_shader.set_int("shadowMap", 31);
-		//texture::activate_slot(31);
-		//depth_map_texture.bind();
 		dir_light.bind_shadowmap();
-		obj_shader.set_int("penumbraMask", 30);
+		obj_shader.set_int("pointLightCube", 30);
+		//obj_shader.set_int("penumbraMask", 30);
 		texture::activate_slot(30);
-		penumbra_mask_texture.bind();
+		point_light_cm.bind();
 		
 		sc1.render_models(obj_shader);
 

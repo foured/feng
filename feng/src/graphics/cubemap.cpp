@@ -1,12 +1,26 @@
 #include "cubemap.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <stb/stb_image.h>
 
 #include "../logging/logging.h"
 
 namespace feng {
+
+	cubemap::cubemap(uint32_t width, uint32_t height, uint32_t internalformat, uint32_t format, uint32_t type) {
+		if (format == NULL)
+			format = internalformat;
+		glGenTextures(1, &_texture_id);
+		bind();
+		for (uint32_t i = 0; i < 6; ++i) {
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalformat, width, height, 0, format, type, NULL);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	}
 
 	cubemap::cubemap(const std::array<std::string, 6>& faces) {
 		glGenTextures(1, &_texture_id);

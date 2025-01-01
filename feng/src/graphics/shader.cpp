@@ -17,14 +17,51 @@
 
 namespace feng {
 
+	shader_sub_program::shader_sub_program(const char* path, uint32_t type) 
+		: path(path), type(type) { }
+
+
 	shader::shader(const char* vertex_shader_path, const char* fragment_shader_path) {
-		uint32_t vertex_shader = compile_shader(vertex_shader_path, GL_VERTEX_SHADER);
-		uint32_t fragment_shader = compile_shader(fragment_shader_path, GL_FRAGMENT_SHADER);
+		//uint32_t vertex_shader = compile_shader(vertex_shader_path, GL_VERTEX_SHADER);
+		//uint32_t fragment_shader = compile_shader(fragment_shader_path, GL_FRAGMENT_SHADER);
+
+		//_shader_program = glCreateProgram();
+
+		//glAttachShader(_shader_program, vertex_shader);
+		//glAttachShader(_shader_program, fragment_shader);
+		//glLinkProgram(_shader_program);
+
+		//int32_t success;
+		//char info_log[512];
+		//glGetProgramiv(_shader_program, GL_LINK_STATUS, &success);
+		//if (!success) {
+		//	glGetProgramInfoLog(_shader_program, 512, NULL, info_log);
+		//	LOG_ERROR("Error to attach shaders:\n " + std::string(info_log));
+		//}
+
+		//glDeleteShader(vertex_shader);
+		//glDeleteShader(fragment_shader);
+
+		//LOG_ACTION("Compiled shader: '" + std::string(vertex_shader_path) + "', '"
+		//	+ std::string(vertex_shader_path) + "'.");
+		load_sub_programs({ shader_sub_program(vertex_shader_path, GL_VERTEX_SHADER), shader_sub_program(fragment_shader_path, GL_FRAGMENT_SHADER)});
+	}
+
+	shader::shader(const char* vertex_shader_path, const char* fragment_shader_path, 
+		std::vector<shader_sub_program> additional_progs) {
+		additional_progs.push_back(shader_sub_program(vertex_shader_path, GL_VERTEX_SHADER));
+		additional_progs.push_back(shader_sub_program(fragment_shader_path, GL_FRAGMENT_SHADER));
+		load_sub_programs(additional_progs);
+	}
+
+	void shader::load_sub_programs(const std::vector<shader_sub_program>& additional_progs) {
+		std::vector<uint32_t> shader_progs;
+		for (const auto& sp : additional_progs)
+			shader_progs.push_back(compile_shader(sp.path, sp.type));
 
 		_shader_program = glCreateProgram();
-
-		glAttachShader(_shader_program, vertex_shader);
-		glAttachShader(_shader_program, fragment_shader);
+		for (auto sp : shader_progs)
+			glAttachShader(_shader_program, sp);
 		glLinkProgram(_shader_program);
 
 		int32_t success;
@@ -35,11 +72,13 @@ namespace feng {
 			LOG_ERROR("Error to attach shaders:\n " + std::string(info_log));
 		}
 
-		glDeleteShader(vertex_shader);
-		glDeleteShader(fragment_shader);
+		for (auto sp : shader_progs)
+			glDeleteShader(sp);
 
-		LOG_ACTION("Compiled shader: '" + std::string(vertex_shader_path) + "', '"
-			+ std::string(vertex_shader_path) + "'.");
+		std::string res_str = "Compiled shader: ";
+		for (auto sp : additional_progs)
+			res_str += "'" + std::string(sp.path) + "' ";
+		LOG_ACTION(res_str);
 	}
 
 	std::string shader::load_shader_from_file(const char* filepath) {

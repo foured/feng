@@ -19,15 +19,15 @@ namespace feng{
 
 		camera(glm::vec3 pos = glm::vec3(0.0, 0.0, 3.0), float sensitivity = 0.4f);
 
+		glm::vec3 position;
+
 		glm::mat4 get_view_matrix();
 		void update_vectors();
 		void move();
 
-		glm::vec3 position();
 		glm::vec3 front();
 
 	private:
-		glm::vec3 _pos;
 		glm::vec3 _up, _right, _front;
 		bool _mouse_movement = true;
 

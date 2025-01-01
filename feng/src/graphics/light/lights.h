@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <array>
 
 #include "../../fng.h"
 #include "../gl_buffers/framebuffer.hpp"
@@ -11,7 +12,12 @@ namespace feng {
     class DirLight {
     public:
         DirLight(uint32_t shadowmap_size = SHADOWMAP_SIZE);
-        DirLight(glm::vec3 dir, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, uint32_t shadowmap_size = SHADOWMAP_SIZE);
+        DirLight(
+            const glm::vec3& dir, 
+            const glm::vec3& ambient, 
+            const glm::vec3& diffuse, 
+            const glm::vec3& specular, 
+            uint32_t shadowmap_size = SHADOWMAP_SIZE);
 
         glm::vec3 direction;
 
@@ -32,7 +38,22 @@ namespace feng {
         texture _shadowmap;
     };
 
-    struct PointLight {
+    class PointLight {
+    public:
+        PointLight(uint32_t shadow_width = SHADOWMAP_SIZE, uint32_t shadow_height = SHADOWMAP_SIZE);
+        PointLight(
+            const glm::vec3& pos, 
+            float cons, 
+            float lin, 
+            float quad, 
+            const glm::vec3& amb, 
+            const glm::vec3& diff, 
+            const glm::vec3& spec,
+            uint32_t shadow_width = SHADOWMAP_SIZE, 
+            uint32_t shadow_height = SHADOWMAP_SIZE);
+
+        static float far_plane;
+
         glm::vec3 position;
 
         float constant;
@@ -42,6 +63,14 @@ namespace feng {
         glm::vec3 ambient;
         glm::vec3 diffuse;
         glm::vec3 specular;
+
+        std::array<glm::mat4, 6> lightspace_matrices;
+
+        void generate_lightspace_matrices();
+
+    private:
+        uint32_t _shadow_width;
+        uint32_t _shadow_height;
     };
 
     struct SpotLight {

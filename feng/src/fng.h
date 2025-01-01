@@ -15,4 +15,4 @@ typedef uint16_t inst_flag_type;
 
 #define SHADOWMAP_SIZE 4 * 1024
 
-#define SHADOWMAP_TEXTURE_SLOT 31
+#define SHADOWMAP_TEXTURE_SLOT MAX_NO_TEXTURE_UNITS - 1

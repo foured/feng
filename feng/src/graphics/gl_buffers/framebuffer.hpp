@@ -31,8 +31,20 @@ namespace feng {
 			generate();
 		}
 
-		void attach_texture(const texture& tex, uint32_t attachment_mode) {
+		void attach_texture2d(const texture& tex, uint32_t attachment_mode) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_mode, GL_TEXTURE_2D, tex.id(), 0);
+		}
+
+		void attach_texture2d(uint32_t texture_id, uint32_t attachment_mode) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_mode, GL_TEXTURE_2D, texture_id, 0);
+		}
+
+		void attach_texture(const texture& tex, uint32_t attachment_mode) {
+			glFramebufferTexture(GL_FRAMEBUFFER, attachment_mode, tex.id(), 0);
+		}
+
+		void attach_texture(uint32_t texture_id, uint32_t attachment_mode) {
+			glFramebufferTexture(GL_FRAMEBUFFER, attachment_mode, texture_id, 0);
 		}
 
 		void attach_renderbuffer(const renderbuffer& rb, uint32_t attachment_mode) {
@@ -48,7 +60,7 @@ namespace feng {
 			fb_texture.bind();
 			fb_texture.allocate(_width, _height, internalformat, format,  type, NULL);
 			fb_texture.set_params(min_filter, mag_filter, wrap_s, wrap_t);
-			attach_texture(fb_texture, attachment_mode);
+			attach_texture2d(fb_texture, attachment_mode);
 
 			return fb_texture;
 		}

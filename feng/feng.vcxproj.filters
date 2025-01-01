@@ -303,5 +303,20 @@
     <None Include="res\shaders\includes\random.glsl" />
     <None Include="res\shaders\penumbra_mask.vs" />
     <None Include="res\shaders\penumbra_mask.fs" />
+    <None Include="res\shaders\fullscreen_quad.vs" />
+    <None Include="res\shaders\main_framebuffer.fs" />
+    <None Include="res\shaders\object_batching.fs" />
+    <None Include="res\shaders\object_batching.vs" />
+    <None Include="res\shaders\uiobject.vs" />
+    <None Include="res\shaders\pointlight_depth.fs" />
+    <None Include="res\shaders\pointlight_depth.gs" />
+    <None Include="res\shaders\pointlight_depth.vs" />
+    <None Include="res\shaders\skybox.fs" />
+    <None Include="res\shaders\skybox.vs" />
+    <None Include="res\shaders\text.fs" />
+    <None Include="res\shaders\text.vs" />
+    <None Include="res\shaders\transparent_object.fs" />
+    <None Include="res\shaders\transparent_object.vs" />
+    <None Include="res\shaders\uiobject.fs" />
   </ItemGroup>
 </Project>

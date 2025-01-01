@@ -5,10 +5,13 @@
 
 namespace feng {
 
+	float PointLight::far_plane = 50.0f;
+
 	DirLight::DirLight(uint32_t shadowmap_size) 
 		: _shadowmap_size(shadowmap_size) { }
 
-	DirLight::DirLight(glm::vec3 dir, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, uint32_t shadowmap_size)
+	DirLight::DirLight(const glm::vec3& dir, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
+		uint32_t shadowmap_size)
 		: _shadowmap_size(shadowmap_size), direction(dir), ambient(ambient), diffuse(diffuse), specular(specular) {	}
 
 	glm::mat4 DirLight::generate_lightspace_matrix() {
@@ -53,6 +56,34 @@ namespace feng {
 	void DirLight::bind_shadowmap(uint32_t slot) {
 		texture::activate_slot(slot);
 		_shadowmap.bind();
+	}
+
+	PointLight::PointLight(uint32_t shadow_width, uint32_t shadow_height)
+		: _shadow_width(shadow_width), _shadow_height(shadow_height) {}
+
+
+	PointLight::PointLight(const glm::vec3& pos, float cons, float lin, float quad, const glm::vec3& amb,
+		const glm::vec3& diff, const glm::vec3& spec, uint32_t shadow_width, uint32_t shadow_height) : position(pos),
+		constant(cons), linear(lin), quadratic(quad), ambient(amb), diffuse(diff), specular(spec),
+		_shadow_width(shadow_width), _shadow_height(shadow_height) {}
+
+	void PointLight::generate_lightspace_matrices() {
+		float aspect = (float)_shadow_width / (float)_shadow_height;
+		float near = 0.1f;
+		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far_plane);
+
+		lightspace_matrices[0] = shadowProj *
+			glm::lookAt(position, position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+		lightspace_matrices[1] = shadowProj *
+			glm::lookAt(position, position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+		lightspace_matrices[2] = shadowProj *
+			glm::lookAt(position, position + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0));
+		lightspace_matrices[3] = shadowProj *
+			glm::lookAt(position, position + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0));
+		lightspace_matrices[4] = shadowProj *
+			glm::lookAt(position, position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0));
+		lightspace_matrices[5] = shadowProj *
+			glm::lookAt(position, position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));
 	}
 
 }

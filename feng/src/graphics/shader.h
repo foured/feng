@@ -7,14 +7,25 @@
 #include <assimp/scene.h>
 
 #include <iostream>
+#include <vector>
 
 namespace feng {
+
+	struct shader_sub_program {
+		shader_sub_program(const char* path, uint32_t type);
+
+		const char* path;
+		uint32_t type;
+	};
 
 	class shader {
 	public:
 		shader(const char* vertex_shader_path, const char* fragment_shader_path);
+		shader(const char* vertex_shader_path, const char* fragment_shader_path, 
+			std::vector<shader_sub_program> additional_progs);
 
 		void activate();
+		void load_sub_programs(const std::vector<shader_sub_program>& additional_progs);
 
 		void set_bool(const std::string& name, bool val);
 		void set_mat4(const std::string& name, glm::mat4 val);

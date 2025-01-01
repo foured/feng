@@ -1,3 +1,10 @@
+#include<random.glsl>
+
+#define BLOCKER_SEARCH_NUM_SAMPLES 256
+#define PCF_NUM_SAMPLES 256
+#define POINTLIGHT_PCF_NUM_SAMPLES 128
+
+
 float SampleTexture(sampler2D tex, vec2 coords, float compare)
 {
 	return step(compare, texture2D(tex, coords.xy).r);
@@ -62,11 +69,6 @@ float PCSS(sampler2D shadowMap, vec3 projCoords, vec2 texelSize, float lightSize
     return PCF(shadowMap, projCoords, texelSize, int(filterRadius), interpolate);
 }
 
-#define BLOCKER_SEARCH_NUM_SAMPLES 256
-#define PCF_NUM_SAMPLES 256
-
-#include<random.glsl>
-
 float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float searchWidth, int samples){
     float avgBlockerDepth = 0.0;
     int numBlockers = 0;
@@ -111,4 +113,28 @@ float CHSS(sampler2D shadowMap, vec3 projCoords, float searchWidth) {
         return 0;
     float penumbra = CalculatePenumbra(avgBlockerDepth, searchWidth, projCoords.z);
     return SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
+}
+
+float PointLightShadow(samplerCube depthMap, vec3 lightPos, vec3 FragPos, vec3 viewPos, float far_plane, vec3 lightDir, vec3 norm){
+    vec3 fragToLight = FragPos - lightPos;
+    float currentDepth = length(fragToLight);
+
+    float gradientNoise = InterleavedGradientNoise(fragToLight);
+
+    const float minBias = 0.005;
+    const float maxBias = 0.05;
+    float bias = max(minBias, maxBias * dot(norm, lightDir));
+
+    float shadow = 0.0;
+    float viewDistance = length(viewPos - FragPos);
+    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    for(int i = 0; i < POINTLIGHT_PCF_NUM_SAMPLES; ++i) {
+        vec3 offset = VogelDisk3D(i, POINTLIGHT_PCF_NUM_SAMPLES, gradientNoise);
+        float closestDepth = texture(depthMap, fragToLight + offset * diskRadius).r;
+        closestDepth *= far_plane;
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(POINTLIGHT_PCF_NUM_SAMPLES);
+    return shadow;
 }
