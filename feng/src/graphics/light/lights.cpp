@@ -5,8 +5,6 @@
 
 namespace feng {
 
-	float PointLight::far_plane = 50.0f;
-
 	DirLight::DirLight(uint32_t shadowmap_size) 
 		: _shadowmap_size(shadowmap_size) { }
 
@@ -58,19 +56,18 @@ namespace feng {
 		_shadowmap.bind();
 	}
 
-	PointLight::PointLight(uint32_t shadow_width, uint32_t shadow_height)
-		: _shadow_width(shadow_width), _shadow_height(shadow_height) {}
+	PointLight::PointLight(uint32_t shadowmap_size)
+		: _shadowmap_size(shadowmap_size) {}
 
 
 	PointLight::PointLight(const glm::vec3& pos, float cons, float lin, float quad, const glm::vec3& amb,
-		const glm::vec3& diff, const glm::vec3& spec, uint32_t shadow_width, uint32_t shadow_height) : position(pos),
+		const glm::vec3& diff, const glm::vec3& spec, uint32_t shadowmap_size) : position(pos),
 		constant(cons), linear(lin), quadratic(quad), ambient(amb), diffuse(diff), specular(spec),
-		_shadow_width(shadow_width), _shadow_height(shadow_height) {}
+		_shadowmap_size(shadowmap_size) {}
 
 	void PointLight::generate_lightspace_matrices() {
-		float aspect = (float)_shadow_width / (float)_shadow_height;
 		float near = 0.1f;
-		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far_plane);
+		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, near, far_plane);
 
 		lightspace_matrices[0] = shadowProj *
 			glm::lookAt(position, position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
@@ -84,6 +81,37 @@ namespace feng {
 			glm::lookAt(position, position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0));
 		lightspace_matrices[5] = shadowProj *
 			glm::lookAt(position, position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));
+	}
+
+	void PointLight::generate_buffers() {
+		_shadowmap = cubemap(_shadowmap_size, _shadowmap_size, GL_DEPTH_COMPONENT);
+		_framebuffer = framebuffer(_shadowmap_size, _shadowmap_size);
+		_framebuffer.bind();
+		_framebuffer.attach_texture(_shadowmap.id(), GL_DEPTH_ATTACHMENT);
+		_framebuffer.set_draw_buffer(GL_NONE);
+		_framebuffer.set_read_buffer(GL_NONE);
+		framebuffer::check_status();
+		_framebuffer.unbind();
+	}
+
+	void PointLight::render_preparations(shader& shader) {
+		_framebuffer.set_viewport();
+		_framebuffer.bind();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		shader.activate();
+		for (uint32_t i = 0; i < 6; i++)
+			shader.set_mat4("shadowMatrices[" + std::to_string(i) + "]", lightspace_matrices[i]);
+		shader.set_float("far_plane", far_plane);
+		shader.set_3float("lightPos", position);
+	}
+
+	void PointLight::render_cleanup() {
+		_framebuffer.unbind();
+	}
+
+	void PointLight::bind_shadowmap(uint32_t slot) {
+		texture::activate_slot(slot);
+		_shadowmap.bind();
 	}
 
 }

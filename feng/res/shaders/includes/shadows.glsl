@@ -127,7 +127,7 @@ float PointLightShadow(samplerCube depthMap, vec3 lightPos, vec3 FragPos, vec3 v
 
     float shadow = 0.0;
     float viewDistance = length(viewPos - FragPos);
-    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    float diskRadius = (1.0 + (viewDistance / far_plane)) / 15.0;
     for(int i = 0; i < POINTLIGHT_PCF_NUM_SAMPLES; ++i) {
         vec3 offset = VogelDisk3D(i, POINTLIGHT_PCF_NUM_SAMPLES, gradientNoise);
         float closestDepth = texture(depthMap, fragToLight + offset * diskRadius).r;

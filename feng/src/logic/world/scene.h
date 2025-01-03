@@ -7,6 +7,7 @@
 #include "../../graphics/shader.h"
 #include "instance.h"
 #include "../../utilities/uuid.hpp"
+#include "../../graphics/light/lights.h"
 
 namespace feng {
 	

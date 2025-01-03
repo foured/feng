@@ -37,7 +37,6 @@ uniform int isSLWorking;
 uniform sampler2D textures[32];
 uniform sampler2D shadowMap;
 uniform samplerCube pointLightCube;
-uniform float pointLightFarPlane;
 //uniform sampler2D penumbraMask;
 
 //uniform samplerCube skybox;
@@ -74,7 +73,7 @@ void main()
     }
 
     vec3 result = vec3(0);
-    //result += CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
+    result += CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
     for(int i = 0; i < MAX_POINT_LIGHTS; i++){
         result += CalcPointLight(fs_in.PointLights[i], norm, fs_in.FragPos, viewDir, c_dif, c_spec); 
     }
@@ -157,7 +156,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     vec3 ambient = light.ambient * c_dif;
     vec3 diffuse = light.diffuse * diff * c_dif;
 
-    float shadow = PointLightShadow(pointLightCube, light.position, fs_in.FragPos, fs_in.ViewPos, pointLightFarPlane, lightDir, normal);
+    float shadow = PointLightShadow(pointLightCube, light.position, fs_in.FragPos, fs_in.ViewPos, light.farPlane, lightDir, normal);
     //return (ambient + diffuse + specular) * attenuation;
     ambient *= attenuation;
     diffuse *= attenuation;

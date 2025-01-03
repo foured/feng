@@ -16,6 +16,8 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float farPlane;
 };
 
 struct SpotLight {

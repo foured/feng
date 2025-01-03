@@ -5,6 +5,7 @@
 
 #include "../../fng.h"
 #include "../gl_buffers/framebuffer.hpp"
+#include "../cubemap.h"
 #include "../texture.h"
 
 namespace feng {
@@ -25,7 +26,6 @@ namespace feng {
         glm::vec3 diffuse;
         glm::vec3 specular;
 
-
         glm::mat4 generate_lightspace_matrix();
         void generate_buffers();
         void render_preparations();
@@ -40,7 +40,7 @@ namespace feng {
 
     class PointLight {
     public:
-        PointLight(uint32_t shadow_width = SHADOWMAP_SIZE, uint32_t shadow_height = SHADOWMAP_SIZE);
+        PointLight(uint32_t shadowmap_size = SHADOWMAP_SIZE);
         PointLight(
             const glm::vec3& pos, 
             float cons, 
@@ -49,10 +49,7 @@ namespace feng {
             const glm::vec3& amb, 
             const glm::vec3& diff, 
             const glm::vec3& spec,
-            uint32_t shadow_width = SHADOWMAP_SIZE, 
-            uint32_t shadow_height = SHADOWMAP_SIZE);
-
-        static float far_plane;
+            uint32_t shadowmap_size = SHADOWMAP_SIZE);
 
         glm::vec3 position;
 
@@ -64,13 +61,20 @@ namespace feng {
         glm::vec3 diffuse;
         glm::vec3 specular;
 
+        float far_plane = 50.0f;
+
         std::array<glm::mat4, 6> lightspace_matrices;
 
         void generate_lightspace_matrices();
+        void generate_buffers();
+        void render_preparations(shader& shader);
+        void render_cleanup();
+        void bind_shadowmap(uint32_t slot);
 
     private:
-        uint32_t _shadow_width;
-        uint32_t _shadow_height;
+        uint32_t _shadowmap_size;
+        framebuffer _framebuffer;
+        cubemap _shadowmap;
     };
 
     struct SpotLight {
