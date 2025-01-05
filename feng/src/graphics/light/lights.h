@@ -26,7 +26,9 @@ namespace feng {
         glm::vec3 diffuse;
         glm::vec3 specular;
 
-        glm::mat4 generate_lightspace_matrix();
+        glm::mat4 lightspace_matrix;
+
+        void generate_lightspace_matrix();
         void generate_buffers();
         void render_preparations();
         void render_cleanup();

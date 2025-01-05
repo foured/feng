@@ -2,8 +2,9 @@
 
 #define BLOCKER_SEARCH_NUM_SAMPLES 256
 #define PCF_NUM_SAMPLES 256
-#define POINTLIGHT_PCF_NUM_SAMPLES 128
 
+#define POINTLIGHT_PCF_NUM_SAMPLES 128
+#define DIRLIGHT_PCF_NUM_SAMPLES 256
 
 float SampleTexture(sampler2D tex, vec2 coords, float compare)
 {
@@ -44,6 +45,22 @@ float PCF(sampler2D shadowMap, vec3 projCoords, vec2 texelSize, int iterations, 
     }
     shadow /= float((2 * iterations + 1) * (2 * iterations + 1));
     return interpolate ? 1.0 - shadow : shadow;
+}
+
+float RandomPCF(sampler2D shadowMap, vec3 projCoords, float radius, vec3 norm, vec3 lightDir) {
+    float shadow;
+    float currentDepth = projCoords.z;
+    float gradientNoise = InterleavedGradientNoise(projCoords.xy);
+    const float minBias = 0.005;
+    const float maxBias = 0.05;
+    float bias = max(minBias, maxBias * (1.0 - dot(norm, lightDir)));
+    for(int i = 0; i < DIRLIGHT_PCF_NUM_SAMPLES; ++i){
+        vec2 offset = VogelDisk(i, DIRLIGHT_PCF_NUM_SAMPLES, gradientNoise);
+        float depth = texture(shadowMap, projCoords.xy + offset * radius).r;
+        shadow += currentDepth - bias > depth ? 1.0 : 0.0;
+    }
+    shadow /= float(DIRLIGHT_PCF_NUM_SAMPLES);
+    return shadow;
 }
 
 float PCSS(sampler2D shadowMap, vec3 projCoords, vec2 texelSize, float lightSize, float searchRadius, bool interpolate){

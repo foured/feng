@@ -104,6 +104,10 @@ namespace feng {
 			glDrawBuffer(mode);
 		}
 
+		void set_draw_buffers(int32_t size, const uint32_t* data) {
+			glDrawBuffers(size, data);
+		}
+
 		void set_read_buffer(uint32_t mode) {
 			glReadBuffer(mode);
 		}

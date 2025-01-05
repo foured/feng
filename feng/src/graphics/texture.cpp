@@ -81,7 +81,7 @@ namespace feng {
 	void texture::set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s, int32_t wrap_t) {
 		if(min_filter != NULL)
 			set_param_i(GL_TEXTURE_MIN_FILTER, min_filter);
-		if (mag_filter!= NULL)
+		if (mag_filter != NULL)
 			set_param_i(GL_TEXTURE_MAG_FILTER, mag_filter);
 		if(wrap_s != NULL)
 			set_param_i(GL_TEXTURE_WRAP_S, wrap_s);

@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 namespace feng {
 
@@ -20,12 +21,12 @@ namespace feng {
 
 	class shader {
 	public:
-		shader(const char* vertex_shader_path, const char* fragment_shader_path);
+		shader(const char* vertex_shader_path, const char* fragment_shader_path, std::vector<std::string> defines = std::vector<std::string>());
 		shader(const char* vertex_shader_path, const char* fragment_shader_path, 
-			std::vector<shader_sub_program> additional_progs);
+			std::vector<shader_sub_program> additional_progs, 
+			std::vector<std::string> defines);
 
 		void activate();
-		void load_sub_programs(const std::vector<shader_sub_program>& additional_progs);
 
 		void set_bool(const std::string& name, bool val);
 		void set_mat4(const std::string& name, glm::mat4 val);
@@ -44,9 +45,11 @@ namespace feng {
 		uint32_t _shader_program;
 
 	private:
+		void load_sub_programs(const std::vector<shader_sub_program>& additional_progs, const std::vector<std::string>& defines);
 		std::string load_shader_from_file(const char* filepath);
-		uint32_t compile_shader(const char* filepath, uint32_t shader_type);
+		uint32_t compile_shader(const char* filepath, uint32_t shader_type, const std::vector<std::string>& defines);
 		std::string include_headers(std::string& shader_code);
+		void set_defines(std::string* target, const std::vector<std::string>& defines);
 
 	};
 

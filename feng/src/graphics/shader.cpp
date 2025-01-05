@@ -21,43 +21,21 @@ namespace feng {
 		: path(path), type(type) { }
 
 
-	shader::shader(const char* vertex_shader_path, const char* fragment_shader_path) {
-		//uint32_t vertex_shader = compile_shader(vertex_shader_path, GL_VERTEX_SHADER);
-		//uint32_t fragment_shader = compile_shader(fragment_shader_path, GL_FRAGMENT_SHADER);
-
-		//_shader_program = glCreateProgram();
-
-		//glAttachShader(_shader_program, vertex_shader);
-		//glAttachShader(_shader_program, fragment_shader);
-		//glLinkProgram(_shader_program);
-
-		//int32_t success;
-		//char info_log[512];
-		//glGetProgramiv(_shader_program, GL_LINK_STATUS, &success);
-		//if (!success) {
-		//	glGetProgramInfoLog(_shader_program, 512, NULL, info_log);
-		//	LOG_ERROR("Error to attach shaders:\n " + std::string(info_log));
-		//}
-
-		//glDeleteShader(vertex_shader);
-		//glDeleteShader(fragment_shader);
-
-		//LOG_ACTION("Compiled shader: '" + std::string(vertex_shader_path) + "', '"
-		//	+ std::string(vertex_shader_path) + "'.");
-		load_sub_programs({ shader_sub_program(vertex_shader_path, GL_VERTEX_SHADER), shader_sub_program(fragment_shader_path, GL_FRAGMENT_SHADER)});
+	shader::shader(const char* vertex_shader_path, const char* fragment_shader_path, std::vector<std::string> defines) {
+		load_sub_programs({ shader_sub_program(vertex_shader_path, GL_VERTEX_SHADER), shader_sub_program(fragment_shader_path, GL_FRAGMENT_SHADER)}, defines);
 	}
 
 	shader::shader(const char* vertex_shader_path, const char* fragment_shader_path, 
-		std::vector<shader_sub_program> additional_progs) {
+		std::vector<shader_sub_program> additional_progs, std::vector<std::string> defines) {
 		additional_progs.push_back(shader_sub_program(vertex_shader_path, GL_VERTEX_SHADER));
 		additional_progs.push_back(shader_sub_program(fragment_shader_path, GL_FRAGMENT_SHADER));
-		load_sub_programs(additional_progs);
+		load_sub_programs(additional_progs, defines);
 	}
 
-	void shader::load_sub_programs(const std::vector<shader_sub_program>& additional_progs) {
+	void shader::load_sub_programs(const std::vector<shader_sub_program>& additional_progs, const std::vector<std::string>& defines) {
 		std::vector<uint32_t> shader_progs;
 		for (const auto& sp : additional_progs)
-			shader_progs.push_back(compile_shader(sp.path, sp.type));
+			shader_progs.push_back(compile_shader(sp.path, sp.type, defines));
 
 		_shader_program = glCreateProgram();
 		for (auto sp : shader_progs)
@@ -126,8 +104,9 @@ namespace feng {
 		return shader_code;
 	}
 
-	uint32_t shader::compile_shader(const char* filepath, uint32_t shader_type) {
+	uint32_t shader::compile_shader(const char* filepath, uint32_t shader_type, const std::vector<std::string>& defines) {
 		std::string shader_src_s = load_shader_from_file(filepath);
+		set_defines(&shader_src_s, defines);
 		const char* shader_src = shader_src_s.c_str();
 
 		uint32_t shader;
@@ -158,6 +137,18 @@ namespace feng {
 		}
 
 		return shader;
+	}
+
+	void shader::set_defines(std::string* target, const std::vector<std::string>& defines) {
+		if (!defines.empty()) {
+			int32_t leidx = target->find('\n');
+			target->insert(leidx, "\n");
+			uint32_t offset = 0;
+			for (const auto& d : defines) {
+				target->insert(leidx + 2 + offset, "#define " + d + "\n");
+				offset += d.size() + 9;
+			}
+		}
 	}
 
 	void shader::activate() {

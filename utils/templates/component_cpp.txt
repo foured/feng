@@ -18,7 +18,8 @@ namespace feng {
 	}
 
 	std::shared_ptr<component> __CLASS_NAME__::copy(instance* new_instance) {
-		return std::make_shared<__CLASS_NAME__>(new_instance /* CHANGE THIS */);
+		//return std::make_shared<__CLASS_NAME__>(new_instance /* CHANGE THIS */);
+		THROW_ERROR("Unimplemented code error.");
 	}
 
 }

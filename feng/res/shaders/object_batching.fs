@@ -74,9 +74,9 @@ void main()
 
     vec3 result = vec3(0);
     result += CalcDirLight(fs_in.DirectionalLight, norm, viewDir, c_dif, c_spec);
-    for(int i = 0; i < MAX_POINT_LIGHTS; i++){
-        result += CalcPointLight(fs_in.PointLights[i], norm, fs_in.FragPos, viewDir, c_dif, c_spec); 
-    }
+    // for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
+    //     result += CalcPointLight(fs_in.PointLights[i], norm, fs_in.FragPos, viewDir, c_dif, c_spec); 
+    // }
     
     if(isSLWorking == 1){      
         result += CalcSpotLight(fs_in.SpotLights[0], norm, fs_in.FragPos, viewDir, c_dif, c_spec);    
@@ -130,7 +130,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
     const int samples = 4;
     shadow = PCF(shadowMap, projCoords, texelSize, samples, true);
-    
+    //shadow = RandomPCF(shadowMap, projCoords, 0.001, normal, lightDir);
     return (ambient + (1.0 - shadow) * (diffuse + specular));
     //return (ambient + diffuse + specular);
 }
@@ -155,8 +155,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     // combine results
     vec3 ambient = light.ambient * c_dif;
     vec3 diffuse = light.diffuse * diff * c_dif;
-
-    float shadow = PointLightShadow(pointLightCube, light.position, fs_in.FragPos, fs_in.ViewPos, light.farPlane, lightDir, normal);
+    float shadow = 0.0;
+    shadow = PointLightShadow(pointLightCube, light.position, fs_in.FragPos, fs_in.ViewPos, light.farPlane, lightDir, normal);
     //return (ambient + diffuse + specular) * attenuation;
     ambient *= attenuation;
     diffuse *= attenuation;

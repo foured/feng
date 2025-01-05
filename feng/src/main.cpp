@@ -55,8 +55,8 @@ int main() {
 	//========================
 	//    CREATING OBJECTS
 	//========================
-
-	window win("Feng", 800, 600);
+	timer startup_timer("Startup timer");
+	window win("Feng", 1920, 1080);
 
 	shader obj_shader("res/shaders/object_batching.vs", "res/shaders/object_batching.fs");
 	shader fullscreen_quad_shader("res/shaders/fullscreen_quad.vs", "res/shaders/main_framebuffer.fs");
@@ -65,7 +65,7 @@ int main() {
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
 	shader dirlight_depth_shader("res/shaders/depth/dirlight_depth.vs", "res/shaders/depth/dirlight_depth.fs");
 	shader penumbra_mask_shader("res/shaders/penumbra_mask.vs", "res/shaders/penumbra_mask.fs");
-	shader pointlight_depth_shader("res/shaders/depth/pointlight_depth.vs", "res/shaders/depth/pointlight_depth.fs", { shader_sub_program("res/shaders/depth/pointlight_depth.gs", GL_GEOMETRY_SHADER) });
+	shader pointlight_depth_shader("res/shaders/depth/pointlight_depth.vs", "res/shaders/depth/pointlight_depth.fs", { shader_sub_program("res/shaders/depth/pointlight_depth.gs", GL_GEOMETRY_SHADER) }, { });
 
 	helpers::texture_quad fullscreen_quad;
 
@@ -93,28 +93,28 @@ int main() {
 	//bottom
 	sptr_ins cube2_i1 = sc1.add_instance();
 	cube2_i1.get()->add_component<model_instance>(cube2);
-	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	//cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
-	//top
-	sptr_ins cube2_i2 = sc1.copy_instance(cube2_i1);
-	cube2_i2.get()->transform.set_position(glm::vec3(0, 18, 0));
-	//right
-	sptr_ins cube2_i3 = sc1.copy_instance(cube2_i1);
-	cube2_i3.get()->transform.set_position(glm::vec3(20, 10, 0));
-	cube2_i3.get()->transform.set_size(glm::vec3(1, 20, 20));
-	//left
-	sptr_ins cube2_i4 = sc1.copy_instance(cube2_i1);
-	cube2_i4.get()->transform.set_position(glm::vec3(-20, 10, 0));
-	cube2_i4.get()->transform.set_size(glm::vec3(1, 20, 20));
-	//forward
-	sptr_ins cube2_i5 = sc1.copy_instance(cube2_i1);
-	cube2_i5.get()->transform.set_position(glm::vec3(0, 10, -20));
-	cube2_i5.get()->transform.set_size(glm::vec3(20, 20, 1));
-	//back
-	sptr_ins cube2_i6 = sc1.copy_instance(cube2_i1);
-	cube2_i6.get()->transform.set_position(glm::vec3(0, 10, 20));
-	cube2_i6.get()->transform.set_size(glm::vec3(20, 20, 1));
+	////top
+	//sptr_ins cube2_i2 = sc1.copy_instance(cube2_i1);
+	//cube2_i2.get()->transform.set_position(glm::vec3(0, 18, 0));
+	////right
+	//sptr_ins cube2_i3 = sc1.copy_instance(cube2_i1);
+	//cube2_i3.get()->transform.set_position(glm::vec3(20, 10, 0));
+	//cube2_i3.get()->transform.set_size(glm::vec3(1, 20, 20));
+	////left
+	//sptr_ins cube2_i4 = sc1.copy_instance(cube2_i1);
+	//cube2_i4.get()->transform.set_position(glm::vec3(-20, 10, 0));
+	//cube2_i4.get()->transform.set_size(glm::vec3(1, 20, 20));
+	////forward
+	//sptr_ins cube2_i5 = sc1.copy_instance(cube2_i1);
+	//cube2_i5.get()->transform.set_position(glm::vec3(0, 10, -20));
+	//cube2_i5.get()->transform.set_size(glm::vec3(20, 20, 1));
+	////back
+	//sptr_ins cube2_i6 = sc1.copy_instance(cube2_i1);
+	//cube2_i6.get()->transform.set_position(glm::vec3(0, 10, 20));
+	//cube2_i6.get()->transform.set_size(glm::vec3(20, 20, 1));
 
 	sptr_ins light_cube_i1 = sc1.add_instance();
 	light_cube_i1.get()->add_component<model_instance>(light_cube);
@@ -123,7 +123,7 @@ int main() {
 	light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
 	light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
 
-	DirLight dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f));
+	DirLight dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f), 2 * 2048);
 	PointLight point_lights[MAX_POINT_LIGHTS] { 
 		{ 
 			light_cube_i1.get()->transform.get_position(),
@@ -197,7 +197,7 @@ int main() {
 		return -1;
 	}
 
-	font_atlas atlas1("res/fonts/UniversCondensed.ttf", ft, 15);
+	font_atlas atlas1("res/fonts/UniversCondensed.ttf", ft, 20);
 	font_atlas atlas2("res/fonts/clacon2.ttf", ft, 30);
 	text_renderer text1(atlas1), text2(atlas2);
 
@@ -217,7 +217,7 @@ int main() {
 	//    PREPARATIONS TO LOOP
 	//============================
 	
-	glm::mat4 dir_lightspace_matrix = dir_light.generate_lightspace_matrix();
+	dir_light.generate_lightspace_matrix();
 	for(auto& pl : point_lights)
 		pl.generate_lightspace_matrices();
 
@@ -225,7 +225,9 @@ int main() {
 	ui.start();
 	sc1.start();
 	double time = 0;
+	double msdt = 0;
 	uint64_t frames_count = 0, fps = 0;
+	startup_timer.stop();
 	while (!win.should_close())
 	{
 		utilities::update_delta_time();
@@ -273,7 +275,7 @@ int main() {
 		//shadow preparations
 		dir_light.render_preparations();
 		dirlight_depth_shader.activate();
-		dirlight_depth_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		dirlight_depth_shader.set_mat4("lightSpaceMatrix", dir_light.lightspace_matrix);
 		dirlight_depth_shader.set_mat4("model", model);
 		sc1.render_flag(dirlight_depth_shader, INST_FLAG_CAST_SHADOWS);
 		dir_light.render_cleanup();
@@ -296,7 +298,7 @@ int main() {
 		obj_shader.set_3float("viewPos", cam.position);
 		obj_shader.set_int("isSLWorking", is_spot_light_working);
 		obj_shader.set_float("material.shininess", 32.0f);
-		obj_shader.set_mat4("lightSpaceMatrix", dir_lightspace_matrix);
+		obj_shader.set_mat4("lightSpaceMatrix", dir_light.lightspace_matrix);
 		obj_shader.set_mat4("model", model);
 		obj_shader.set_int("shadowMap", 31);
 		dir_light.bind_shadowmap();
@@ -337,11 +339,13 @@ int main() {
 		frames_count++;
 		if (time >= 0.5) {
 			fps = frames_count / time;
+			msdt = 1.0 / fps;
 			time = 0;
 			frames_count = 0;
 		}
 
-		text2.render(&tb, std::to_string(fps), { -400, 280, 0 }, glm::vec3(0, 1, 0));
+		text1.render(&tb, "FPS: " + std::to_string(fps), {-hw, hh - 35, 0}, glm::vec3(0, 1, 0));
+		text1.render(&tb, "time: " + std::to_string(msdt), {-hw, hh - 50, 0}, glm::vec3(0, 1, 0));
 		//text1.render(&tb, std::to_string((int)pcss_sw), { 290, -90, 0 }, glm::vec3(1, 0, 0));
 		tb.render(text_shader);
 		glDisable(GL_BLEND);

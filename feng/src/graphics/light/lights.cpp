@@ -12,17 +12,17 @@ namespace feng {
 		uint32_t shadowmap_size)
 		: _shadowmap_size(shadowmap_size), direction(dir), ambient(ambient), diffuse(diffuse), specular(specular) {	}
 
-	glm::mat4 DirLight::generate_lightspace_matrix() {
-		float border = 5;
-		float dlm_near_plane = 0.0f, dlm_far_plane = 30.5f;
+	void DirLight::generate_lightspace_matrix() {
+		float border = 7;
+		float dlm_near_plane = 0.0f, dlm_far_plane = 40.5f;
 		glm::mat4 light_projection = glm::ortho(-border, border, -border, border, dlm_near_plane, dlm_far_plane);
-		glm::vec3 pos = -3.0f * direction;
+		glm::vec3 pos = -5.0f * direction;
 		glm::mat4 light_view = glm::lookAt(
 			pos,
 			glm::vec3(0.0f, 0.0f, 0.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f));
 
-		return light_projection * light_view;
+		lightspace_matrix = light_projection * light_view;
 	}
 
 	void DirLight::generate_buffers() {
@@ -43,11 +43,13 @@ namespace feng {
 		_depthmap_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		glCullFace(GL_FRONT);
+		//glCullFace(GL_FRONT);
+		glDisable(GL_CULL_FACE);
 	}
 
 	void DirLight::render_cleanup() {
-		glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
 		_depthmap_framebuffer.unbind();
 	}
 
@@ -66,8 +68,7 @@ namespace feng {
 		_shadowmap_size(shadowmap_size) {}
 
 	void PointLight::generate_lightspace_matrices() {
-		float near = 0.1f;
-		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, near, far_plane);
+		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, far_plane);
 
 		lightspace_matrices[0] = shadowProj *
 			glm::lookAt(position, position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
