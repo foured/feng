@@ -13,10 +13,10 @@ namespace feng {
 		: _shadowmap_size(shadowmap_size), direction(dir), ambient(ambient), diffuse(diffuse), specular(specular) {	}
 
 	void DirLight::generate_lightspace_matrix() {
-		float border = 7;
-		float dlm_near_plane = 0.0f, dlm_far_plane = 40.5f;
+		float border = 1;
+		float dlm_near_plane = 0.0f, dlm_far_plane = 20.0f;
 		glm::mat4 light_projection = glm::ortho(-border, border, -border, border, dlm_near_plane, dlm_far_plane);
-		glm::vec3 pos = -5.0f * direction;
+		glm::vec3 pos = -2.0f * direction;
 		glm::mat4 light_view = glm::lookAt(
 			pos,
 			glm::vec3(0.0f, 0.0f, 0.0f),
@@ -43,13 +43,13 @@ namespace feng {
 		_depthmap_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		//glCullFace(GL_FRONT);
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
+		glCullFace(GL_FRONT); // Use for PCSS
 	}
 
 	void DirLight::render_cleanup() {
-		glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		//glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // Use for PCSS
 		_depthmap_framebuffer.unbind();
 	}
 

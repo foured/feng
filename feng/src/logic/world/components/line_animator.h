@@ -13,6 +13,9 @@ namespace feng {
 		void update();
 		std::shared_ptr<component> copy(instance* new_instance);
 
+		void serialize(data::wfile* file) override;
+		void deserialize(data::rfile* file) override;
+
 	private:
 		glm::vec3 _start; 
 		glm::vec3 _end;

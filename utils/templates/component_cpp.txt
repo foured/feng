@@ -1,6 +1,7 @@
 #include "__CLASS_NAME__.h"
 
 #include "../instance.h"
+#include "../../data_management/files.h"
 
 namespace feng {
 
@@ -19,6 +20,16 @@ namespace feng {
 
 	std::shared_ptr<component> __CLASS_NAME__::copy(instance* new_instance) {
 		//return std::make_shared<__CLASS_NAME__>(new_instance /* CHANGE THIS */);
+		THROW_ERROR("Unimplemented code error.");
+	}
+
+	void line_animator::serialize(data::wfile* file)
+	{
+		THROW_ERROR("Unimplemented code error.");
+	}
+
+	void line_animator::deserialize(data::rfile* file)
+	{
 		THROW_ERROR("Unimplemented code error.");
 	}
 

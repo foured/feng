@@ -1,5 +1,7 @@
 #include "instance.h"
 
+#include "../data_management/files.h"
+
 namespace feng {
 
 	void instance::start() {
@@ -26,6 +28,22 @@ namespace feng {
 			ni->_components.push_back(c.get()->copy(ni));
 		}
 		return new_instance;
+	}
+
+	void instance::serialize(data::wfile* file)
+	{
+		file->write_raw(get_uuid());
+		file->write_raw(flags._flags);
+		file->write_raw(is_active);
+		file->write_raw(transform);
+		file->write_raw(_components.size());
+		for (const auto& comp : _components)
+			file->write_serializable(comp.get());
+	}
+
+	void instance::deserialize(data::rfile* file)
+	{
+
 	}
 
 }

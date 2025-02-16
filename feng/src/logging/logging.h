@@ -41,14 +41,14 @@ namespace feng {
 		static void log_error(const std::string& msg, const std::string& func_name = "");
 		static void log_warning(const std::string& msg, const std::string& func_name = "");
 		static void throw_error(const std::string& msg, const std::string& func_name = "");
-
+		
 	private:
 		static void log_time();
 		static void log(const std::string& msg, const std::string& type_name, char color,
 			std::string f_name);
 		static void set_color(char color);
 	};
-
+	
 	class timer {
 	public:
 		timer(const char* name);

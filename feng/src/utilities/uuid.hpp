@@ -2,45 +2,58 @@
 
 #include <string>
 #include <random>
-
+	
 #include "singleton.hpp"
 #include "../logic/containers/binary_tree.hpp"
+#include "../logging/logging.h"
+
+#include "../fng.h"
 
 namespace feng::util {
 
 	class uuid : public singleton<uuid> {
 	public:
-		uuid() : _rd(), _gen(_rd()) { }
+		uuid() : _rd(), _gen(_rd()), _dist(std::numeric_limits<uuid_type>::min(), std::numeric_limits<uuid_type>::max()){ }
 
-		uint64_t generate() {
-			std::uniform_int_distribution<uint64_t> dist(std::numeric_limits<uint64_t>::min(), std::numeric_limits<uint64_t>::max());
-			uint64_t v = dist(_gen);
+		uuid_type generate() {
+			uuid_type v = _dist(_gen);
 			_ids.insert(v);
 			return v;
 		}
 
+		void insert(uuid_type id) {
+			if (_ids.contains(id)) {
+				LOG_WARNING("ID: [" + std::to_string(id) + "] is not unique.");
+				return;
+			}
+			_ids.insert(id);
+		}
+
 	private:
-		containers::binary_tree<uint64_t> _ids;
+		containers::binary_tree<uuid_type> _ids;
 
 		std::random_device _rd;
 		std::mt19937_64 _gen;
+		std::uniform_int_distribution<uuid_type> _dist;
 
 	};
 
 	class uuid_owner {
 	public:
 		uuid_owner() : _uuid(uuid::get_instance()->generate()) { }
+		uuid_owner(uuid_type id) : _uuid(id) { }
 
 		std::string get_uuid_string() {
 			return "uuid: [" + std::to_string(_uuid) + "]";
 		}
 
-		uint64_t get_uuid() const {
+		uuid_type get_uuid() const {
 			return _uuid;
 		}
 
 	private:
-		uint64_t _uuid;
+		uuid_type _uuid;
+
 	};
 
 }

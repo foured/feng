@@ -12,12 +12,14 @@ namespace feng {
 		: _disable_faceculling(disable_faceculling) {
 		load_model(filepath);
 		setup();
+		calculate_bounds();
 		LOG_ACTION("Loaded model: '" + filepath + "'. " + get_uuid_string());
 	}
 
 	model::model(std::vector<mesh> meshes, bool disable_faceculling)
 		: _meshes(meshes), _disable_faceculling(disable_faceculling) {
 		setup();
+		calculate_bounds();
 		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes. " + get_uuid_string());
 	}
 
@@ -377,6 +379,21 @@ namespace feng {
 		_positions.clear();
 		_sizes.clear();
 		_rotations.clear();
+	}
+
+	void model::calculate_bounds() {
+		bounds.set_numeric_limits();
+		for (const auto& m : _meshes) {
+			for (const auto& v : m._vertices) {
+				bounds.min.x = fminf(bounds.min.x, v.position.x);
+				bounds.min.y = fminf(bounds.min.y, v.position.y);
+				bounds.min.z = fminf(bounds.min.z, v.position.z);
+
+				bounds.max.x = fmaxf(bounds.max.x, v.position.x);
+				bounds.max.y = fmaxf(bounds.max.y, v.position.y);
+				bounds.max.z = fmaxf(bounds.max.z, v.position.z);
+			}
+		}
 	}
 
 }

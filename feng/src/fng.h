@@ -13,6 +13,8 @@
 
 typedef uint16_t inst_flag_type;
 
+typedef uint64_t uuid_type;
+
 #define SHADOWMAP_SIZE 1 * 1024
 
 #define SHADOWMAP_TEXTURE_SLOT MAX_NO_TEXTURE_UNITS - 1

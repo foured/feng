@@ -1,6 +1,7 @@
 #include "line_animator.h"
 
 #include "../instance.h"
+#include "../../data_management/files.h"
 #include "../../../utilities/utilities.h"
 
 namespace feng {
@@ -27,6 +28,19 @@ namespace feng {
 
 	std::shared_ptr<component> line_animator::copy(instance* new_instance) {
 		return std::make_shared<line_animator>(new_instance, _start, _end, _speed);
+	}
+
+	void line_animator::serialize(data::wfile* file)
+	{
+		component_list type = component_list::line_animator;
+		file->write_raw(type);
+		file->write_raw(_start);
+		file->write_raw(_end);
+		file->write_raw(_speed);
+	}
+
+	void line_animator::deserialize(data::rfile* file)
+	{
 	}
 
 }

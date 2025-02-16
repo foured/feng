@@ -8,6 +8,7 @@
 #include "mesh.h"
 #include "../utilities/uuid.hpp"
 #include "../logic/world/instance.h"
+#include "../logic/aabb.h"
 
 namespace feng {
 
@@ -37,6 +38,8 @@ namespace feng {
 		model(std::string filepath, bool disable_faceculling = false);
 		model(std::vector<mesh> meshes, bool disable_faceculling = false);
 
+		aabb bounds;
+
 		void render_ready_data(shader& shader);
 		void render(shader& shader);
 		void render_flag(shader& shader, inst_flag_type flag);
@@ -64,6 +67,8 @@ namespace feng {
 		std::vector<texture> load_material_textures(aiMaterial* mat, aiTextureType type);
 		void batch_meshes();
 		void clear_instances_data();
+
+		void calculate_bounds();
 	};
 
 }

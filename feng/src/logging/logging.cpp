@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <exception>
 
+
 #ifdef _WIN32
 	#include "Windows.h"
 #endif

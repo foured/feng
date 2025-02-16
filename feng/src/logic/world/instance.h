@@ -8,6 +8,7 @@
 #include "component.h"
 #include "../../logging/logging.h"
 #include "../../utilities/uuid.hpp"
+#include "../data_management/serializable.h"
 
 #define INST_FLAG_STATIC			0b0000000000000001
 #define INST_FLAG_CAST_SHADOWS		0b0000000000000010
@@ -15,29 +16,30 @@
 
 namespace feng {
 
-	class instance_flags{
+	class instance : public util::uuid_owner, public data::serializable {
 	public:
-		void set(inst_flag_type pos, bool value) {
-			if (value)
-				_flags |= pos;
-			else
-				_flags &= ~pos;
-		}
+		class flags {
+		public:
+			void set(inst_flag_type pos, bool value) {
+				if (value)
+					_flags |= pos;
+				else
+					_flags &= ~pos;
+			}
 
-		bool get(inst_flag_type pos) const {
-			return (_flags & pos) != 0;
-		}
+			bool get(inst_flag_type pos) const {
+				return (_flags & pos) != 0;
+			}
 
-	private:
-		inst_flag_type _flags = (INST_FLAG_STATIC | INST_FLAG_CAST_SHADOWS | INST_FLAG_RCV_SHADOWS);
-	};
+		private:
+			friend class instance;
 
-	class instance : public util::uuid_owner {
-	public:
-		transform transform;
+			inst_flag_type _flags = (INST_FLAG_STATIC | INST_FLAG_CAST_SHADOWS | INST_FLAG_RCV_SHADOWS);
+		};
 
+		flags flags;
 		bool is_active = true;
-		instance_flags flags;
+		transform transform;
 
 		void start();
 		void update();
@@ -51,6 +53,9 @@ namespace feng {
 		}
 
 		std::shared_ptr<instance> copy() const;
+
+		void serialize(data::wfile* file);
+		void deserialize(data::rfile* file);
 
 	private:
 		std::vector<std::shared_ptr<component>> _components;

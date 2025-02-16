@@ -152,6 +152,7 @@
     <ClCompile Include="src\graphics\batching\text_batcher.cpp" />
     <ClCompile Include="src\graphics\cubemap.cpp" />
     <ClCompile Include="src\graphics\light\lights.cpp" />
+    <ClCompile Include="src\graphics\light\shadowmap_offset_texture.cpp" />
     <ClCompile Include="src\graphics\mesh.cpp" />
     <ClCompile Include="src\graphics\mesh2d.cpp" />
     <ClCompile Include="src\graphics\model.cpp" />
@@ -170,6 +171,10 @@
     <ClCompile Include="src\io\camera.cpp" />
     <ClCompile Include="src\io\input.cpp" />
     <ClCompile Include="src\logging\logging.cpp" />
+    <ClCompile Include="src\logic\aabb.cpp" />
+    <ClCompile Include="src\logic\data_management\files.cpp" />
+    <ClCompile Include="src\logic\data_management\scene_serializer.cpp" />
+    <ClCompile Include="src\logic\data_management\serializable.cpp" />
     <ClCompile Include="src\logic\ui\components\slider.cpp" />
     <ClCompile Include="src\logic\ui\ui.cpp" />
     <ClCompile Include="src\logic\ui\uibounds.cpp" />
@@ -201,6 +206,7 @@
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
     <ClInclude Include="src\graphics\helpers\texture_quad.hpp" />
     <ClInclude Include="src\graphics\light\lights.h" />
+    <ClInclude Include="src\graphics\light\shadowmap_offset_texture.h" />
     <ClInclude Include="src\graphics\mesh.h" />
     <ClInclude Include="src\graphics\mesh2d.h" />
     <ClInclude Include="src\graphics\model.h" />
@@ -221,8 +227,12 @@
     <ClInclude Include="src\logging\logging.h" />
     <ClInclude Include="src\logic\containers\binary_tree.hpp" />
     <ClInclude Include="src\logic\data_management\assets_manager.h" />
-    <ClInclude Include="src\logic\data_management\files.hpp" />
+    <ClInclude Include="src\logic\data_management\buffer.hpp" />
+    <ClInclude Include="src\logic\data_management\files.h" />
+    <ClInclude Include="src\logic\data_management\scene_serializer.h" />
+    <ClInclude Include="src\logic\data_management\serializable.h" />
     <ClInclude Include="src\logic\event.hpp" />
+    <ClInclude Include="src\logic\aabb.h" />
     <ClInclude Include="src\logic\world\component.h" />
     <ClInclude Include="src\logic\world\components\line_animator.h" />
     <ClInclude Include="src\logic\world\components\model_instance.h" />

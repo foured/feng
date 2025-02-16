@@ -11,6 +11,10 @@
 
 namespace feng {
 	
+	namespace data {
+		class scene_serializer;
+	}
+
 	using sptr_mdl = std::shared_ptr<model>;
 	using sptr_ins = std::shared_ptr<instance>;
 
@@ -43,8 +47,9 @@ namespace feng {
 
 		sptr_ins copy_instance(sptr_ins instance_to_copy);
 
-
 	private:
+		friend class data::scene_serializer;
+
 		std::vector<sptr_mdl> _models;
 		std::vector<sptr_ins> _instances;
 

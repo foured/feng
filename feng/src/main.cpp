@@ -31,6 +31,7 @@
 #include "logic/world/components/model_instance.h"
 #include "logic/world/components/line_animator.h"
 #include "logic/data_management/assets_manager.h"
+#include "logic/data_management/scene_serializer.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -64,7 +65,6 @@ int main() {
 	shader ui_shader("res/shaders/uiobject.vs", "res/shaders/uiobject.fs");
 	shader text_shader("res/shaders/text.vs", "res/shaders/text.fs");
 	shader dirlight_depth_shader("res/shaders/depth/dirlight_depth.vs", "res/shaders/depth/dirlight_depth.fs");
-	shader penumbra_mask_shader("res/shaders/penumbra_mask.vs", "res/shaders/penumbra_mask.fs");
 	shader pointlight_depth_shader("res/shaders/depth/pointlight_depth.vs", "res/shaders/depth/pointlight_depth.fs", { shader_sub_program("res/shaders/depth/pointlight_depth.gs", GL_GEOMETRY_SHADER) }, { });
 
 	helpers::texture_quad fullscreen_quad;
@@ -221,6 +221,8 @@ int main() {
 	for(auto& pl : point_lights)
 		pl.generate_lightspace_matrices();
 
+	data::scene_serializer::serialize(&sc1, "scene1.fsp");
+
 	bool is_spot_light_working = false;
 	ui.start();
 	sc1.start();
@@ -339,7 +341,7 @@ int main() {
 		frames_count++;
 		if (time >= 0.5) {
 			fps = frames_count / time;
-			msdt = 1.0 / fps;
+			msdt = 1000.0 / fps;
 			time = 0;
 			frames_count = 0;
 		}

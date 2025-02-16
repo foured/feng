@@ -37,6 +37,7 @@ uniform int isSLWorking;
 uniform sampler2D textures[32];
 uniform sampler2D shadowMap;
 uniform samplerCube pointLightCube;
+uniform sampler3D shadowMapOffsetTexture;
 //uniform sampler2D penumbraMask;
 
 //uniform samplerCube skybox;
@@ -113,26 +114,19 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     vec3 ambient = light.ambient * c_dif;
     vec3 diffuse = light.diffuse * diff * c_dif;
 
-    // CHSS calculations
+    // Shadow calculations
 
+    float shadow = 0.0;
     //float shadow = ShadowCalculation(normal, lightDir);
     vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    //const float lightSize = 1.0 / 500;
-    //float shadow = CHSS(shadowMap, projCoords, lightSize);
+    const float lightSize = 1.0 / 200;
+    //vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
-    // vec2 suv = gl_FragCoord.xy / (2 * textureSize(penumbraMask, 0));
-    //float gradientNoise = InterleavedGradientNoise(projCoords.xy);
-    // float penumbra = texture(penumbraMask, suv).r;
-    float shadow = 0.0;
-    // if (penumbra != 1)
-    //     shadow = SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    const int samples = 4;
-    shadow = PCF(shadowMap, projCoords, texelSize, samples, true);
-    //shadow = RandomPCF(shadowMap, projCoords, 0.001, normal, lightDir);
+    shadow = PCSS(shadowMap, projCoords, lightSize);
+    //shadow = RandomPCF_Vogel(shadowMap, projCoords, 0.001, normal, lightDir);
+
     return (ambient + (1.0 - shadow) * (diffuse + specular));
-    //return (ambient + diffuse + specular);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 c_dif, vec3 c_spec)

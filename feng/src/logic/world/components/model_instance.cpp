@@ -1,6 +1,7 @@
 #include "model_instance.h"
 
 #include "../instance.h"
+#include "../../data_management/files.h"
 
 namespace feng {
 
@@ -17,6 +18,17 @@ namespace feng {
 
 	std::shared_ptr<component> model_instance::copy(instance* new_instance) {
 		return std::make_shared<model_instance>(new_instance, _model);
+	}
+
+	void model_instance::serialize(data::wfile* file)
+	{
+		component_list type = component_list::model_instance;
+		file->write_raw(type);
+		file->write_raw(_model->get_uuid());
+	}
+
+	void model_instance::deserialize(data::rfile* file)
+	{
 	}
 
 }
