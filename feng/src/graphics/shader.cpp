@@ -21,6 +21,8 @@ namespace feng {
 		: path(path), type(type) { }
 
 
+	shader::shader() {}
+
 	shader::shader(const char* vertex_shader_path, const char* fragment_shader_path, std::vector<std::string> defines) {
 		load_sub_programs({ shader_sub_program(vertex_shader_path, GL_VERTEX_SHADER), shader_sub_program(fragment_shader_path, GL_FRAGMENT_SHADER)}, defines);
 	}

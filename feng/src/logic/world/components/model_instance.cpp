@@ -2,6 +2,7 @@
 
 #include "../instance.h"
 #include "../../data_management/files.h"
+#include "../scene.h"
 
 namespace feng {
 
@@ -27,8 +28,11 @@ namespace feng {
 		file->write_raw(_model->get_uuid());
 	}
 
-	void model_instance::deserialize(data::rfile* file)
+	void model_instance::deserialize(data::rfile* file, scene* scene)
 	{
+		uuid_type model_uuid;
+		file->read_raw(&model_uuid);
+		_model = scene->find_model(model_uuid);
 	}
 
 }

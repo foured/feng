@@ -1,6 +1,8 @@
 #include "component.h"
 #include "instance.h"
 
+#include "scene.h"
+
 namespace feng {
 
 	component::component(instance* instance) 

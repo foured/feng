@@ -2,6 +2,7 @@
 
 #include "../instance.h"
 #include "../../data_management/files.h"
+#include "../scene.h"
 
 namespace feng {
 
@@ -23,12 +24,12 @@ namespace feng {
 		THROW_ERROR("Unimplemented code error.");
 	}
 
-	void line_animator::serialize(data::wfile* file)
+	void __CLASS_NAME__::serialize(data::wfile* file)
 	{
 		THROW_ERROR("Unimplemented code error.");
 	}
 
-	void line_animator::deserialize(data::rfile* file)
+	void __CLASS_NAME__::deserialize(data::rfile* file, scene* scene)
 	{
 		THROW_ERROR("Unimplemented code error.");
 	}

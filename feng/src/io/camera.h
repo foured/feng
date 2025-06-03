@@ -37,7 +37,6 @@ namespace feng{
 		float _speed;
 		float _zoom;
 
-	private:
 		void controll_mouse_movement();
 		void controll_keyboard_presses(direction dir);
 

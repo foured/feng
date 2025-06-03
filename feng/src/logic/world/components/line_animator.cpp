@@ -34,13 +34,17 @@ namespace feng {
 	{
 		component_list type = component_list::line_animator;
 		file->write_raw(type);
+
 		file->write_raw(_start);
 		file->write_raw(_end);
 		file->write_raw(_speed);
 	}
 
-	void line_animator::deserialize(data::rfile* file)
+	void line_animator::deserialize(data::rfile* file, scene* scene)
 	{
+		//file->read_raw(&_start);
+		//file->read_raw(&_end);
+		//file->read_raw(&_speed);
 	}
 
 }

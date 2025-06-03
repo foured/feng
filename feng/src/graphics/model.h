@@ -9,8 +9,11 @@
 #include "../utilities/uuid.hpp"
 #include "../logic/world/instance.h"
 #include "../logic/aabb.h"
+#include "../logic/data_management/serializable.h"
 
 namespace feng {
+
+	class scene;
 
 	struct advanced_static_vertex_data {
 		vertex vert;
@@ -33,8 +36,9 @@ namespace feng {
 		void render(shader& shader, uint32_t no_instances);
 	};
 
-	class model : public util::uuid_owner {
+	class model : public util::uuid_owner, public data::serializable {
 	public:
+		model();
 		model(std::string filepath, bool disable_faceculling = false);
 		model(std::vector<mesh> meshes, bool disable_faceculling = false);
 
@@ -45,6 +49,9 @@ namespace feng {
 		void render_flag(shader& shader, inst_flag_type flag);
 		void add_instance(instance* i);
 		void clear_instances();
+
+		void serialize(data::wfile* file) override;
+		void deserialize(data::rfile* file, scene* scene) override;
 
 	private:
 		std::vector<mesh> _meshes;
@@ -60,7 +67,7 @@ namespace feng {
 
 		void allocate_buffers();
 		void update_instances_buffers();
-		void setup();
+		void setup(bool do_batching = true);
 		void load_model(std::string path);
 		void process_node(aiNode* node, const aiScene* scene, glm::mat4 matrix);
 		mesh process_mesh(aiMesh* mesh, const aiScene* scene, glm::mat4 matrix);

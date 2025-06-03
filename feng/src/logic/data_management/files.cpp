@@ -1,5 +1,7 @@
 #include "files.h"
 
+#include "../../logging/logging.h"
+
 namespace feng::data {
 
 	// Write file
@@ -31,6 +33,12 @@ namespace feng::data {
 		serializable->serialize(this);
 	}
 
+	void wfile::check_stream() {
+		if (_stream.eof())  LOG_ERROR("eofbit set!");
+		if (_stream.fail()) LOG_ERROR("failbit set!");
+		if (_stream.bad())  LOG_ERROR("badbit set!");
+	}
+
 	// Read file
 	
 	rfile::rfile(const std::filesystem::path& filepath)
@@ -56,9 +64,15 @@ namespace feng::data {
 		_stream.read(string.data(), sizeof(char) *  size);
 	}
 
-	void rfile::read_serializable(serializable* serializable)
+	void rfile::read_serializable(serializable* serializable, scene* scene)
 	{
-		serializable->deserialize(this);
+		serializable->deserialize(this, scene);
+	}
+
+	void rfile::check_stream() {
+		if (_stream.eof())  LOG_ERROR("eofbit set!");
+		if (_stream.fail()) LOG_ERROR("failbit set!");
+		if (_stream.bad())  LOG_ERROR("badbit set!");
 	}
 
 }

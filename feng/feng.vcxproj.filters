@@ -144,6 +144,15 @@
     <ClCompile Include="src\logic\data_management\serializable.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\editor\lightbaker.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logic\data_management\assets_manager.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logic\world\components\flash_light.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\logging\logging.h">
@@ -318,6 +327,12 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\logic\data_management\scene_serializer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\editor\lightbaker.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logic\world\components\flash_light.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

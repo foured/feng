@@ -30,6 +30,8 @@ namespace feng::util {
 		}
 
 	private:
+		friend class uuid_owner;
+
 		containers::binary_tree<uuid_type> _ids;
 
 		std::random_device _rd;
@@ -49,6 +51,12 @@ namespace feng::util {
 
 		uuid_type get_uuid() const {
 			return _uuid;
+		}
+
+		void reset(uuid_type new_uuid) {
+			uuid::get_instance()->_ids.remove(_uuid);
+			_uuid = new_uuid;
+			uuid::get_instance()->insert(_uuid);
 		}
 
 	private:

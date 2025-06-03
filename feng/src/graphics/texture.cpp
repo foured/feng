@@ -6,6 +6,8 @@
 #include <stb/stb_image_write.h>
 
 #include "../logging/logging.h"
+#include "../logic/data_management/files.h"
+#include "../logic/world/scene.h"
 
 namespace feng {
 
@@ -173,6 +175,60 @@ namespace feng {
 
 	int32_t texture::height() const {
 		return _height;
+	}
+
+	void texture::serialize(data::wfile* file) {
+		file->write_raw(_width);
+		file->write_raw(_height);
+		uint8_t n = no_channels();
+		file->write_raw(n);
+		file->write_raw(_aiTtype);
+		uint64_t no_pixeles = _width * _height * n;
+		file->write_raw(no_pixeles);
+		void* data = get_pixeles();
+		file->write_raw((char*)data, no_pixeles);
+		free(data);
+	}
+
+	void texture::deserialize(data::rfile* file, scene* scene) {
+		file->read_raw(&_width);
+		file->read_raw(&_height);
+		uint8_t n;
+		file->read_raw(&n);
+		file->read_raw(&_aiTtype);
+		uint64_t no_pixeles;
+		file->read_raw(&no_pixeles);
+		void* data = malloc(no_pixeles);
+		file->read_raw((char*)data, no_pixeles);
+		file->check_stream();
+
+		if (data) {
+			generate();
+			uint32_t color_mode = GL_RGB;
+			int32_t param = GL_REPEAT;
+			switch (n)
+			{
+			case(1):
+				color_mode = GL_RED;
+				break;
+			case(3):
+				color_mode = GL_RGB;
+				break;
+			case(4):
+				color_mode = GL_RGBA;
+				param = GL_CLAMP_TO_EDGE;
+			}
+
+			bind();
+			allocate(_width, _height, color_mode, color_mode, GL_UNSIGNED_BYTE, data);
+			set_params(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, param, param);
+			generate_mipmap();
+			LOG_ACTION("Texture loaded.");
+		}
+		else {
+			LOG_ERROR("Failed to load texture.");
+		}
+		free(data);
 	}
 
 }

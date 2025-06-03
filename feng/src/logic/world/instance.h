@@ -16,6 +16,8 @@
 
 namespace feng {
 
+	class scene;
+
 	class instance : public util::uuid_owner, public data::serializable {
 	public:
 		class flags {
@@ -54,8 +56,8 @@ namespace feng {
 
 		std::shared_ptr<instance> copy() const;
 
-		void serialize(data::wfile* file);
-		void deserialize(data::rfile* file);
+		void serialize(data::wfile* file) override;
+		void deserialize(data::rfile* file, feng::scene* scene) override;
 
 	private:
 		std::vector<std::shared_ptr<component>> _components;

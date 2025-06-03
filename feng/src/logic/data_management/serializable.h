@@ -1,5 +1,9 @@
 #pragma once
 
+namespace feng{
+	class scene;
+}
+
 namespace feng::data {
 
 	class rfile;
@@ -10,7 +14,7 @@ namespace feng::data {
 		virtual ~serializable() = default;
 
 		virtual void serialize(wfile* file) = 0;
-		virtual void deserialize(rfile* file) = 0;
+		virtual void deserialize(rfile* file, scene* scene) = 0;
 	};
 
 }

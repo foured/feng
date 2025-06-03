@@ -2,6 +2,9 @@
 
 #include <glad/glad.h>
 //#include <GLFW/glfw3.h>
+#include "../logic/data_management/files.h"
+#include "../logic/world/scene.h"
+#include "../logging/logging.h"
 
 namespace feng {
 
@@ -68,6 +71,29 @@ namespace feng {
 
 		vertexarray::unbind();
 		glActiveTexture(GL_TEXTURE0);
+	}
+
+	void mesh::serialize(data::wfile* file) {
+		file->write_raw(_has_textures);
+		if (_has_textures) {
+			file->write_raw(_textures.size());
+			for (auto& t : _textures) 
+				file->write_serializable(&t);
+		}
+		else {
+			file->write_raw(_diffuse);
+			file->write_raw(_specular);
+		}
+		file->write_raw(_indices.size());
+		for (const auto i : _indices)
+			file->write_raw(i);
+		file->write_raw(_vertices.size());
+		for (const auto& v : _vertices)
+			file->write_raw(v);
+	}
+
+	void mesh::deserialize(data::rfile* file, scene* scene) {
+		THROW_ERROR("Unimplemented code in mesh::deserialize");
 	}
 
 }

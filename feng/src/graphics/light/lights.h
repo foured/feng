@@ -10,10 +10,10 @@
 
 namespace feng {
 
-    class DirLight {
+    class dir_light {
     public:
-        DirLight(uint32_t shadowmap_size = SHADOWMAP_SIZE);
-        DirLight(
+        dir_light(uint32_t shadowmap_size = SHADOWMAP_SIZE);
+        dir_light(
             const glm::vec3& dir, 
             const glm::vec3& ambient, 
             const glm::vec3& diffuse, 
@@ -40,10 +40,10 @@ namespace feng {
         texture _shadowmap;
     };
 
-    class PointLight {
+    class point_light {
     public:
-        PointLight(uint32_t shadowmap_size = SHADOWMAP_SIZE);
-        PointLight(
+        point_light(uint32_t shadowmap_size = SHADOWMAP_SIZE);
+        point_light(
             const glm::vec3& pos, 
             float cons, 
             float lin, 
@@ -79,7 +79,7 @@ namespace feng {
         cubemap _shadowmap;
     };
 
-    struct SpotLight {
+    struct spot_light {
         glm::vec3 position;
         glm::vec3 direction;
 

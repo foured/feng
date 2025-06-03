@@ -14,9 +14,11 @@ namespace feng {
 		std::shared_ptr<component> copy(instance* new_instance);
 
 		void serialize(data::wfile* file) override;
-		void deserialize(data::rfile* file) override;
+		void deserialize(data::rfile* file, scene* scene) override;
 
 	private:
+		friend class instance;
+
 		std::shared_ptr<model> _model;
 
 	};

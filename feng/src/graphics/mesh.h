@@ -11,6 +11,8 @@
 #include "gl_buffers/arraybuffer.hpp"
 #include "vertexarray.h"
 
+#include "../logic/data_management/serializable.h"
+
 namespace feng {
 
 	struct vertex{
@@ -20,7 +22,7 @@ namespace feng {
 		glm::vec3 tangent;
 	};
 
-	class mesh {
+	class mesh : public data::serializable {
 	public:
 		mesh(std::vector<vertex> vertices, std::vector<uint32_t> indices, std::vector<texture> textures);
 		mesh(std::vector<vertex> vertices, std::vector<uint32_t> indices, aiColor4D diffuse, aiColor4D specular);
@@ -29,6 +31,9 @@ namespace feng {
 		void setup();
 
 		vertexarray vertex_array;
+
+		void serialize(data::wfile* file) override;
+		void deserialize(data::rfile* file, scene* scene) override;
 
 	private:
 		friend class model;

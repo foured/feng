@@ -5,14 +5,14 @@
 
 namespace feng {
 
-	DirLight::DirLight(uint32_t shadowmap_size) 
+	dir_light::dir_light(uint32_t shadowmap_size) 
 		: _shadowmap_size(shadowmap_size) { }
 
-	DirLight::DirLight(const glm::vec3& dir, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
+	dir_light::dir_light(const glm::vec3& dir, const glm::vec3& ambient, const glm::vec3& diffuse, const glm::vec3& specular,
 		uint32_t shadowmap_size)
 		: _shadowmap_size(shadowmap_size), direction(dir), ambient(ambient), diffuse(diffuse), specular(specular) {	}
 
-	void DirLight::generate_lightspace_matrix() {
+	void dir_light::generate_lightspace_matrix() {
 		float border = 1;
 		float dlm_near_plane = 0.0f, dlm_far_plane = 20.0f;
 		glm::mat4 light_projection = glm::ortho(-border, border, -border, border, dlm_near_plane, dlm_far_plane);
@@ -25,7 +25,7 @@ namespace feng {
 		lightspace_matrix = light_projection * light_view;
 	}
 
-	void DirLight::generate_buffers() {
+	void dir_light::generate_buffers() {
 		_depthmap_framebuffer = framebuffer(_shadowmap_size, _shadowmap_size);
 		_depthmap_framebuffer.bind();
 		_shadowmap = _depthmap_framebuffer.allocate_and_attach_texture(
@@ -38,7 +38,7 @@ namespace feng {
 		_depthmap_framebuffer.unbind();
 	}
 
-	void DirLight::render_preparations() {
+	void dir_light::render_preparations() {
 		_depthmap_framebuffer.set_viewport();
 		_depthmap_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
@@ -47,27 +47,27 @@ namespace feng {
 		glCullFace(GL_FRONT); // Use for PCSS
 	}
 
-	void DirLight::render_cleanup() {
+	void dir_light::render_cleanup() {
 		//glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK); // Use for PCSS
 		_depthmap_framebuffer.unbind();
 	}
 
-	void DirLight::bind_shadowmap(uint32_t slot) {
+	void dir_light::bind_shadowmap(uint32_t slot) {
 		texture::activate_slot(slot);
 		_shadowmap.bind();
 	}
 
-	PointLight::PointLight(uint32_t shadowmap_size)
+	point_light::point_light(uint32_t shadowmap_size)
 		: _shadowmap_size(shadowmap_size) {}
 
 
-	PointLight::PointLight(const glm::vec3& pos, float cons, float lin, float quad, const glm::vec3& amb,
+	point_light::point_light(const glm::vec3& pos, float cons, float lin, float quad, const glm::vec3& amb,
 		const glm::vec3& diff, const glm::vec3& spec, uint32_t shadowmap_size) : position(pos),
 		constant(cons), linear(lin), quadratic(quad), ambient(amb), diffuse(diff), specular(spec),
 		_shadowmap_size(shadowmap_size) {}
 
-	void PointLight::generate_lightspace_matrices() {
+	void point_light::generate_lightspace_matrices() {
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, far_plane);
 
 		lightspace_matrices[0] = shadowProj *
@@ -84,7 +84,7 @@ namespace feng {
 			glm::lookAt(position, position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0));
 	}
 
-	void PointLight::generate_buffers() {
+	void point_light::generate_buffers() {
 		_shadowmap = cubemap(_shadowmap_size, _shadowmap_size, GL_DEPTH_COMPONENT);
 		_framebuffer = framebuffer(_shadowmap_size, _shadowmap_size);
 		_framebuffer.bind();
@@ -95,7 +95,7 @@ namespace feng {
 		_framebuffer.unbind();
 	}
 
-	void PointLight::render_preparations(shader& shader) {
+	void point_light::render_preparations(shader& shader) {
 		_framebuffer.set_viewport();
 		_framebuffer.bind();
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -106,11 +106,11 @@ namespace feng {
 		shader.set_3float("lightPos", position);
 	}
 
-	void PointLight::render_cleanup() {
+	void point_light::render_cleanup() {
 		_framebuffer.unbind();
 	}
 
-	void PointLight::bind_shadowmap(uint32_t slot) {
+	void point_light::bind_shadowmap(uint32_t slot) {
 		texture::activate_slot(slot);
 		_shadowmap.bind();
 	}

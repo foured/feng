@@ -5,8 +5,13 @@
 #include <algorithm>
 
 #include "../logging/logging.h"
+#include "../logic/data_management/files.h"
 
 namespace feng {
+
+	model::model() {
+
+	}
 
 	model::model(std::string filepath, bool disable_faceculling) 
 		: _disable_faceculling(disable_faceculling) {
@@ -23,8 +28,9 @@ namespace feng {
 		LOG_ACTION("Loaded model with " + std::to_string(meshes.size()) + " custom meshes. " + get_uuid_string());
 	}
 
-	void model::setup() {
-		batch_meshes();
+	void model::setup(bool do_batching) {
+		if(do_batching)
+			batch_meshes();
 		for (mesh_batch& batch : _batches)
 			batch.setup_data();
 
@@ -74,6 +80,52 @@ namespace feng {
 		_instances.clear();
 	}
 
+	void model::serialize(data::wfile* file) {
+		file->write_raw(get_uuid());
+		file->write_raw(_disable_faceculling);
+		file->write_raw(_batches.size());
+		for (auto& b : _batches) {
+			file->write_raw(b.asvds.size());
+			for (const auto& asvd : b.asvds)
+				file->write_raw(asvd);
+			file->write_raw(b.indices.size());
+			for (auto i : b.indices)
+				file->write_raw(i);
+			file->write_raw(b.textures.size());
+			for (auto& t : b.textures)
+				file->write_serializable(&t);
+		}
+	}
+
+	void model::deserialize(data::rfile* file, scene* scene) {
+		uuid_type uuid;
+		file->read_raw(&uuid);
+		reset(uuid);
+		file->read_raw(&_disable_faceculling);
+		size_t batches_size;
+		file->read_raw(&batches_size);
+		_batches = std::vector<mesh_batch>(batches_size);
+		for (size_t bi = 0; bi < batches_size; bi++) {
+			size_t size;
+			// advanced_static_vertex_data
+			file->read_raw(&size);
+			_batches[bi].asvds = std::vector<advanced_static_vertex_data>(size);
+			file->read_raw((char*)_batches[bi].asvds.data(), size * sizeof(advanced_static_vertex_data));
+			// indices
+			file->read_raw(&size);
+			_batches[bi].indices = std::vector<uint32_t>(size);
+			file->read_raw((char*)_batches[bi].indices.data(), size * sizeof(uint32_t));
+			// textures
+			file->read_raw(&size);
+			_batches[bi].textures = std::vector<texture>(size);
+			for (size_t ti = 0; ti < size; ti++) {
+				file->read_serializable(&_batches[bi].textures[ti], scene);
+			}
+		}
+		setup(false);
+		calculate_bounds();
+		LOG_ACTION("Model loaded " + get_uuid_string());
+	}
 
 	void model::load_model(std::string path) {
 		Assimp::Importer importer;

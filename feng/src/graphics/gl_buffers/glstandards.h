@@ -2,6 +2,7 @@
 
 #include <map>
 #include <typeindex>
+#include "../../utilities/utilities.h"
 
 #define TID typeid
 #define TS sizeof
@@ -15,7 +16,7 @@
 
 namespace feng::glstd {
 
-	static std::map<std::type_index, uint32_t> base_aligments{
+	static std::map<std::type_index, uint32_t> base_aligments {
 		{ TID(int), 4 },
 		{ TID(float), 4 },
 		{ TID(glm::vec2), 8 },
@@ -61,6 +62,13 @@ namespace feng::glstd {
 		}
 
 		std::vector<buffer_element> elements;
+
+		template<typename... Ts>
+		static const buffer_structure make_buffer_structure() {
+			buffer_structure buf;
+			(buf.add_element<Ts>(), ...);
+			return buf;
+		}
 
 	private:
 		uint32_t _size = 0;

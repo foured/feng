@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <assimp/scene.h>
 
+#include "../logic/data_management/serializable.h"
+
 namespace feng {
 
 	struct texture_base_data {
@@ -12,7 +14,7 @@ namespace feng {
 		int32_t width, height, no_channels;
 	};
 
-	class texture {
+	class texture: public data::serializable {
 	public:
 		texture();
 		texture(std::string full_path, bool flip = false);
@@ -44,6 +46,9 @@ namespace feng {
 		bool operator==(const texture& other) const {
 			return _id == other._id;
 		}
+
+		void serialize(data::wfile* file) override;
+		void deserialize(data::rfile* fil, scene* scene) override;
 
 	private:
 		uint32_t _id = 0;

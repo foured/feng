@@ -6,7 +6,8 @@
 
 enum class component_list : uint32_t {
 	model_instance = 0,
-	line_animator
+	line_animator,
+	flash_light
 };
 
 namespace feng {
@@ -25,7 +26,7 @@ namespace feng {
 		instance* get_instance() const;
 
 		virtual void serialize(data::wfile* file) = 0;
-		virtual void deserialize(data::rfile* file) = 0;
+		virtual void deserialize(data::rfile* file, scene* scene) = 0;
 
 	protected:
 		instance* _instance;

@@ -21,6 +21,7 @@ namespace feng {
 
 	class shader {
 	public:
+		shader();
 		shader(const char* vertex_shader_path, const char* fragment_shader_path, std::vector<std::string> defines = std::vector<std::string>());
 		shader(const char* vertex_shader_path, const char* fragment_shader_path, 
 			std::vector<shader_sub_program> additional_progs, 

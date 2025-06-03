@@ -2,6 +2,7 @@
 
 #include "gl_buffer.hpp"
 #include "../../logging/logging.h"
+#include "../../fng.h"
 #include "glstandards.h"
 
 /*
@@ -59,6 +60,28 @@ namespace feng {
 
 		void end_block() {
 			unbind();
+		}
+
+		static inline const glstd::buffer_structure dirlight_buffer_structure 
+			= glstd::buffer_structure::make_buffer_structure<glm::vec3, glm::vec3, glm::vec3, glm::vec3>();
+
+		static inline const glstd::buffer_structure spotlight_buffer_structure
+			= glstd::buffer_structure::make_buffer_structure<glm::vec3, glm::vec3, float, float, float, float, float, glm::vec3, glm::vec3, glm::vec3>();
+
+		static inline const glstd::buffer_structure pointlight_buffer_structure
+			= glstd::buffer_structure::make_buffer_structure<glm::vec3, float, float, float, glm::vec3, glm::vec3, glm::vec3, float>();
+
+		static glstd::buffer_structure generate_lights_buffer() {
+			glstd::buffer_structure lighs_final_buffer_structure;
+			lighs_final_buffer_structure.add_struct(dirlight_buffer_structure);
+			lighs_final_buffer_structure.add_element<int>();
+			for(int32_t i = 0; i < MAX_SPOT_LIGHTS; i++)
+				lighs_final_buffer_structure.add_struct(spotlight_buffer_structure);
+			lighs_final_buffer_structure.add_element<int>();
+			for (int32_t i = 0; i < MAX_POINT_LIGHTS; i++)
+				lighs_final_buffer_structure.add_struct(pointlight_buffer_structure);
+
+			return lighs_final_buffer_structure;
 		}
 
 	private:

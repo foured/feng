@@ -11,6 +11,8 @@ namespace feng {
 	}
 
 	void scene::update() {
+		main_camera.move();
+
 		for (const auto& m : _models)
 			m.get()->clear_instances();
 
@@ -47,6 +49,52 @@ namespace feng {
 		sptr_ins new_ins = instance_to_copy.get()->copy();
 		_instances.push_back(new_ins);
 		return new_ins;
+	}
+
+	sptr_mdl scene::find_model(uuid_type uuid) {
+		for (const auto& model : _models) {
+			if (model.get()->get_uuid() == uuid)
+				return model;
+		}
+		THROW_ERROR("No model with uuid: [" + std::to_string(uuid) + "].");
+	}
+
+	void scene::generate_lights_buffers() {
+		dir_light.generate_buffers();
+		for (auto& point_light : point_lights)
+			point_light.generate_buffers();
+
+		_lights_ssbo.allocate(ssbo::generate_lights_buffer(), 2);
+	}
+
+	void scene::generate_lightspace_matrices() {
+		dir_light.generate_lightspace_matrix();
+		for (auto& point_light : point_lights)
+			point_light.generate_lightspace_matrices();
+	}
+
+	void scene::bind_lights_ssbo() {
+		int32_t no_spotlights = MAX_SPOT_LIGHTS, no_pointlights = MAX_POINT_LIGHTS;
+		_lights_ssbo.start_block();
+		_lights_ssbo.add_structure(ssbo::dirlight_buffer_structure, &dir_light);
+		_lights_ssbo.add_element(&no_spotlights);
+		for(int32_t i = 0; i < no_spotlights; i++)
+			_lights_ssbo.add_structure(ssbo::spotlight_buffer_structure, &spot_lights[i]);
+		_lights_ssbo.add_element(&no_pointlights);
+		for (int32_t i = 0; i < no_pointlights; i++)
+			_lights_ssbo.add_structure(ssbo::pointlight_buffer_structure, &point_lights[i]);
+		_lights_ssbo.end_block();
+	}
+
+	size_t scene::get_free_spot_light_idx() {
+		for (size_t i = 0; i < _free_spot_lights.size(); i++) {
+			if (!_free_spot_lights.test(i)) {
+				_free_spot_lights.set(i);
+				return i;
+			}
+		}
+		LOG_WARNING("There are not as many spot lights as expected (max: " + std::to_string(MAX_SPOT_LIGHTS) + ")");
+		return -1;
 	}
 
 }
