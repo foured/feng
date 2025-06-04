@@ -25,6 +25,7 @@ namespace feng {
 		void allocate(uint32_t width, uint32_t height, int32_t internalformat, uint32_t format, uint32_t type = GL_FLOAT, void* data = NULL);
 		void set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s, int32_t wrap_t);
 		void generate_mipmap();
+		void del();
 
 		void set_param_i(uint32_t pname, int32_t p);
 		void set_param_fv(uint32_t pname, const float* p);

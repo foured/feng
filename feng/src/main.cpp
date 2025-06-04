@@ -33,6 +33,7 @@
 #include "logic/data_management/assets_manager.h"
 #include "logic/data_management/scene_serializer.h"
 #include "logic/world/components/flash_light.h"
+#include "utilities/fps_counter.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -70,7 +71,6 @@ int main() {
 	//======================
 
 	scene sc1;
-	//camera cam;
 	skybox sb(&am->shaders.skybox_shader, skybox_faces);
 
 	//sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
@@ -84,33 +84,13 @@ int main() {
 	cube1_i2.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2.get()->transform.set_position(glm::vec3(2, 2, -2));
 	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 3, 0.5));
-	//cube1_i2.get()->add_component<line_animator>(glm::vec3(2, 3, -2), glm::vec3(2, 10, -2), 1);
 
 	//bottom
 	sptr_ins cube2_i1 = sc1.add_instance();
 	cube2_i1.get()->add_component<model_instance>(cube2);
-	//cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
-	////top
-	//sptr_ins cube2_i2 = sc1.copy_instance(cube2_i1);
-	//cube2_i2.get()->transform.set_position(glm::vec3(0, 18, 0));
-	////right
-	//sptr_ins cube2_i3 = sc1.copy_instance(cube2_i1);
-	//cube2_i3.get()->transform.set_position(glm::vec3(20, 10, 0));
-	//cube2_i3.get()->transform.set_size(glm::vec3(1, 20, 20));
-	////left
-	//sptr_ins cube2_i4 = sc1.copy_instance(cube2_i1);
-	//cube2_i4.get()->transform.set_position(glm::vec3(-20, 10, 0));
-	//cube2_i4.get()->transform.set_size(glm::vec3(1, 20, 20));
-	////forward
-	//sptr_ins cube2_i5 = sc1.copy_instance(cube2_i1);
-	//cube2_i5.get()->transform.set_position(glm::vec3(0, 10, -20));
-	//cube2_i5.get()->transform.set_size(glm::vec3(20, 20, 1));
-	////back
-	//sptr_ins cube2_i6 = sc1.copy_instance(cube2_i1);
-	//cube2_i6.get()->transform.set_position(glm::vec3(0, 10, 20));
-	//cube2_i6.get()->transform.set_size(glm::vec3(20, 20, 1));
 
 	sptr_ins light_cube_i1 = sc1.add_instance();
 	light_cube_i1.get()->add_component<model_instance>(light_cube);
@@ -122,19 +102,12 @@ int main() {
 	sptr_ins flash_light_i = sc1.add_instance();
 	flash_light_i.get()->add_component<flash_light>(&sc1);
 
-	sc1.dir_light = dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f), 2 * 2048);
+	sc1.dir_light = dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f), 2048);
 	sc1.point_lights[0] = point_light{
 		light_cube_i1.get()->transform.get_position(),
 		1.0f, 0.09f, 0.032f,
 		glm::vec3(0.1f), glm::vec3(0.8f), glm::vec3(1.0f)
 	};
-	//sc1.spot_lights[0] = spot_light{
-	//	cam.position, cam.front(),
-	//	glm::cos(glm::radians(12.5f)),
-	//	glm::cos(glm::radians(17.5f)),
-	//	1, 0.09f, 0.032f,
-	//	glm::vec3(0.1f), glm::vec3(0.8f), glm::vec3(0.5f)
-	//};
 
 	//===============
 	//    BUFFERS
@@ -149,34 +122,29 @@ int main() {
 	framebuffer::check_status();
 	main_framebuffer.unbind();
 
-	//dir_light.generate_buffers();
-	//for(auto& pl : point_lights)
-	//	pl.generate_buffers();
-	
+	auto framebuffer_subscription = window::on_framebuffer_size.subscribe(
+		[&](uint16_t width, uint16_t height) {
+			main_framebuffer.bind();
+			main_framebuffer.width = width;
+			main_framebuffer.height = height;
+			main_render_texture.del();
+			main_render_texture = main_framebuffer.allocate_and_attach_texture(
+				GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB16F, GL_RGB);
+			main_renderbuffer.bind();
+			main_renderbuffer.renderbuffer_storage(GL_DEPTH24_STENCIL8, width, height);
+			framebuffer::check_status();
+			main_framebuffer.unbind();
+		});
+
+	sc1.generate_matrices_buffers();
 	sc1.generate_lights_buffers();
-
-	ssbo matrices_ssbo;
-	matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
-
-	//ssbo lights_ssbo;
-	//lights_ssbo.allocate(ssbo::generate_lights_buffer(), 2);
 
 	//============
 	//    TEXT
 	//============
 
-	FT_Library ft;
-	if (FT_Init_FreeType(&ft))
-	{
-		std::cout << "Error to init FreeType Library" << std::endl;
-		return -1;
-	}
-
-	font_atlas atlas1("res/fonts/UniversCondensed.ttf", ft, 20);
-	font_atlas atlas2("res/fonts/clacon2.ttf", ft, 30);
-	text_renderer text1(atlas1), text2(atlas2);
-
-	FT_Done_FreeType(ft);
+	text_renderer text1(am->univers_condensed_atlas_20);
+	text_renderer text2(am->clacon2_atlas_30);
 
 	//==========
 	//    UI
@@ -191,11 +159,7 @@ int main() {
 	//============================
 	//    PREPARATIONS TO LOOP
 	//============================
-	
 	sc1.generate_lightspace_matrices();
-	//dir_light.generate_lightspace_matrix();
-	//for(auto& pl : point_lights)
-	//	pl.generate_lightspace_matrices();
 
 	//LOG_INFO(std::to_string(std::filesystem::file_size("pack1.fmp")));
 
@@ -204,17 +168,17 @@ int main() {
 	//data::scene_serializer::deserialize_models(&sc1, "pack1.fmp");
 	//data::scene_serializer::deserialize(&sc1, "scene1.fsp");
 
+	glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+
 	bool is_spot_light_working = false;
 	ui.start();
 	sc1.start();
-	double time = 0;
-	double msdt = 0;
-	uint64_t frames_count = 0, fps = 0;
+	fps_counter counter;
 	startup_timer.stop();
 	while (!win.should_close())
 	{
 		utilities::update_delta_time();
-		//cam.move();
+		counter.update();
 		win.process_input();
 		ui.update();
 		sc1.update();
@@ -222,33 +186,13 @@ int main() {
 		//==================
 		//    SETUP DATA
 		//==================
-		
-		glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));;
-		glm::mat4 projection;
-		projection = glm::perspective(
-			glm::radians(45.0f), (float)window::win_width / (float)window::win_height, 0.01f, 100.0f);
 
 		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
 		if (input::get_key_down(GLFW_KEY_T)) 
 			sc1.main_camera.position = glm::mat3(model) * light_cube_i1->transform.get_position();
 
-		matrices_ssbo.start_block();
-		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(projection));
-		matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(sc1.main_camera.get_view_matrix()));
-		matrices_ssbo.end_block();
-
-		//spot_lights[0].position = cam.position;
-		//spot_lights[0].direction = cam.front();
-	
+		sc1.bind_matrices_ssbo();
 		sc1.bind_lights_ssbo();
-		//int32_t no_spotlights = MAX_SPOT_LIGHTS, no_pointlights = MAX_POINT_LIGHTS;
-		//lights_ssbo.start_block();
-		//lights_ssbo.add_structure(ssbo::dirlight_buffer_structure, &dir_light);
-		//lights_ssbo.add_element(&no_spotlights);
-		//lights_ssbo.add_structure(ssbo::spotlight_buffer_structure, &spot_lights[0]);
-		//lights_ssbo.add_element(&no_pointlights);
-		//lights_ssbo.add_structure(ssbo::pointlight_buffer_structure, &point_lights[0]);
-		//lights_ssbo.end_block();
 
 		//=================
 		//    RENDERING
@@ -317,18 +261,8 @@ int main() {
 		float hh = window::win_height / 2.0f;
 		am->shaders.text_shader.set_mat4("projection", glm::ortho(-hw, hw, -hh, hh, 0.0f, (float)UCHAR_MAX));
 
-		time += utilities::delta_time();
-		frames_count++;
-		if (time >= 0.5) {
-			fps = frames_count / time;
-			msdt = 1000.0 / fps;
-			time = 0;
-			frames_count = 0;
-		}
-
-		text1.render(&tb, "FPS: " + std::to_string(fps), {-hw, hh - 15, 0}, glm::vec3(0, 1, 0));
-		text1.render(&tb, "time: " + std::to_string(msdt), {-hw, hh - 30, 0}, glm::vec3(0, 1, 0));
-		//text1.render(&tb, std::to_string((int)pcss_sw), { 290, -90, 0 }, glm::vec3(1, 0, 0));
+		text1.render(&tb, "FPS: " + std::to_string(counter.fps), {-hw, hh - 15, 0}, glm::vec3(0, 1, 0));
+		text1.render(&tb, "time: " + std::to_string(counter.msdt), {-hw, hh - 30, 0}, glm::vec3(0, 1, 0));
 		tb.render(am->shaders.text_shader);
 		glDisable(GL_BLEND);
 
@@ -336,7 +270,6 @@ int main() {
 		glfwPollEvents();
 	}
 
-	//fb.delete_buffer();
 	return 0;
 }
 

@@ -1,5 +1,8 @@
 #include "assets_manager.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H  
+
 namespace feng {
 
 	void assets_manager::shaders_set::load() {
@@ -14,10 +17,24 @@ namespace feng {
 
 	assets_manager::assets_manager() 
 		: _shader_folder("res/shaders") {
+		load_fonts();
 	}
 
 	std::string assets_manager::get_shader(const std::string& file_name) {
 		return _shader_folder.read_file(file_name);
+	}
+
+	void assets_manager::load_fonts() {
+		FT_Library ft;
+		if (FT_Init_FreeType(&ft))
+		{
+			THROW_ERROR("Error to init FreeType Library");
+		}
+
+		univers_condensed_atlas_20 = font_atlas("res/fonts/UniversCondensed.ttf", ft, 20);
+		clacon2_atlas_30 = font_atlas("res/fonts/clacon2.ttf", ft, 30);
+
+		FT_Done_FreeType(ft);
 	}
 
 }

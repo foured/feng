@@ -1,10 +1,17 @@
 #include "scene.h"
 
 #include "../../logging/logging.h"
+#include "../../graphics/window.h"
 
 namespace feng {
 
 	void scene::start() {
+		_framebuffer_change_sub = window::on_framebuffer_size.subscribe([this](int32_t width, int32_t height) {
+				calculate_projection_matrix();
+			});
+
+		calculate_projection_matrix();
+
 		for (auto& inst : _instances)
 			if (inst.get()->is_active)
 				inst.get()->start();
@@ -39,6 +46,22 @@ namespace feng {
 	void scene::render_models(shader& shader) {
 		for (const auto& m : _models)
 			m.get()->render(shader);
+	}
+
+	void scene::generate_matrices_buffers() {
+		_matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
+	}
+
+	void scene::bind_matrices_ssbo() {
+		_matrices_ssbo.start_block();
+		_matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(_projection));
+		_matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(main_camera.get_view_matrix()));
+		_matrices_ssbo.end_block();
+	}
+
+	void scene::calculate_projection_matrix() {
+		_projection = glm::perspective(
+			glm::radians(60.0f), (float)window::win_width / (float)window::win_height, 0.01f, 100.0f);
 	}
 
 	void scene::add_instance(sptr_ins new_instance) {
@@ -81,7 +104,7 @@ namespace feng {
 		for(int32_t i = 0; i < no_spotlights; i++)
 			_lights_ssbo.add_structure(ssbo::spotlight_buffer_structure, &spot_lights[i]);
 		_lights_ssbo.add_element(&no_pointlights);
-		for (int32_t i = 0; i < no_pointlights; i++)
+		for(int32_t i = 0; i < no_pointlights; i++)
 			_lights_ssbo.add_structure(ssbo::pointlight_buffer_structure, &point_lights[i]);
 		_lights_ssbo.end_block();
 	}

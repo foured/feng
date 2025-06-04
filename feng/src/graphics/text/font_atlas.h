@@ -22,6 +22,7 @@ namespace feng {
 
 	class font_atlas {
 	public:
+		font_atlas();
 		font_atlas(const char* font_path, FT_Library& lib, uint32_t size);
 
 		uint32_t texture_id;

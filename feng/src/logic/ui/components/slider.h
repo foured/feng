@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../uicomponent.h"
+#include "../../event.hpp"
 
 namespace feng::ui {
 
@@ -18,6 +19,8 @@ namespace feng::ui {
 	private:
 		uiinstance* _pin;
 		bool _is_lmb_down = false;
+
+		feng::event<>::subscription _pin_sub;
 
 		float calculate_w();
 

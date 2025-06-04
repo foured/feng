@@ -7,6 +7,7 @@
 
 #include "components/model_instance.h"
 #include "components/line_animator.h"
+#include "components/flash_light.h"
 
 namespace feng {
 
@@ -81,6 +82,14 @@ namespace feng {
 				std::shared_ptr<line_animator> la = std::make_shared<line_animator>(this, start, end, speed);
 				//file->read_serializable(la.get(), scene);
 				_components.push_back(la);
+				break;
+			}
+			case component_list::flash_light: {
+				flash_light::static_data static_data;
+				file->read_raw(&static_data);
+
+				std::shared_ptr<flash_light> fl = std::make_shared<flash_light>(this, scene, static_data);
+				_components.push_back(fl);
 				break;
 			}
 			default: {

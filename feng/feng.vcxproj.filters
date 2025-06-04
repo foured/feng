@@ -335,6 +335,9 @@
     <ClInclude Include="src\logic\world\components\flash_light.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\utilities\fps_counter.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="glfw3.dll" />

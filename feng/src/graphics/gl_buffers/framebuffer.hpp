@@ -22,12 +22,15 @@ namespace feng {
 
 	class framebuffer : public i_gl_buffer{
 	public:
+		uint32_t width, height;
+
+
 		framebuffer() {
 
 		}
 
 		framebuffer(uint32_t width, uint32_t height)
-			: _width(width), _height(height){
+			: width(width), height(height){
 			generate();
 		}
 
@@ -58,7 +61,7 @@ namespace feng {
 			texture fb_texture;
 			fb_texture.generate();
 			fb_texture.bind();
-			fb_texture.allocate(_width, _height, internalformat, format,  type, NULL);
+			fb_texture.allocate(width, height, internalformat, format,  type, NULL);
 			fb_texture.set_params(min_filter, mag_filter, wrap_s, wrap_t);
 			attach_texture2d(fb_texture, attachment_mode);
 
@@ -70,7 +73,7 @@ namespace feng {
 			renderbuffer fb_renderbuffer;
 			fb_renderbuffer.generate();
 			fb_renderbuffer.bind();
-			fb_renderbuffer.renderbuffer_storage(format, _width, _height);
+			fb_renderbuffer.renderbuffer_storage(format, width, height);
 			attach_renderbuffer(fb_renderbuffer, attachment_mode);
 
 			return fb_renderbuffer;
@@ -97,7 +100,7 @@ namespace feng {
 		}
 		
 		void set_viewport() {
-			glViewport(0, 0, _width, _height);
+			glViewport(0, 0, width, height);
 		}
 
 		void set_draw_buffer(uint32_t mode) {
@@ -137,9 +140,8 @@ namespace feng {
 		}
 
 	private:
-		uint32_t _width, _height;
-
 		uint32_t _FBO;
+
 	};
 
 }

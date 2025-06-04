@@ -7,9 +7,11 @@
 
 namespace feng {
 
-	uint16_t window::win_width = 0; 
-	uint16_t window::win_height = 0; 
+	int32_t window::win_width = 0;
+	int32_t window::win_height = 0;
 	window* window::current_window = nullptr;
+	feng::event<int32_t, int32_t> window::on_framebuffer_size;
+
 
 	window::window(const char* title, int width, int height) {
 		glfwInit();
@@ -90,10 +92,11 @@ namespace feng {
 
 	// static
 
-	void window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	void window::framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height) {
 		glViewport(0, 0, width, height);
 		window::win_width = width;
 		window::win_height = height;
+		window::on_framebuffer_size.invoke(width, height);
 	}
 
 	void window::error_callback(int error, const char* description) {

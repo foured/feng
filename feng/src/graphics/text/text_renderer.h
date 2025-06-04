@@ -17,8 +17,6 @@ namespace feng {
 
 	class text_batcher;
 
-
-
 	struct text_vertex{
 		float x;
 		float y;

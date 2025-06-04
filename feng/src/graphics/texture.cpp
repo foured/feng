@@ -161,6 +161,10 @@ namespace feng {
 		glGenTextures(1, &_id);
 	}
 
+	void texture::del() {
+		glDeleteTextures(1, &_id);
+	}
+
 	std::string texture::path() const {
 		return _path;
 	}

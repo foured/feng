@@ -3,6 +3,7 @@
 #include "../../utilities/singleton.hpp"
 #include "../../utilities/files_in_folder.hpp"
 #include "../../graphics/shader.h"
+#include "../../graphics/text/font_atlas.h"
 
 namespace feng {
 
@@ -22,15 +23,19 @@ namespace feng {
 			void load();
 		};
 
+		shaders_set shaders;
+
+		font_atlas univers_condensed_atlas_20;
+		font_atlas clacon2_atlas_30;
+
 		assets_manager();
 
 		std::string get_shader(const std::string& file_name);
 
-		shaders_set shaders;
-
-
 	private:
 		util::files_in_folder _shader_folder;
+
+		void load_fonts();
 	};
 
 }

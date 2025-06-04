@@ -6,6 +6,8 @@
 
 namespace feng {
 
+	font_atlas::font_atlas() {}
+
 	font_atlas::font_atlas(const char* font_path, FT_Library& lib, uint32_t size) {
 		FT_Face face;
 		if (FT_New_Face(lib, font_path, 0, &face)) {

@@ -16,7 +16,7 @@ namespace feng::ui {
 		if (_instance->render_order == 0)
 			LOG_WARNING("render_order of slider instance cant be 0");
 		_pin->render_order = _instance->render_order - 1;
-		_pin->on_mouse_down.subscribe([this]() 
+		_pin_sub = _pin->on_mouse_down.subscribe([this]()
 			{ 
 				if(is_active)
 					_is_lmb_down = true; 

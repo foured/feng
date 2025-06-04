@@ -12,6 +12,7 @@
 #include "../../graphics/light/lights.h"
 #include "../../graphics/gl_buffers/ssbo.hpp"
 #include "../../io/camera.h"
+#include "../event.hpp"
 
 namespace feng {
 	
@@ -77,6 +78,14 @@ namespace feng {
 		void render_flag(shader& shader, inst_flag_type flag);
 		void render_models(shader& shader);
 
+
+		//=======================
+		// MATRICES
+		//=======================
+		void generate_matrices_buffers();
+		void bind_matrices_ssbo();
+		void calculate_projection_matrix();
+
 		//=======================
 		// LIGHTS
 		//=======================
@@ -96,6 +105,12 @@ namespace feng {
 
 		ssbo _lights_ssbo;
 		std::bitset<MAX_SPOT_LIGHTS> _free_spot_lights;
+
+		ssbo _matrices_ssbo;
+		glm::mat4 _model = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));;
+		glm::mat4 _projection;
+		event<int32_t, int32_t>::subscription _framebuffer_change_sub;
+
 	};
 
 }

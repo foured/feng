@@ -3,10 +3,17 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "../logic/event.hpp"
+
 namespace feng {
 
 	class window {
 	public:
+		static int32_t win_width, win_height;
+		static window* current_window;
+
+		static feng::event<int32_t, int32_t> on_framebuffer_size;
+
 		window(const char* title, int width, int height);
 		~window();
 
@@ -19,14 +26,10 @@ namespace feng {
 
 		void set_cursor_mode(bool enable);
 
-		static uint16_t win_width, win_height;
-		static window* current_window;
-
 	private:
 		GLFWwindow* _window;
 
-	private:
-		static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+		static void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height);
 		static void error_callback(int error, const char* description);
 	};
 
