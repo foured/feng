@@ -2,6 +2,7 @@
 
 #include "../../logging/logging.h"
 #include "../../graphics/window.h"
+#include "components/model_instance.h"
 
 namespace feng {
 
@@ -64,6 +65,10 @@ namespace feng {
 			glm::radians(60.0f), (float)window::win_width / (float)window::win_height, 0.01f, 100.0f);
 	}
 
+	glm::mat4 scene::get_projection_matrix() const {
+		return _projection;
+	}
+
 	void scene::add_instance(sptr_ins new_instance) {
 		_instances.push_back(new_instance);
 	}
@@ -72,6 +77,14 @@ namespace feng {
 		sptr_ins new_ins = instance_to_copy.get()->copy();
 		_instances.push_back(new_ins);
 		return new_ins;
+	}
+
+	sptr_ins scene::get_instance(uuid_type uuid) {
+		for (const auto& instance : _instances) {
+			if (instance->get_uuid() == uuid)
+				return instance;
+		}
+		THROW_ERROR("No instance with uuid: [" + std::to_string(uuid) + "].");
 	}
 
 	sptr_mdl scene::find_model(uuid_type uuid) {
@@ -91,7 +104,9 @@ namespace feng {
 	}
 
 	void scene::generate_lightspace_matrices() {
-		dir_light.generate_lightspace_matrix();
+		//dir_light.generate_lightspace_matrix();
+		calculate_bounds();
+		dir_light.lightspace_matrix = dir_light.generate_custom_lightspace_matrix(_bounds, model_matrix);
 		for (auto& point_light : point_lights)
 			point_light.generate_lightspace_matrices();
 	}
@@ -118,6 +133,38 @@ namespace feng {
 		}
 		LOG_WARNING("There are not as many spot lights as expected (max: " + std::to_string(MAX_SPOT_LIGHTS) + ")");
 		return -1;
+	}
+
+	void scene::calculate_bounds() {
+		_bounds.set_numeric_limits();
+		transform* instance_transform = nullptr;
+		aabb* model_bounds = nullptr;
+
+		//int32_t i = 0;
+		for (const auto& instance : _instances) {
+			std::shared_ptr<model_instance> model = instance->try_get_component<model_instance>();
+			if (model && instance->flags.get(INST_FLAG_STATIC) && instance->flags.get(INST_FLAG_CAST_SHADOWS)) {
+				instance_transform = &instance->transform;
+				model_bounds = &model->get_model()->bounds;
+				glm::vec3 max = model_bounds->max * instance_transform->get_size() + instance_transform->get_position();
+				glm::vec3 min = model_bounds->min * instance_transform->get_size() + instance_transform->get_position();
+
+				_bounds.max = glm::max(_bounds.max, max);
+				_bounds.min = glm::min(_bounds.min, min);
+
+				//i++;
+				//if (i == 4) {
+				//	_bounds.max = max;
+				//	_bounds.min = min;
+				//	LOG_INFO(instance->get_uuid_string());
+				//	return;
+				//}
+			}
+		}
+	}
+
+	aabb scene::get_bounds() const{
+		return _bounds;
 	}
 
 }

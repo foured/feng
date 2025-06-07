@@ -47,6 +47,8 @@ namespace feng {
 		void render_ready_data(shader& shader);
 		void render(shader& shader);
 		void render_flag(shader& shader, inst_flag_type flag);
+		void render_single_instance(shader& shader, instance* instance);
+
 		void add_instance(instance* i);
 		void clear_instances();
 
@@ -74,6 +76,7 @@ namespace feng {
 		std::vector<texture> load_material_textures(aiMaterial* mat, aiTextureType type);
 		void batch_meshes();
 		void clear_instances_data();
+		void add_instance_render_data(instance* instance);
 
 		void calculate_bounds();
 	};

@@ -34,6 +34,8 @@ namespace feng {
 		std::array<point_light, MAX_POINT_LIGHTS> point_lights;
 		std::array<spot_light, MAX_SPOT_LIGHTS> spot_lights;
 
+		glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));;
+
 		camera main_camera;
 
 		//==================
@@ -70,6 +72,7 @@ namespace feng {
 		}
 
 		sptr_ins copy_instance(sptr_ins instance_to_copy);
+		sptr_ins get_instance(uuid_type uuid);
 
 
 		//=======================
@@ -85,6 +88,7 @@ namespace feng {
 		void generate_matrices_buffers();
 		void bind_matrices_ssbo();
 		void calculate_projection_matrix();
+		glm::mat4 get_projection_matrix() const;
 
 		//=======================
 		// LIGHTS
@@ -94,6 +98,11 @@ namespace feng {
 		void bind_lights_ssbo();
 		size_t get_free_spot_light_idx();
 
+		//======================
+		// OTHER
+		//======================
+		void calculate_bounds();
+		aabb get_bounds() const;
 
 	private:
 		friend class data::scene_serializer;
@@ -107,9 +116,10 @@ namespace feng {
 		std::bitset<MAX_SPOT_LIGHTS> _free_spot_lights;
 
 		ssbo _matrices_ssbo;
-		glm::mat4 _model = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));;
 		glm::mat4 _projection;
 		event<int32_t, int32_t>::subscription _framebuffer_change_sub;
+
+		aabb _bounds;
 
 	};
 

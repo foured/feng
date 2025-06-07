@@ -190,6 +190,7 @@
     <ClCompile Include="src\logic\world\components\model_instance.cpp" />
     <ClCompile Include="src\logic\world\instance.cpp" />
     <ClCompile Include="src\logic\world\scene.cpp" />
+    <ClCompile Include="src\logic\world\tags\shadow_texture_owner.cpp" />
     <ClCompile Include="src\logic\world\transform.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utilities\utilities.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="src\graphics\gl_buffers\renderbuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
+    <ClInclude Include="src\graphics\helpers\box_renderer.hpp" />
     <ClInclude Include="src\graphics\helpers\texture_quad.hpp" />
     <ClInclude Include="src\graphics\light\lights.h" />
     <ClInclude Include="src\graphics\light\shadowmap_offset_texture.h" />
@@ -250,6 +252,8 @@
     <ClInclude Include="src\logic\ui\uiinstance.h" />
     <ClInclude Include="src\logic\ui\uitransform.h" />
     <ClInclude Include="src\logic\ui\ui_layer.h" />
+    <ClInclude Include="src\logic\world\tag.h" />
+    <ClInclude Include="src\logic\world\tags\shadow_texture_owner.h" />
     <ClInclude Include="src\logic\world\transform.h" />
     <ClInclude Include="src\utilities\files_in_folder.hpp" />
     <ClInclude Include="src\utilities\fps_counter.h" />

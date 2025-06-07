@@ -120,10 +120,10 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 c_dif, vec3 c_
     //float shadow = ShadowCalculation(normal, lightDir);
     vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    const float lightSize = 1.0 / 200;
+    //const float lightSize = 1.0 / 40;
     //vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
-    shadow = PCSS(shadowMap, projCoords, lightSize);
+    shadow = PCSS(shadowMap, projCoords, LIGHT_SIZE);
     //shadow = RandomPCF_Vogel(shadowMap, projCoords, 0.001, normal, lightDir);
 
     return (ambient + (1.0 - shadow) * (diffuse + specular));

@@ -12,6 +12,9 @@ namespace feng {
 		glm::vec3 max;
 
 		void set_numeric_limits();
+		float volume();
+
+		aabb scale(const glm::mat4& model);
 
 	};
 

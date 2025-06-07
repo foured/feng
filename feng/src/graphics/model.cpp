@@ -42,7 +42,7 @@ namespace feng {
 			batch.vertex_array.set_attrib_pointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			_size_array_buffer.bind();
 			batch.vertex_array.set_attrib_pointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
-			vertexarray::unbind;
+			vertexarray::unbind();
 		}
 	}
 
@@ -273,9 +273,7 @@ namespace feng {
 	void model::render(shader& shader) {
 		clear_instances_data();
 		for (const auto& i : _instances) {
-			_positions.push_back(i->transform.get_position());
-			_sizes.push_back(i->transform.get_size());
-			_rotations.push_back(i->transform.get_rotation());
+			add_instance_render_data(i);
 		}
 		render_ready_data(shader);
 	}
@@ -284,13 +282,22 @@ namespace feng {
 		clear_instances_data();
 		for (const auto& i : _instances) {
 			if (i->flags.get(flag)) {
-				_positions.push_back(i->transform.get_position());
-				_sizes.push_back(i->transform.get_size());
-				_rotations.push_back(i->transform.get_rotation());
+				add_instance_render_data(i);
 			}
 		}
-		uint32_t no_instances = _positions.size();
 		render_ready_data(shader);
+	}
+
+	void model::render_single_instance(shader& shader, instance* instance) {
+		clear_instances_data();
+		add_instance_render_data(instance);
+		render_ready_data(shader);
+	}
+
+	void model::add_instance_render_data(instance* instance) {
+		_positions.push_back(instance->transform.get_position());
+		_sizes.push_back(instance->transform.get_size());
+		_rotations.push_back(instance->transform.get_rotation());
 	}
 
 	void model::batch_meshes() {
@@ -435,15 +442,10 @@ namespace feng {
 
 	void model::calculate_bounds() {
 		bounds.set_numeric_limits();
-		for (const auto& m : _meshes) {
-			for (const auto& v : m._vertices) {
-				bounds.min.x = fminf(bounds.min.x, v.position.x);
-				bounds.min.y = fminf(bounds.min.y, v.position.y);
-				bounds.min.z = fminf(bounds.min.z, v.position.z);
-
-				bounds.max.x = fmaxf(bounds.max.x, v.position.x);
-				bounds.max.y = fmaxf(bounds.max.y, v.position.y);
-				bounds.max.z = fmaxf(bounds.max.z, v.position.z);
+		for (const auto& batch : _batches) {
+			for (const auto& asvd : batch.asvds) {
+				bounds.min = glm::min(bounds.min, asvd.vert.position);
+				bounds.max = glm::max(bounds.max, asvd.vert.position);
 			}
 		}
 	}

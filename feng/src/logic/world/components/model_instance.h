@@ -16,6 +16,12 @@ namespace feng {
 		void serialize(data::wfile* file) override;
 		void deserialize(data::rfile* file, scene* scene) override;
 
+		void render_alone(shader& shader);
+
+		aabb calculate_bounds();
+
+		std::shared_ptr<model> get_model() const;
+
 	private:
 		friend class instance;
 

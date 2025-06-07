@@ -6,6 +6,8 @@
 #define POINTLIGHT_PCF_NUM_SAMPLES 128
 #define DIRLIGHT_PCF_NUM_SAMPLES 256
 
+#define LIGHT_SIZE 1.0 / 200.0
+
 float SampleTexture(sampler2D tex, vec2 coords, float compare)
 {
 	return step(compare, texture2D(tex, coords.xy).r);
@@ -63,15 +65,16 @@ float RandomPCF_Vogel(sampler2D shadowMap, vec3 projCoords, float radius, vec3 n
     return shadow;
 }
 
-float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float searchWidth, int samples){
+float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float lightSize, int samples){
     float avgBlockerDepth = 0.0;
     int numBlockers = 0;
 
     for (int i = 0; i < samples; ++i) {
         vec2 sampleUV = VogelDisk(i, samples, gradientNoise);
-        sampleUV = projCoords.xy + searchWidth * sampleUV;
+        sampleUV = projCoords.xy + lightSize * sampleUV;
 
         float sampleDepth = texture(shadowMap, sampleUV).r;
+        //float sampleDepth = SampleTexture(shadowMap, sampleUV, projCoords.z);
 
         if (sampleDepth < projCoords.z) {
             avgBlockerDepth += sampleDepth;
@@ -89,7 +92,10 @@ float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 pr
 }
 
 float CalculatePenumbra(float avgBlockerDepth, float lightSize, float zDepth) {
-    return lightSize * (zDepth - avgBlockerDepth) / avgBlockerDepth;
+    float penumbra = lightSize * (zDepth - avgBlockerDepth) / avgBlockerDepth;
+    // penumbra *= penumbra;
+    // penumbra = clamp(80.0 * penumbra, 0.0, 1.0);
+    return penumbra;
 }
 
 float SmoothPCF(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float radius, int samples) {
@@ -109,6 +115,9 @@ float PCSS(sampler2D shadowMap, vec3 projCoords, float lightSize) {
     float avgBlockerDepth = CalculateAvgBlockerDepth(shadowMap, gradientNoise, projCoords, lightSize, BLOCKER_SEARCH_NUM_SAMPLES);
     if (avgBlockerDepth == 0)
         return 0;
+    // if (avgBlockerDepth == 0)
+    //     return SmoothPCF(shadowMap, gradientNoise, projCoords, 0.1, 64);
+
     // if (avgBlockerDepth == -1)
     //     return 1;
     float penumbra = CalculatePenumbra(avgBlockerDepth, lightSize, projCoords.z);

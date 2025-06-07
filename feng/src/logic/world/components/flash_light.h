@@ -35,6 +35,8 @@ namespace feng {
 		void deserialize(data::rfile* file, scene* scene) override;
 
 	private:
+		flash_light(instance* instance);
+
 		scene* _scene;
 		size_t _idx;
 

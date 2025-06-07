@@ -7,6 +7,7 @@
 #include "../gl_buffers/framebuffer.hpp"
 #include "../cubemap.h"
 #include "../texture.h"
+#include "../../logic/aabb.h"
 
 namespace feng {
 
@@ -28,16 +29,32 @@ namespace feng {
 
         glm::mat4 lightspace_matrix;
 
+
+        //===================
+        // MATRICES
+        //===================
         void generate_lightspace_matrix();
+        glm::mat4 generate_custom_lightspace_matrix(const glm::vec3& min, const glm::vec3& max, const glm::mat4& model);
+        glm::mat4 generate_custom_lightspace_matrix(const aabb& bounds, const glm::mat4& model);
+        glm::mat4 generate_custom_relative_lightspace_matrix(const glm::vec3& cmin, const glm::vec3& cmax,
+            const glm::vec3& rmin, const glm::vec3& rmax, const glm::mat4& model);
+        glm::mat4 generate_custom_relative_lightspace_matrix(const aabb& caster, const aabb& receiver, const glm::mat4& model);
+
         void generate_buffers();
         void render_preparations();
+        void full_render_preparations(shader& shader, glm::mat4 model);
         void render_cleanup();
         void bind_shadowmap(uint32_t slot = SHADOWMAP_TEXTURE_SLOT);
+
+        void delete_buffers();
+
+        texture get_texture() const;
+
+        texture _shadowmap;
 
     private:
         uint32_t _shadowmap_size;
         framebuffer _depthmap_framebuffer;
-        texture _shadowmap;
     };
 
     class point_light {

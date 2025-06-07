@@ -91,7 +91,7 @@ namespace feng {
 	}
 
 	// static
-
+	
 	void window::framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height) {
 		glViewport(0, 0, width, height);
 		window::win_width = width;

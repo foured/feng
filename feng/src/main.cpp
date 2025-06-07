@@ -6,11 +6,11 @@
 
 #include "graphics/window.h"
 #include "graphics/shader.h"
-#include "logging/logging.h"
 #include "graphics/texture.h"
 #include "io/camera.h"
 #include "utilities/utilities.h"
 #include "io/input.h"
+#include "logging/logging.h"
 #include "graphics/model.h"
 #include "graphics/gl_buffers/framebuffer.hpp"
 #include "graphics/skybox.h"
@@ -34,6 +34,9 @@
 #include "logic/data_management/scene_serializer.h"
 #include "logic/world/components/flash_light.h"
 #include "utilities/fps_counter.h"
+#include "graphics/helpers/box_renderer.hpp"
+
+#include "editor/lightbaker.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
 
@@ -48,8 +51,6 @@ std::array<std::string, 6> skybox_faces{
 	"res/textures/skyboxes/1/back.jpg"
 };
 
-void check_errors();
-
 int main() {
 #ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 	LOG_WARNING("'IMPLEMENT_WORK_IN_PROGRESS_CODE' was detected!");
@@ -59,7 +60,7 @@ int main() {
 	//    CREATING OBJECTS
 	//========================
 	timer startup_timer("Startup timer");
-	window win("Feng", 800, 600);
+	window win("Feng", 1920 - 192, 1080 - 108);
 
 	assets_manager* am = assets_manager::get_instance();
 	am->shaders.load();
@@ -73,38 +74,49 @@ int main() {
 	scene sc1;
 	skybox sb(&am->shaders.skybox_shader, skybox_faces);
 
-	//sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
+	sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
 	sptr_mdl cube1 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
 	sptr_mdl cube2 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(0.6)));
 	sptr_mdl light_cube = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(1)));
 
+	sptr_ins bp_i = sc1.add_instance();
+	bp_i->add_component<model_instance>(backpack_m);
+	bp_i->transform.set_size(glm::vec3(0.005f));
+	bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
+	LOG_INFO("bp_i: " + bp_i->get_uuid_string());
+
 	sptr_ins cube1_i1 = sc1.add_instance();
 	cube1_i1.get()->add_component<model_instance>(cube1);
+	LOG_INFO("cube1_i1: " + cube1_i1->get_uuid_string());
+
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
 	cube1_i2.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2.get()->transform.set_position(glm::vec3(2, 2, -2));
-	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 3, 0.5));
+	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 10, 0.5));
+	LOG_INFO("cube1_i2: " + cube1_i2->get_uuid_string());
 
 	//bottom
 	sptr_ins cube2_i1 = sc1.add_instance();
-	cube2_i1.get()->add_component<model_instance>(cube2);
+	auto cube2_i1_mi = cube2_i1.get()->add_component<model_instance>(cube2);
 	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
 
 	sptr_ins light_cube_i1 = sc1.add_instance();
 	light_cube_i1.get()->add_component<model_instance>(light_cube);
-	light_cube_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	//light_cube_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	//light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
 	light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
+	LOG_INFO("light_cube_i1: " + light_cube_i1->get_uuid_string());
 
 	sptr_ins flash_light_i = sc1.add_instance();
 	flash_light_i.get()->add_component<flash_light>(&sc1);
 
-	sc1.dir_light = dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f), 2048);
+	sc1.dir_light = dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f), 4 * 1024);
 	sc1.point_lights[0] = point_light{
-		light_cube_i1.get()->transform.get_position(),
+		//light_cube_i1.get()->transform.get_position(),
+		glm::vec3(1.3f, 0, -2),
 		1.0f, 0.09f, 0.032f,
 		glm::vec3(0.1f), glm::vec3(0.8f), glm::vec3(1.0f)
 	};
@@ -154,21 +166,41 @@ int main() {
 	auto layer1 = ui.create_layer();
 	layer1->support_input = true;
 
+	texture dir_light_shadowmap = sc1.dir_light.get_texture();
+	auto texture_display_model = ui.create_model(primitives2d::generate_square_mesh(dir_light_shadowmap));
+	auto texture_display = ui.add_instance(layer1, texture_display_model);
+	int32_t a = 300;
+	texture_display->uitransform.set_size_pix({a, a});
+	texture_display->uitransform.set_anchor(ui::anchor::BOTTOM_RIGHT);
+	texture_display->uitransform.set_pos_pix({-a, a});
+
 	text_batcher tb;
 
 	//============================
 	//    PREPARATIONS TO LOOP
 	//============================
-	sc1.generate_lightspace_matrices();
 
-	//LOG_INFO(std::to_string(std::filesystem::file_size("pack1.fmp")));
+	//LOG_INFO(std::to_string(std::filesystem::file_size("scene1.fstp")));
 
+	//editor::lightbaker::bake(&sc1, "scene1.fstp");
 	//data::scene_serializer::serialize_models(&sc1, "pack1.fmp");
 	//data::scene_serializer::serialize(&sc1, "scene1.fsp");
+
 	//data::scene_serializer::deserialize_models(&sc1, "pack1.fmp");
 	//data::scene_serializer::deserialize(&sc1, "scene1.fsp");
+	//data::scene_serializer::deserialize_baked_light(&sc1, "scene1.fstp");
 
-	glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+	sc1.generate_lightspace_matrices();
+	
+	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
+		cube2_i1_mi->calculate_bounds(), sc1.model_matrix);
+
+	glm::mat4 floor_lml = sc1.dir_light.generate_custom_lightspace_matrix(cube2_i1_mi->calculate_bounds(), sc1.model_matrix);
+
+	helpers::box_renderer light_view_box(&am->shaders.debug_box_shader, sc1.dir_light.lightspace_matrix);
+	helpers::box_renderer floor_lml_box(&am->shaders.debug_box_shader, floor_lml);
+	helpers::box_renderer floor_bounds(&am->shaders.debug_box_shader, cube2_i1_mi->calculate_bounds().scale(sc1.model_matrix));
+	//cube2_i1->is_active = false;
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -189,7 +221,8 @@ int main() {
 
 		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
 		if (input::get_key_down(GLFW_KEY_T)) 
-			sc1.main_camera.position = glm::mat3(model) * light_cube_i1->transform.get_position();
+			//sc1.main_camera.position = glm::mat3(sc1.model_matrix) * light_cube_i1->transform.get_position();
+			sc1.main_camera.position = glm::mat3(sc1.model_matrix) * glm::vec3(1.3f, 0, -2);
 
 		sc1.bind_matrices_ssbo();
 		sc1.bind_lights_ssbo();
@@ -199,18 +232,15 @@ int main() {
 		//=================
 
 		//shadow preparations
-		sc1.dir_light.render_preparations();
-		am->shaders.dirlight_depth_shader.activate();
-		am->shaders.dirlight_depth_shader.set_mat4("lightSpaceMatrix", sc1.dir_light.lightspace_matrix);
-		am->shaders.dirlight_depth_shader.set_mat4("model", model);
+		sc1.dir_light.full_render_preparations(am->shaders.dirlight_depth_shader, sc1.model_matrix);
 		sc1.render_flag(am->shaders.dirlight_depth_shader, INST_FLAG_CAST_SHADOWS);
 		sc1.dir_light.render_cleanup();
 
-		for (auto& pl : sc1.point_lights) {
-			pl.render_preparations(am->shaders.pointlight_depth_shader);
-			sc1.render_flag(am->shaders.pointlight_depth_shader, INST_FLAG_CAST_SHADOWS);
-			pl.render_cleanup();
-		}
+		//for (auto& pl : sc1.point_lights) {
+		//	pl.render_preparations(am->shaders.pointlight_depth_shader);
+		//	sc1.render_flag(am->shaders.pointlight_depth_shader, INST_FLAG_CAST_SHADOWS);
+		//	pl.render_cleanup();
+		//}
 
 		//main render pass preparations
 		main_framebuffer.set_viewport();
@@ -225,7 +255,7 @@ int main() {
 		am->shaders.obj_shader.set_int("isSLWorking", is_spot_light_working);
 		am->shaders.obj_shader.set_float("material.shininess", 32.0f);
 		am->shaders.obj_shader.set_mat4("lightSpaceMatrix", sc1.dir_light.lightspace_matrix);
-		am->shaders.obj_shader.set_mat4("model", model);
+		am->shaders.obj_shader.set_mat4("model", sc1.model_matrix);
 		am->shaders.obj_shader.set_int("shadowMap", 31);
 		sc1.dir_light.bind_shadowmap();
 		//obj_shader.set_int("penumbraMask", 30);
@@ -236,6 +266,11 @@ int main() {
 		}
 		
 		sc1.render_models(am->shaders.obj_shader);
+
+		light_view_box.render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.main_camera.get_view_matrix(), sc1.get_projection_matrix());
+		floor_bounds.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.main_camera.get_view_matrix(), sc1.get_projection_matrix());
+		floor_lml_box.render(glm::vec3(0.0f, 0.0f, 1.0f), sc1.main_camera.get_view_matrix(), sc1.get_projection_matrix());
+
 		sb.render(sc1.main_camera.get_view_matrix());
 		main_framebuffer.unbind();
 
@@ -271,10 +306,4 @@ int main() {
 	}
 
 	return 0;
-}
-
-void check_errors() {
-	uint32_t gl_error = glGetError();
-	if (gl_error != GL_NO_ERROR)
-		LOG_ERROR("OpenGL error: '" + std::to_string(gl_error) + "'.");
 }

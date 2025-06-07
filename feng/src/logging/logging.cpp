@@ -14,20 +14,20 @@
 
 namespace feng {
 
-	void logger::log_action(const std::string& msg, const std::string& func_name) {
-		log(msg, "ACTION", WIN_LOGGIN_COLOR_GREEN, func_name);
+	void logger::log_action(const std::string& msg, const std::string& func_name, int32_t line) {
+		log(msg, "ACTION", WIN_LOGGIN_COLOR_GREEN, func_name, line);
 	}
 
-	void logger::log_info(const std::string& msg, const std::string& func_name) {
-		log(msg, "INFO", WIN_LOGGIN_COLOR_BLUE, func_name);
+	void logger::log_info(const std::string& msg, const std::string& func_name, int32_t line) {
+		log(msg, "INFO", WIN_LOGGIN_COLOR_BLUE, func_name, line);
 	}
 
-	void logger::log_error(const std::string& msg, const std::string& func_name) {
-		log(msg, "ERROR", WIN_LOGGIN_COLOR_RED, func_name);
+	void logger::log_error(const std::string& msg, const std::string& func_name, int32_t line) {
+		log(msg, "ERROR", WIN_LOGGIN_COLOR_RED, func_name, line);
 	}
 
-	void logger::log_warning(const std::string& msg, const std::string& func_name) {
-		log(msg, "WARNING", WIN_LOGGIN_COLOR_PINK, func_name);
+	void logger::log_warning(const std::string& msg, const std::string& func_name, int32_t line) {
+		log(msg, "WARNING", WIN_LOGGIN_COLOR_PINK, func_name, line);
 	}
 
 	void logger::log_time() {
@@ -41,21 +41,21 @@ namespace feng {
 		std::cout << ']';
 	}
 
-	void logger::throw_error(const std::string& msg, const std::string& func_name) {
-		log_error(msg, func_name);
+	void logger::throw_error(const std::string& msg, const std::string& func_name, int32_t line) {
+		log_error(msg, func_name, line);
 		throw std::exception(msg.c_str());
 	}
 
-	void logger::log(const std::string& msg, const std::string& type_name, char color, std::string func_name) {
+	void logger::log(const std::string& msg, const std::string& type_name, char color, std::string func_name, int32_t line) {
 		log_time();
 		std::cout << " | [";
 		set_color(color);
 		std::cout << type_name;
-#if LOG_FUNC_NAME
+#ifdef LOG_FUNC_NAME
 		set_color(WIN_LOGGIN_COLOR_NORMAL);
 		std::cout << "] | [";
 		set_color(WIN_LOGGIN_COLOR_DARK_BLUE);
-		std::cout << func_name;
+		std::cout << func_name << " (" << line << ")";
 #endif
 		set_color(WIN_LOGGIN_COLOR_NORMAL);
 		std::cout << "] -> " << msg << std::endl;
@@ -96,7 +96,7 @@ namespace feng {
 		int64_t end = std::chrono::time_point_cast<std::chrono::milliseconds>(end_timepoint)
 			.time_since_epoch().count();
 
-		logger::log_info(_name + " : " + std::to_string(end - start) + "ms");
+		LOG_INFO(_name + " : " + std::to_string(end - start) + "ms");
 
 		_stopped = true;
 	}

@@ -23,7 +23,7 @@ namespace feng {
 		void generate();
 		void bind();
 		void allocate(uint32_t width, uint32_t height, int32_t internalformat, uint32_t format, uint32_t type = GL_FLOAT, void* data = NULL);
-		void set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s, int32_t wrap_t);
+		void set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s = NULL, int32_t wrap_t = NULL);
 		void generate_mipmap();
 		void del();
 
@@ -31,7 +31,8 @@ namespace feng {
 		void set_param_fv(uint32_t pname, const float* p);
 
 		void save_to_png(const std::string& path);
-		void* get_pixeles();
+		void* get_pixels();
+		void* get_pixels_safe();
 
 		// Just 0, 1, 2... NO GL_TEXTURE0
 		static void activate_slot(uint32_t slot);

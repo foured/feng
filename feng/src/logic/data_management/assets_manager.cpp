@@ -13,6 +13,8 @@ namespace feng {
 		text_shader = shader("res/shaders/text.vs", "res/shaders/text.fs");
 		dirlight_depth_shader = shader("res/shaders/depth/dirlight_depth.vs", "res/shaders/depth/dirlight_depth.fs");
 		pointlight_depth_shader = shader("res/shaders/depth/pointlight_depth.vs", "res/shaders/depth/pointlight_depth.fs", { shader_sub_program("res/shaders/depth/pointlight_depth.gs", GL_GEOMETRY_SHADER) }, { });
+		light_bake = shader("res/shaders/light_bake.vs", "res/shaders/light_bake.fs");
+		debug_box_shader = shader("res/shaders/debug_line.vs", "res/shaders/debug_line.fs");
 	}
 
 	assets_manager::assets_manager() 

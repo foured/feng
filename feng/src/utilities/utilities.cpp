@@ -50,5 +50,28 @@ namespace feng {
 		return str.substr(start, end - start + 1);
 	}
 
+	std::tuple<glm::vec3, glm::vec3> utilities::calculate_min_max_light_space(glm::vec3 min, glm::vec3 max,
+		const glm::mat4& light_view, const glm::mat4& model) {
+		std::vector<glm::vec3> corners = {
+			{ min.x, min.y, min.z },
+			{ min.x, min.y, max.z },
+			{ min.x, max.y, min.z },
+			{ min.x, max.y, max.z },
+			{ max.x, min.y, min.z },
+			{ max.x, min.y, max.z },
+			{ max.x, max.y, min.z },
+			{ max.x, max.y, max.z }
+		};
+
+		glm::vec3 min_ls(FLT_MAX), max_ls(-FLT_MAX);
+		for (const auto& c : corners) {
+			glm::vec3 light_space_pos = glm::vec3(light_view * model * glm::vec4(c, 1.0f));
+			min_ls = glm::min(min_ls, light_space_pos);
+			max_ls = glm::max(max_ls, light_space_pos);
+		}
+
+		return { min_ls, max_ls };
+	}
+
 
 }

@@ -6,6 +6,8 @@
 
 #include "serializable.h"
 
+#include "../../logging/logging.h"
+
 // Thx to The Cherno
 //https://github.com/StudioCherno/Walnut/blob/dev/Walnut/Source/Walnut/Serialization/FileStream.cpp
 
@@ -22,7 +24,8 @@ namespace feng::data {
 		~wfile();
 
 		template<typename T>
-		void write_raw(const T& data) {
+		typename std::enable_if_t<!std::is_pointer_v<T>, void>
+		write_raw(const T& data) {
 			write_raw((char*)&data, sizeof(T));
 		}
 

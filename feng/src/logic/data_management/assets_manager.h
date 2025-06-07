@@ -20,6 +20,10 @@ namespace feng {
 			shader dirlight_depth_shader;
 			shader pointlight_depth_shader;
 
+			shader light_bake;
+
+			shader debug_box_shader;
+
 			void load();
 		};
 

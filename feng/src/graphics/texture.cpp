@@ -83,7 +83,7 @@ namespace feng {
 	void texture::set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s, int32_t wrap_t) {
 		if(min_filter != NULL)
 			set_param_i(GL_TEXTURE_MIN_FILTER, min_filter);
-		if (mag_filter != NULL)
+		if(mag_filter != NULL)
 			set_param_i(GL_TEXTURE_MAG_FILTER, mag_filter);
 		if(wrap_s != NULL)
 			set_param_i(GL_TEXTURE_WRAP_S, wrap_s);
@@ -91,15 +91,79 @@ namespace feng {
 			set_param_i(GL_TEXTURE_WRAP_T, wrap_t);
 	}
 
-	void* texture::get_pixeles() {
+	void* texture::get_pixels() {
+		bind();
 		int noc = no_channels();
 		void* data = malloc(_width * _height * noc);
 		glGetTexImage(GL_TEXTURE_2D, 0, _format, _type, data);
+		GL_CHECK_ERRORS();
 		return data;
 	}
 
+	void* texture::get_pixels_safe() {
+		bind();
+
+		const int level = 0;
+		const int noc = no_channels(); 
+		const int pixel_size = _width * _height * noc;
+
+		void* data = malloc(pixel_size);
+		if (!data) {
+			LOG_ERROR("Failed to allocate memory for texture read.");
+			return nullptr;
+		}
+
+		glGetTexImage(GL_TEXTURE_2D, level, _format, _type, data);
+		GLenum err = glGetError();
+		if (err == GL_NO_ERROR) {
+			return data;
+		}
+
+		LOG_WARNING("glGetTexImage failed; falling back to RGBA.");
+		free(data);
+		data = nullptr;
+
+		const int fallback_noc = 4;
+		const int fallback_size = _width * _height * fallback_noc;
+
+		data = malloc(fallback_size);
+		if (!data) {
+			LOG_ERROR("Failed to allocate memory for RGBA fallback.");
+			return nullptr;
+		}
+
+		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		err = glGetError();
+		if (err != GL_NO_ERROR) {
+			LOG_ERROR("glGetTexImage(GL_RGBA) failed.");
+			free(data);
+			return nullptr;
+		}
+
+		if (noc == 1) {
+			void* red_only = malloc(pixel_size);
+			if (!red_only) {
+				LOG_ERROR("Failed to allocate red_only buffer.");
+				free(data);
+				return nullptr;
+			}
+
+			uint8_t* src = static_cast<uint8_t*>(data);
+			uint8_t* dst = static_cast<uint8_t*>(red_only);
+			for (int i = 0; i < _width * _height; ++i) {
+				dst[i] = src[i * 4]; // только R
+			}
+
+			free(data);
+			return red_only;
+		}
+
+		return data;
+	}
+
+
 	void texture::save_to_png(const std::string& path) {
-		void* data = get_pixeles();
+		void* data = get_pixels();
 		uint8_t noc = no_channels();
 		if (stbi_write_png(path.c_str(), _width, _height, noc, data, _width * noc) == 0)
 			LOG_WARNING("Error to save texture as PNG.");
@@ -189,7 +253,7 @@ namespace feng {
 		file->write_raw(_aiTtype);
 		uint64_t no_pixeles = _width * _height * n;
 		file->write_raw(no_pixeles);
-		void* data = get_pixeles();
+		void* data = get_pixels_safe();
 		file->write_raw((char*)data, no_pixeles);
 		free(data);
 	}

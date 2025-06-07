@@ -61,4 +61,18 @@ namespace feng::data {
 		LOG_ACTION("Deserialization of " + path.string() + " ended.");
 	}
 
+	void scene_serializer::deserialize_baked_light(feng::scene* scene, std::filesystem::path path) {
+		LOG_ACTION("Deserialization of " + path.string() + " started.");
+		rfile file(path);
+		uuid_type scene_uuid;
+		file.read_raw(&scene_uuid);
+		if (scene->get_uuid() != scene_uuid)
+			LOG_WARNING("Data in '" + path.string() + "' may belong to another scene.");
+		size_t no_textures;
+		file.read_raw(&no_textures);
+		LOG_INFO(std::to_string(no_textures));
+
+		LOG_ACTION("Deserialization of " + path.string() + " ended.");
+	}
+
 }

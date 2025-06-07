@@ -13,6 +13,7 @@ namespace feng::data {
 
 		static void deserialize(feng::scene* scene, std::filesystem::path path);
 		static void deserialize_models(feng::scene* scene, std::filesystem::path path);
+		static void deserialize_baked_light(feng::scene* scene, std::filesystem::path path);
 
 	};
 

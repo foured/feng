@@ -17,6 +17,9 @@ namespace feng {
 
 		static std::string strip(const std::string& str);
 
+		static std::tuple<glm::vec3, glm::vec3> calculate_min_max_light_space(glm::vec3 min, glm::vec3 max,
+			const glm::mat4& light_view, const glm::mat4& model = glm::mat4(1.0f));
+
 	private:
 		static double _last_frame_time, _frame_time, _delta_time;
 		static bool _is_first;

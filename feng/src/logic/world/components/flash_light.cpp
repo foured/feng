@@ -6,6 +6,9 @@
 
 namespace feng {
 
+	flash_light::flash_light(instance* instance) 
+		: component(instance) {}
+
 	flash_light::flash_light(instance* instance, scene* scene, 
 		float cut_off, float outer_cut_off,
 		float constant, float linear, float quadratic, 
@@ -46,8 +49,8 @@ namespace feng {
 	void flash_light::serialize(data::wfile* file)
 	{
 		component_list type = component_list::flash_light;
-		file->write_raw(&type);
-		file->write_raw(&_static);
+		file->write_raw(type);
+		file->write_raw(_static);
 	}
 
 	void flash_light::deserialize(data::rfile* file, scene* scene)

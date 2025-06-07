@@ -5,6 +5,7 @@
 
 #include "../logic/event.hpp"
 
+
 namespace feng {
 
 	class window {
