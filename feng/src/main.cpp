@@ -25,7 +25,7 @@
 #include "graphics/light/lights.h"
 #include "graphics/gl_buffers/ssbo.hpp"
 #include "graphics/primitives.h"
-#include "graphics/helpers/texture_quad.hpp"
+#include "graphics/helpers/fullscreen_quad.hpp"
 #include "utilities/uuid.hpp"
 #include "logic/world/scene.h"
 #include "logic/world/components/model_instance.h"
@@ -65,7 +65,9 @@ int main() {
 	assets_manager* am = assets_manager::get_instance();
 	am->shaders.load();
 
-	helpers::texture_quad fullscreen_quad;
+	//gaussian_blur::get_instance()->generate_buffers();
+
+	helpers::fullscreen_quad fullscreen_quad;
 
 	//======================
 	//    CREATING SCENE
@@ -200,7 +202,6 @@ int main() {
 	helpers::box_renderer light_view_box(&am->shaders.debug_box_shader, sc1.dir_light.lightspace_matrix);
 	helpers::box_renderer floor_lml_box(&am->shaders.debug_box_shader, floor_lml);
 	helpers::box_renderer floor_bounds(&am->shaders.debug_box_shader, cube2_i1_mi->calculate_bounds().scale(sc1.model_matrix));
-	//cube2_i1->is_active = false;
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -235,6 +236,7 @@ int main() {
 		sc1.dir_light.full_render_preparations(am->shaders.dirlight_depth_shader, sc1.model_matrix);
 		sc1.render_flag(am->shaders.dirlight_depth_shader, INST_FLAG_CAST_SHADOWS);
 		sc1.dir_light.render_cleanup();
+		
 
 		//for (auto& pl : sc1.point_lights) {
 		//	pl.render_preparations(am->shaders.pointlight_depth_shader);
@@ -281,7 +283,7 @@ int main() {
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		fullscreen_quad.render(am->shaders.fullscreen_quad_shader, main_render_texture);
+		fullscreen_quad.render_framebuffer_shader(am->shaders.fullscreen_quad_shader, main_render_texture);
 
 		//====================
 		//    UI RENDERING

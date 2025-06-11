@@ -34,9 +34,12 @@ namespace feng {
 		void* get_pixels();
 		void* get_pixels_safe();
 
+		int32_t get_param_iv(uint32_t param);
+
 		// Just 0, 1, 2... NO GL_TEXTURE0
 		static void activate_slot(uint32_t slot);
 		static texture_base_data get_texture_data_form_file(const std::string path, bool flip = false);
+		static uint32_t get_current_binded_texture();
 
 		int id() const;
 		std::string path() const;
@@ -44,6 +47,9 @@ namespace feng {
 		int32_t width() const;
 		int32_t height() const;
 		uint8_t no_channels() const;
+		uint32_t format() const;
+		int32_t internal_format() const;
+		uint32_t type() const;
 
 		bool operator==(const texture& other) const {
 			return _id == other._id;
@@ -63,6 +69,7 @@ namespace feng {
 		std::string _path;
 		std::string _dir;
 
+		static uint32_t _current_binded_texture;
 
 		void split_full_path(std::string full_path);
 		void load_texture_from_file(bool flip = false);

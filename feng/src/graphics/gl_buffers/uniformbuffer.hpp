@@ -1,3 +1,4 @@
+#ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 #pragma once
 
 #include <map>
@@ -7,7 +8,6 @@
 #include "gl_buffer.hpp"
 #include "../light/lights.h"
 
-#ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 
 #define __IS_T_NOT_UBO_STRUCT(T) !std::is_same_v<uniformbuffer_struct, T> && !std::is_base_of<uniformbuffer_struct, T>
 

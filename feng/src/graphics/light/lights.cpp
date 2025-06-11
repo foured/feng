@@ -19,10 +19,11 @@ namespace feng {
 		float border = 1;
 		float dlm_near_plane = 0.0f, dlm_far_plane = 20.0f;
 		glm::mat4 light_projection = glm::ortho(-border, border, -border, border, dlm_near_plane, dlm_far_plane);
-		glm::vec3 pos = -8.0f * direction;
+		glm::vec3 center(0.0f, 0.0f, 0.0f);
+		glm::vec3 pos = center -3.0f * direction;
 		glm::mat4 light_view = glm::lookAt(
 			pos,
-			glm::vec3(0.0f, 0.0f, 0.0f),
+			center,
 			glm::vec3(0.0f, 1.0f, 0.0f));
 
 		lightspace_matrix = light_projection * light_view;
@@ -68,7 +69,9 @@ namespace feng {
 		float cn = -cmax_ls.z, cf = -cmin_ls.z;
 		float rn = -rmax_ls.z, rf = -rmin_ls.z;
 
-		glm::mat4 light_proj = glm::ortho(l, r, b, t, std::min(cn, rn), std::max(cf, rf));
+		float n = std::min(cn, rn), f = std::max(cf, rf);
+
+		glm::mat4 light_proj = glm::ortho(l, r, b, t, n, f);
 		return light_proj * light_view;
 	}
 

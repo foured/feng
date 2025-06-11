@@ -10,6 +10,7 @@
 #include "../logging/logging.h"
 #include "../utilities/utilities.h"
 #include "../logic/data_management/assets_manager.h"
+#include "../logic/data_management/files.h"
 
 #define SHADER_INCLUDE_WORD "#include"
 #define SHADER_INCLUDE_OPEN_BRACKET_CHAR '<'
@@ -124,15 +125,16 @@ namespace feng {
 		if (!success) {
 			glGetShaderInfoLog(shader, 512, NULL, info_log);
 			LOG_ERROR("Error to compile shader '" + std::string(filepath) + "': " + std::string(info_log));
-			std::string log_filename = "log_" + std::filesystem::path(filepath).filename().string();
-			std::ofstream output_file("log/" + log_filename);
+			std::string log_filename = "log/log_" + std::filesystem::path(filepath).filename().string();
+			data::wfile file(log_filename);
 
-			if (!output_file) {
+			if (!file) {
 				LOG_ERROR("Error to create shader log file!");
 			}
 			else {
-				output_file << shader_src_s;
-				output_file.close();
+				file.write_raw(shader_src_s.data(), sizeof(char) * shader_src_s.size());
+				//output_file << shader_src_s;
+				//output_file.close();
 				LOG_INFO("Saved shader log file: " + log_filename);
 			}
 

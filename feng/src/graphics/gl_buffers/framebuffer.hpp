@@ -54,8 +54,8 @@ namespace feng {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment_mode, GL_RENDERBUFFER, rb.id());
 		}
 
-		texture allocate_and_attach_texture(uint32_t attachment_mode, uint32_t min_filter, uint32_t mag_filter, 
-			uint32_t wrap_s, uint32_t wrap_t, int32_t internalformat, uint32_t format = NULL, uint32_t type = GL_FLOAT) {
+		texture allocate_and_attach_texture(uint32_t attachment_mode, int32_t min_filter, int32_t mag_filter, 
+			int32_t wrap_s, int32_t wrap_t, int32_t internalformat, uint32_t format = NULL, uint32_t type = GL_FLOAT) {
 			if (format == NULL)
 				format = internalformat;
 			texture fb_texture;

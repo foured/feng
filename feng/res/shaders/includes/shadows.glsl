@@ -1,12 +1,24 @@
 #include<random.glsl>
 
-#define BLOCKER_SEARCH_NUM_SAMPLES 256
-#define PCF_NUM_SAMPLES 256
+
+#define DEFAULT_BLOCKER_SEARCH_NUM_SAMPLES 256
+#ifndef BLOCKER_SEARCH_NUM_SAMPLES
+    #define BLOCKER_SEARCH_NUM_SAMPLES DEFAULT_BLOCKER_SEARCH_NUM_SAMPLES
+#endif
+
+#define DEFAULT_PCF_NUM_SAMPLES 256
+#ifndef PCF_NUM_SAMPLES
+    #define PCF_NUM_SAMPLES DEFAULT_PCF_NUM_SAMPLES
+#endif
+
+#define DEFAULT_LIGHT_SIZE 1.0 / 100.0
+#ifndef LIGHT_SIZE
+    #define LIGHT_SIZE DEFAULT_LIGHT_SIZE
+#endif
 
 #define POINTLIGHT_PCF_NUM_SAMPLES 128
 #define DIRLIGHT_PCF_NUM_SAMPLES 256
 
-#define LIGHT_SIZE 1.0 / 200.0
 
 float SampleTexture(sampler2D tex, vec2 coords, float compare)
 {
@@ -65,13 +77,13 @@ float RandomPCF_Vogel(sampler2D shadowMap, vec3 projCoords, float radius, vec3 n
     return shadow;
 }
 
-float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float lightSize, int samples){
+float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float searchWidth, int samples){
     float avgBlockerDepth = 0.0;
     int numBlockers = 0;
 
     for (int i = 0; i < samples; ++i) {
         vec2 sampleUV = VogelDisk(i, samples, gradientNoise);
-        sampleUV = projCoords.xy + lightSize * sampleUV;
+        sampleUV = projCoords.xy + searchWidth * sampleUV;
 
         float sampleDepth = texture(shadowMap, sampleUV).r;
         //float sampleDepth = SampleTexture(shadowMap, sampleUV, projCoords.z);
@@ -91,8 +103,8 @@ float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 pr
     return avgBlockerDepth /= numBlockers;
 }
 
-float CalculatePenumbra(float avgBlockerDepth, float lightSize, float zDepth) {
-    float penumbra = lightSize * (zDepth - avgBlockerDepth) / avgBlockerDepth;
+float CalculatePenumbra(float avgBlockerDepth, float searchWidth, float zDepth) {
+    float penumbra = searchWidth * (zDepth - avgBlockerDepth) / avgBlockerDepth;
     // penumbra *= penumbra;
     // penumbra = clamp(80.0 * penumbra, 0.0, 1.0);
     return penumbra;
@@ -112,7 +124,7 @@ float SmoothPCF(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float
 float PCSS(sampler2D shadowMap, vec3 projCoords, float lightSize) {
     //https://www.gamedev.net/articles/programming/graphics/contact-hardening-soft-shadows-made-fast-r4906/
     float gradientNoise = InterleavedGradientNoise(projCoords.xy);
-    float avgBlockerDepth = CalculateAvgBlockerDepth(shadowMap, gradientNoise, projCoords, lightSize, BLOCKER_SEARCH_NUM_SAMPLES);
+    float avgBlockerDepth = CalculateAvgBlockerDepth(shadowMap, gradientNoise, projCoords, 0.2, BLOCKER_SEARCH_NUM_SAMPLES);
     if (avgBlockerDepth == 0)
         return 0;
     // if (avgBlockerDepth == 0)

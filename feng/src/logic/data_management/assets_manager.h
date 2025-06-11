@@ -21,6 +21,7 @@ namespace feng {
 			shader pointlight_depth_shader;
 
 			shader light_bake;
+			shader gaussian_blur_shader;
 
 			shader debug_box_shader;
 

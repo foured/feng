@@ -156,6 +156,9 @@
     <ClCompile Include="src\logic\world\tags\shadow_texture_owner.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\gaussian_blur.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\logging\logging.h">
@@ -278,7 +281,7 @@
     <ClInclude Include="src\fng.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\helpers\texture_quad.hpp">
+    <ClInclude Include="src\graphics\helpers\fullscreen_quad.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\logic\containers\binary_tree.hpp">
@@ -348,6 +351,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\helpers\box_renderer.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\gaussian_blur.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

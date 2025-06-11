@@ -11,6 +11,9 @@
 
 namespace feng {
 
+	uint32_t texture::_current_binded_texture = 0;
+
+
 	texture::texture() { }
 
 	texture::texture(std::string full_path, bool flip)
@@ -161,13 +164,19 @@ namespace feng {
 		return data;
 	}
 
+	int32_t texture::get_param_iv(uint32_t param) {
+		int32_t val;
+		glGetTexParameteriv(GL_TEXTURE_2D, param, &val);
+		return val;
+	}
 
 	void texture::save_to_png(const std::string& path) {
-		void* data = get_pixels();
+		void* data = get_pixels_safe();
 		uint8_t noc = no_channels();
 		if (stbi_write_png(path.c_str(), _width, _height, noc, data, _width * noc) == 0)
 			LOG_WARNING("Error to save texture as PNG.");
 		free(data);
+		GL_CHECK_ERRORS();
 	}
 
 	texture_base_data texture::get_texture_data_form_file(const std::string path, bool flip) {
@@ -197,6 +206,18 @@ namespace feng {
 		return 4;
 	}
 
+	uint32_t texture::format() const {
+		return _format;
+	}
+
+	int32_t texture::internal_format() const {
+		return _internalformat;
+	}
+
+	uint32_t texture::type() const {
+		return _type;
+	}
+
 	void texture::activate_slot(uint32_t slot) {
 		glActiveTexture(GL_TEXTURE0 + slot);
 	}
@@ -218,7 +239,10 @@ namespace feng {
 	}
 
 	void texture::bind() {
-		glBindTexture(GL_TEXTURE_2D, _id);
+		if (_current_binded_texture != _id) {
+			glBindTexture(GL_TEXTURE_2D, _id);
+			_current_binded_texture = _id;
+		}
 	}
 
 	void texture::generate() {
@@ -297,6 +321,10 @@ namespace feng {
 			LOG_ERROR("Failed to load texture.");
 		}
 		free(data);
+	}
+
+	uint32_t texture::get_current_binded_texture() {
+		return _current_binded_texture;
 	}
 
 }
