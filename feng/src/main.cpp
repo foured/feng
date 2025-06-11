@@ -65,8 +65,6 @@ int main() {
 	assets_manager* am = assets_manager::get_instance();
 	am->shaders.load();
 
-	//gaussian_blur::get_instance()->generate_buffers();
-
 	helpers::fullscreen_quad fullscreen_quad;
 
 	//======================
@@ -76,16 +74,16 @@ int main() {
 	scene sc1;
 	skybox sb(&am->shaders.skybox_shader, skybox_faces);
 
-	sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
+	//sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
 	sptr_mdl cube1 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
 	sptr_mdl cube2 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(0.6)));
 	sptr_mdl light_cube = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(1)));
 
-	sptr_ins bp_i = sc1.add_instance();
-	bp_i->add_component<model_instance>(backpack_m);
-	bp_i->transform.set_size(glm::vec3(0.005f));
-	bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
-	LOG_INFO("bp_i: " + bp_i->get_uuid_string());
+	//sptr_ins bp_i = sc1.add_instance();
+	//bp_i->add_component<model_instance>(backpack_m);
+	//bp_i->transform.set_size(glm::vec3(0.005f));
+	//bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
+	//LOG_INFO("bp_i: " + bp_i->get_uuid_string());
 
 	sptr_ins cube1_i1 = sc1.add_instance();
 	cube1_i1.get()->add_component<model_instance>(cube1);

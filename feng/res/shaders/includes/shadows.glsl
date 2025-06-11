@@ -22,7 +22,7 @@
 
 float SampleTexture(sampler2D tex, vec2 coords, float compare)
 {
-	return step(compare, texture2D(tex, coords.xy).r);
+    return step(compare, texture(tex, coords.xy).r);
 }
 
 float SampleShadowMapLinear(sampler2D shadowMap, vec2 coords, float compare, vec2 texelSize)
@@ -77,6 +77,17 @@ float RandomPCF_Vogel(sampler2D shadowMap, vec3 projCoords, float radius, vec3 n
     return shadow;
 }
 
+float SmoothPCF(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float radius, int samples) {
+    float shadow = 0.0;
+    for (int i = 0; i < samples; ++i) {
+        vec2 sampleUV = VogelDisk(i, samples, gradientNoise);
+        sampleUV = projCoords.xy + sampleUV * radius;
+        shadow += SampleTexture(shadowMap, sampleUV, projCoords.z);
+    }
+    shadow /= samples;
+    return 1 - shadow;
+}
+
 float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float searchWidth, int samples){
     float avgBlockerDepth = 0.0;
     int numBlockers = 0;
@@ -86,7 +97,6 @@ float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 pr
         sampleUV = projCoords.xy + searchWidth * sampleUV;
 
         float sampleDepth = texture(shadowMap, sampleUV).r;
-        //float sampleDepth = SampleTexture(shadowMap, sampleUV, projCoords.z);
 
         if (sampleDepth < projCoords.z) {
             avgBlockerDepth += sampleDepth;
@@ -97,28 +107,12 @@ float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 pr
     if (numBlockers == 0)
         return 0;
 
-    // if(numBlockers == samples)
-    //     return -1;
-
     return avgBlockerDepth /= numBlockers;
 }
 
 float CalculatePenumbra(float avgBlockerDepth, float searchWidth, float zDepth) {
     float penumbra = searchWidth * (zDepth - avgBlockerDepth) / avgBlockerDepth;
-    // penumbra *= penumbra;
-    // penumbra = clamp(80.0 * penumbra, 0.0, 1.0);
     return penumbra;
-}
-
-float SmoothPCF(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float radius, int samples) {
-    float shadow = 0.0;
-    for (int i = 0; i < samples; ++i){
-        vec2 sampleUV = VogelDisk(i, samples, gradientNoise);
-        sampleUV = projCoords.xy + sampleUV * radius;
-        shadow += SampleTexture(shadowMap, sampleUV, projCoords.z);
-    }
-    shadow /= samples;
-    return 1 - shadow;
 }
 
 float PCSS(sampler2D shadowMap, vec3 projCoords, float lightSize) {
@@ -127,11 +121,6 @@ float PCSS(sampler2D shadowMap, vec3 projCoords, float lightSize) {
     float avgBlockerDepth = CalculateAvgBlockerDepth(shadowMap, gradientNoise, projCoords, 0.2, BLOCKER_SEARCH_NUM_SAMPLES);
     if (avgBlockerDepth == 0)
         return 0;
-    // if (avgBlockerDepth == 0)
-    //     return SmoothPCF(shadowMap, gradientNoise, projCoords, 0.1, 64);
-
-    // if (avgBlockerDepth == -1)
-    //     return 1;
     float penumbra = CalculatePenumbra(avgBlockerDepth, lightSize, projCoords.z);
     return SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
 }

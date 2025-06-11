@@ -1,0 +1,1 @@
+LOG_FILE_PATH = 'utils/util_log.txt'

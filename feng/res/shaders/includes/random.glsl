@@ -1,13 +1,23 @@
 #define GOLDEN_ANGLE 2.39996322972865332
 
+#include <random_consts.glsl>
+
+float CalculateVogelR(int index, int samples) {
+    if (samples == 256) {
+        return vogel_r_256[index];
+    } else {
+        return sqrt((index + 0.5) / samples);
+    }
+}
+
 vec2 VogelDisk(int index, int samples, float phi) {
-    float r = sqrt((index + 0.5) / samples);
+    float r = CalculateVogelR(index, samples);
     float t = index * GOLDEN_ANGLE + phi;
     return r * vec2(cos(t), sin(t));
 }
 
 vec3 VogelDisk3D(int index, int samples, float phi) {
-    float r = sqrt((index + 0.5) / samples);
+    float r = CalculateVogelR(index, samples);
     float t = index * GOLDEN_ANGLE + phi;
     float s = sin(t);
     float c = cos(t);
