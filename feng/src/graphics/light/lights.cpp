@@ -124,7 +124,7 @@ namespace feng {
 	}
 
 	void dir_light::delete_buffers() {
-		_shadowmap.del();
+		_shadowmap.delete_buffer();
 		_depthmap_framebuffer.delete_buffer();
 	}
 

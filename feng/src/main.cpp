@@ -74,18 +74,20 @@ int main() {
 	scene sc1;
 	skybox sb(&am->shaders.skybox_shader, skybox_faces);
 
-	//sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
+	sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
 	sptr_mdl cube1 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
 	sptr_mdl cube2 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(0.6)));
 	sptr_mdl light_cube = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(1)));
 
-	//sptr_ins bp_i = sc1.add_instance();
-	//bp_i->add_component<model_instance>(backpack_m);
-	//bp_i->transform.set_size(glm::vec3(0.005f));
-	//bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
-	//LOG_INFO("bp_i: " + bp_i->get_uuid_string());
+	sptr_ins bp_i = sc1.add_instance();
+	bp_i.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	bp_i->add_component<model_instance>(backpack_m);
+	bp_i->transform.set_size(glm::vec3(0.005f));
+	bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
+	LOG_INFO("bp_i: " + bp_i->get_uuid_string());
 
 	sptr_ins cube1_i1 = sc1.add_instance();
+	cube1_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i1.get()->add_component<model_instance>(cube1);
 	LOG_INFO("cube1_i1: " + cube1_i1->get_uuid_string());
 
@@ -98,6 +100,7 @@ int main() {
 	//bottom
 	sptr_ins cube2_i1 = sc1.add_instance();
 	auto cube2_i1_mi = cube2_i1.get()->add_component<model_instance>(cube2);
+	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
 	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
@@ -105,7 +108,7 @@ int main() {
 	sptr_ins light_cube_i1 = sc1.add_instance();
 	light_cube_i1.get()->add_component<model_instance>(light_cube);
 	//light_cube_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	//light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
 	light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
 	LOG_INFO("light_cube_i1: " + light_cube_i1->get_uuid_string());
@@ -139,7 +142,7 @@ int main() {
 			main_framebuffer.bind();
 			main_framebuffer.width = width;
 			main_framebuffer.height = height;
-			main_render_texture.del();
+			main_render_texture.delete_buffer();
 			main_render_texture = main_framebuffer.allocate_and_attach_texture(
 				GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB16F, GL_RGB);
 			main_renderbuffer.bind();
@@ -182,7 +185,7 @@ int main() {
 
 	//LOG_INFO(std::to_string(std::filesystem::file_size("scene1.fstp")));
 
-	//editor::lightbaker::bake(&sc1, "scene1.fstp");
+	editor::lightbaker::bake(&sc1, "scene1.fstp");
 	//data::scene_serializer::serialize_models(&sc1, "pack1.fmp");
 	//data::scene_serializer::serialize(&sc1, "scene1.fsp");
 

@@ -7,7 +7,7 @@ namespace feng {
 	shadow_texture_owner::shadow_texture_owner() {}
 
 	shadow_texture_owner::~shadow_texture_owner() {
-		_shadow_texture.del();
+		_shadow_texture.delete_buffer();
 	}
 
 	void shadow_texture_owner::serialize(data::wfile* file) {

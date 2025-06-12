@@ -8,8 +8,6 @@ layout (location = 8) in vec3 aSize;
 
 uniform mat4 model;
 uniform mat4 lightSpaceMatrix;
-uniform mat4 projection;
-uniform mat4 view;
 
 out VS_OUT{
     vec2 TexCoords;

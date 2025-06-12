@@ -11,9 +11,6 @@
 
 namespace feng {
 
-	uint32_t texture::_current_binded_texture = 0;
-
-
 	texture::texture() { }
 
 	texture::texture(std::string full_path, bool flip)
@@ -96,71 +93,12 @@ namespace feng {
 
 	void* texture::get_pixels() {
 		bind();
-		int noc = no_channels();
-		void* data = malloc(_width * _height * noc);
+		uint8_t noc = no_channels();
+		uint8_t pixel_size = get_pixel_size();
+
+		void* data = malloc(_width * _height * noc * pixel_size);
 		glGetTexImage(GL_TEXTURE_2D, 0, _format, _type, data);
 		GL_CHECK_ERRORS();
-		return data;
-	}
-
-	void* texture::get_pixels_safe() {
-		bind();
-
-		const int level = 0;
-		const int noc = no_channels(); 
-		const int pixel_size = _width * _height * noc;
-
-		void* data = malloc(pixel_size);
-		if (!data) {
-			LOG_ERROR("Failed to allocate memory for texture read.");
-			return nullptr;
-		}
-
-		glGetTexImage(GL_TEXTURE_2D, level, _format, _type, data);
-		GLenum err = glGetError();
-		if (err == GL_NO_ERROR) {
-			return data;
-		}
-
-		LOG_WARNING("glGetTexImage failed; falling back to RGBA.");
-		free(data);
-		data = nullptr;
-
-		const int fallback_noc = 4;
-		const int fallback_size = _width * _height * fallback_noc;
-
-		data = malloc(fallback_size);
-		if (!data) {
-			LOG_ERROR("Failed to allocate memory for RGBA fallback.");
-			return nullptr;
-		}
-
-		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		err = glGetError();
-		if (err != GL_NO_ERROR) {
-			LOG_ERROR("glGetTexImage(GL_RGBA) failed.");
-			free(data);
-			return nullptr;
-		}
-
-		if (noc == 1) {
-			void* red_only = malloc(pixel_size);
-			if (!red_only) {
-				LOG_ERROR("Failed to allocate red_only buffer.");
-				free(data);
-				return nullptr;
-			}
-
-			uint8_t* src = static_cast<uint8_t*>(data);
-			uint8_t* dst = static_cast<uint8_t*>(red_only);
-			for (int i = 0; i < _width * _height; ++i) {
-				dst[i] = src[i * 4]; // только R
-			}
-
-			free(data);
-			return red_only;
-		}
-
 		return data;
 	}
 
@@ -171,7 +109,7 @@ namespace feng {
 	}
 
 	void texture::save_to_png(const std::string& path) {
-		void* data = get_pixels_safe();
+		void* data = get_pixels();
 		uint8_t noc = no_channels();
 		if (stbi_write_png(path.c_str(), _width, _height, noc, data, _width * noc) == 0)
 			LOG_WARNING("Error to save texture as PNG.");
@@ -218,6 +156,30 @@ namespace feng {
 		return _type;
 	}
 
+	uint8_t texture::get_pixel_size() const {
+		switch (_type) {
+		case GL_FLOAT:                  return 4;
+		case GL_HALF_FLOAT:             return 2;
+		case GL_INT:                    return 4;
+		case GL_UNSIGNED_INT:           return 4;
+		case GL_SHORT:                  return 2;
+		case GL_UNSIGNED_SHORT:         return 2;
+		case GL_BYTE:                   return 1;
+		case GL_UNSIGNED_BYTE:          return 1;
+		case GL_UNSIGNED_INT_24_8:      return 4;
+		case GL_UNSIGNED_INT_10F_11F_11F_REV: return 4;
+		case GL_UNSIGNED_INT_5_9_9_9_REV:     return 4;
+		case GL_UNSIGNED_INT_2_10_10_10_REV:  return 4;
+		case GL_UNSIGNED_INT_8_8_8_8:         return 4;
+		case GL_UNSIGNED_SHORT_5_6_5:         return 2;
+		case GL_UNSIGNED_SHORT_4_4_4_4:       return 2;
+		case GL_UNSIGNED_SHORT_5_5_5_1:       return 2;
+		default:
+			LOG_WARNING("Unsupported texture type: " + std::to_string(_type) + " returning 1");
+			return 1;
+		}
+	}
+
 	void texture::activate_slot(uint32_t slot) {
 		glActiveTexture(GL_TEXTURE0 + slot);
 	}
@@ -239,17 +201,19 @@ namespace feng {
 	}
 
 	void texture::bind() {
-		if (_current_binded_texture != _id) {
-			glBindTexture(GL_TEXTURE_2D, _id);
-			_current_binded_texture = _id;
-		}
+		glBindTexture(GL_TEXTURE_2D, _id);
+	}
+
+	void texture::bind_to_slot(uint32_t slot) {
+		texture::activate_slot(slot);
+		bind();
 	}
 
 	void texture::generate() {
 		glGenTextures(1, &_id);
 	}
 
-	void texture::del() {
+	void texture::delete_buffer() {
 		glDeleteTextures(1, &_id);
 	}
 
@@ -272,12 +236,13 @@ namespace feng {
 	void texture::serialize(data::wfile* file) {
 		file->write_raw(_width);
 		file->write_raw(_height);
+		file->write_raw(_type);
 		uint8_t n = no_channels();
 		file->write_raw(n);
 		file->write_raw(_aiTtype);
 		uint64_t no_pixeles = _width * _height * n;
 		file->write_raw(no_pixeles);
-		void* data = get_pixels_safe();
+		void* data = get_pixels();
 		file->write_raw((char*)data, no_pixeles);
 		free(data);
 	}
@@ -285,6 +250,7 @@ namespace feng {
 	void texture::deserialize(data::rfile* file, scene* scene) {
 		file->read_raw(&_width);
 		file->read_raw(&_height);
+		file->read_raw(&_type);
 		uint8_t n;
 		file->read_raw(&n);
 		file->read_raw(&_aiTtype);
@@ -309,6 +275,7 @@ namespace feng {
 			case(4):
 				color_mode = GL_RGBA;
 				param = GL_CLAMP_TO_EDGE;
+				break;
 			}
 
 			bind();
@@ -321,10 +288,6 @@ namespace feng {
 			LOG_ERROR("Failed to load texture.");
 		}
 		free(data);
-	}
-
-	uint32_t texture::get_current_binded_texture() {
-		return _current_binded_texture;
 	}
 
 }

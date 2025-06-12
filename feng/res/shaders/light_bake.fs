@@ -19,6 +19,7 @@ void main() {
     float shadow = PCSS(shadowMap, projCoords, LIGHT_SIZE);
     float value = texture(inputTexture, fs_in.TexCoords).r;
 
-    //FragColor = max(shadow, value);
-    FragColor = 1.0;
+    FragColor = max(shadow, value);
+    //FragColor = 1 - shadow;
+    //FragColor = 0.5;
 }

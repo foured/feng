@@ -1,5 +1,7 @@
 #include "lightbaker.h"
 
+#include <array>
+
 #include "../logic/data_management/assets_manager.h"
 #include "../logic/data_management/files.h"
 #include "../graphics/window.h"
@@ -21,106 +23,99 @@ namespace feng::editor {
 					casters.emplace_back(instance, m_instance);
 			}
 		}
-		
+
 		if (!casters.empty() && !receivers.empty()) {
-			timer lightbake_time("Light bake timer");
-			LOG_INFO("Starting baking light");
+			std::shared_ptr<instance> receiver_instance, caster_instance;
+			std::shared_ptr<model_instance> receiver_model_instance, caster_model_instance;
+			dir_light* light = &scene->dir_light;
+			glm::mat4 model = scene->model_matrix;
+			assets_manager* am = assets_manager::get_instance();
+
+			//scene->calculate_projection_matrix();
 
 			data::wfile file(path);
 			file.write_raw(scene->get_uuid());
 			file.write_raw(receivers.size());
 
-			dir_light* light = nullptr;
-			assets_manager* manager = assets_manager::get_instance();
-			std::shared_ptr<model_instance> caster_m_instance;
-			aabb model_bounds;
-			scene->calculate_projection_matrix();
+			for (const auto& receiver_pair : receivers) {
+				receiver_instance = receiver_pair.first;
+				receiver_model_instance = receiver_pair.second;
 
-			std::vector<instance*> pointers;
-			std::vector<dir_light*> lights;
+				int32_t shadow_texture_res = calculate_shadow_texture_res(receiver_pair);
 
-			for (const auto& caster_pair : casters) {
-				pointers.push_back(caster_pair.first.get());
-				lights.push_back(new dir_light(
-					scene->dir_light.direction,
-					scene->dir_light.ambient,
-					scene->dir_light.diffuse,
-					scene->dir_light.specular,
-					LIGHT_BAKER_SHADOWMAP_SIZE));
-
-				light = lights.back();
-				light->generate_buffers();
-
-				caster_m_instance = caster_pair.second;
-				model_bounds = caster_m_instance.get()->get_model()->bounds;
-
-				transform* i_transform = &caster_pair.first.get()->transform;
-				glm::vec3 min = model_bounds.min * i_transform->get_size() + i_transform->get_position();
-				glm::vec3 max = model_bounds.max * i_transform->get_size() + i_transform->get_position();
-
-				light->lightspace_matrix = light->generate_custom_lightspace_matrix(min, max, scene->model_matrix);
-				//light->generate_lightspace_matrix();
-				light->full_render_preparations(manager->shaders.dirlight_depth_shader, scene->model_matrix);
-				caster_m_instance->render_alone(manager->shaders.dirlight_depth_shader);
-				light->render_cleanup();
-
-				//std::string shadowmap_path = std::to_string(pointers.back()->get_uuid()) + ".png";
-				//light->_shadowmap.save_to_png(shadowmap_path);
-			}
-
-			for (const auto& pair : receivers) {
-				std::shared_ptr<model_instance> receiver_m_instance = pair.second;
-				std::shared_ptr<instance> receiver_instance = pair.first;
-				int32_t shadow_texture_res = calculate_shadow_texture_res(pair);
-				texture shadow_texture;
-				shadow_texture.generate();
-				shadow_texture.bind();
-				std::vector<uint8_t> pixels(shadow_texture_res * shadow_texture_res, 0);
-				shadow_texture.allocate(shadow_texture_res, shadow_texture_res, GL_RED, GL_RED, GL_UNSIGNED_BYTE, pixels.data());
-				shadow_texture.set_params(GL_NEAREST, GL_NEAREST);
-
-				framebuffer shadow_framebuffer(shadow_texture_res, shadow_texture_res);
-				shadow_framebuffer.bind();
-				shadow_framebuffer.attach_texture2d(shadow_texture, GL_COLOR_ATTACHMENT0);
-				shadow_framebuffer.unbind();
-
-				for (size_t i = 0; i < lights.size(); i++) {
-					if (receiver_instance.get() != pointers[i]) {
-						light = lights[i];
-
-						shadow_framebuffer.set_viewport();
-						shadow_framebuffer.bind();
-
-						glDisable(GL_DEPTH_TEST);
-						//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-						glClear(GL_COLOR_BUFFER_BIT);
-
-						manager->shaders.light_bake.activate();
-						manager->shaders.light_bake.set_mat4("model", scene->model_matrix);
-						manager->shaders.light_bake.set_mat4("view", scene->main_camera.get_view_matrix());
-						manager->shaders.light_bake.set_mat4("lightSpaceMatrix", light->lightspace_matrix);
-						manager->shaders.light_bake.set_mat4("projection", scene->get_projection_matrix());
-						manager->shaders.light_bake.set_int("shadowMap", 0);
-						light->bind_shadowmap(0);
-						manager->shaders.light_bake.set_int("inputTexture", 1);
-						texture::activate_slot(1);
-						shadow_texture.bind();
-						receiver_m_instance->render_alone(manager->shaders.light_bake);
-
-						shadow_framebuffer.unbind();
-					}
+				std::array<texture, 2> shadow_textures = std::array<texture, 2>();
+				std::array<framebuffer, 2> shadow_framebuffers = {
+					framebuffer(shadow_texture_res, shadow_texture_res),
+					framebuffer(shadow_texture_res, shadow_texture_res)
+				};
+				
+				for (size_t i = 0; i < 2; i++) {
+					shadow_textures[i].generate();
+					shadow_textures[i].bind();
+					shadow_textures[i].allocate(shadow_texture_res, shadow_texture_res, GL_R32F, GL_RED, GL_FLOAT);
+					shadow_textures[i].set_params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+				
+					shadow_framebuffers[i].bind();
+					shadow_framebuffers[i].attach_texture2d(shadow_textures[i], GL_COLOR_ATTACHMENT0);
+					shadow_framebuffers[i].unbind();
 				}
 
+				//texture shadow_texture;
+				//shadow_texture.generate();
+				//shadow_texture.bind();
+				//shadow_texture.allocate(shadow_texture_res, shadow_texture_res, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+				//shadow_texture.set_params(GL_NEAREST, GL_NEAREST);
+				//
+				//framebuffer shadow_framebuffer(shadow_texture_res, shadow_texture_res);
+				//shadow_framebuffer.bind();
+				//shadow_framebuffer.attach_texture2d(shadow_texture, GL_COLOR_ATTACHMENT0);
+				//shadow_framebuffer.unbind();
+
+				bool t = false;
+				for (const auto& caster_pair : casters) {
+					caster_instance = caster_pair.first;
+					caster_model_instance = caster_pair.second;
+
+					if (caster_instance->get_uuid() != receiver_instance->get_uuid()) {
+						light->lightspace_matrix = light->generate_custom_relative_lightspace_matrix(
+							caster_model_instance->calculate_bounds(),
+							receiver_model_instance->calculate_bounds(),
+							model
+						);
+						light->full_render_preparations(am->shaders.dirlight_depth_shader, model);
+						caster_model_instance->render_alone(am->shaders.dirlight_depth_shader);
+						light->render_cleanup();
+
+						shadow_framebuffers[t].set_viewport();
+						shadow_framebuffers[t].bind();
+
+						glDisable(GL_DEPTH_TEST);
+						glClear(GL_COLOR_BUFFER_BIT);
+
+						glCullFace(GL_FRONT);
+
+						am->shaders.light_bake.activate();
+						am->shaders.light_bake.set_mat4("model", model);
+						am->shaders.light_bake.set_mat4("lightSpaceMatrix", light->lightspace_matrix);
+						am->shaders.light_bake.set_int("shadowMap", 31);
+						light->bind_shadowmap(31);
+						am->shaders.light_bake.set_int("inputTexture", 30);
+						shadow_textures[!t].bind_to_slot(30);
+
+						receiver_model_instance->render_alone(am->shaders.light_bake);
+
+						shadow_framebuffers[t].unbind();
+
+						t = !t;
+					}
+				}
 				file.write_raw(receiver_instance->get_uuid());
-				file.write_serializable(&shadow_texture);
+				file.write_serializable(&shadow_textures[t]);
 
-				shadow_texture.del();
-				shadow_framebuffer.delete_buffer();
-			}
-
-			for (dir_light* dl : lights) {
-				dl->delete_buffers();
-				delete dl;
+				for (size_t i = 0; i < 2; i++) {
+					shadow_textures[i].delete_buffer();
+					shadow_framebuffers[i].delete_buffer();
+				}
 			}
 		}
 	}
@@ -142,7 +137,7 @@ namespace feng::editor {
 		else if (volume <= 500)
 			shadow_texture_resolution = 512;
 		else
-			shadow_texture_resolution = 1024;
+			shadow_texture_resolution = 4096;
 		return shadow_texture_resolution;
 	}
 
