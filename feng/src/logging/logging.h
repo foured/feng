@@ -2,7 +2,7 @@
 
 #include <string>
 #include <chrono>
-
+#include <sstream>
 
 #define FENG_LOGGIN
 //#define LOG_FUNC_NAME
@@ -16,10 +16,10 @@
 #define WIN_LOGGIN_COLOR_YELLOW 14
 
 #ifdef FENG_LOGGIN
-	#define LOG_INFO(msg) feng::logger::log_info(msg, __FUNCTION__, __LINE__)
-	#define LOG_ACTION(msg) feng::logger::log_action(msg, __FUNCTION__, __LINE__)
-	#define LOG_ERROR(msg) feng::logger::log_error(msg, __FUNCTION__, __LINE__)
-	#define LOG_WARNING(msg) feng::logger::log_warning(msg, __FUNCTION__, __LINE__)
+	#define LOG_INFO(...) feng::logger::log_info(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
+	#define LOG_ACTION(...) feng::logger::log_action(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
+	#define LOG_ERROR(...) feng::logger::log_error(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
+	#define LOG_WARNING(...) feng::logger::log_warning(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
 
 	#define START_TIMER() feng::timer t(__FUNCTION__)
 
@@ -27,15 +27,15 @@
 	#define GL_CHECK_ERRORS() { \
 		GLenum err; \
 		while ((err = glGetError()) != GL_NO_ERROR) { \
-			LOG_WARNING(std::string("OpenGL error: ") + std::to_string(err) + std::string(" at line ") + std::to_string(__LINE__));\
+			LOG_WARNING(std::string("OpenGL error: ") + feng::logger::get_error_string(err) + std::string(" at line ") + std::to_string(__LINE__));\
 		} \
 	}	
 
 #else
-	#define LOG_INFO(msg)
-	#define LOG_ACTION(msg)
-	#define LOG_ERROR(msg) 
-	#define LOG_WARNING(msg)
+	#define LOG_INFO(...)
+	#define LOG_ACTION(...)
+	#define LOG_ERROR(...) 
+	#define LOG_WARNING(...)
 
 	#define START_TIMER(name)
 
@@ -53,14 +53,24 @@ namespace feng {
 		static void log_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void log_warning(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void throw_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
-		
+
+		static std::string get_error_string(uint32_t err);
+
+		template<typename... Ts>
+		static std::string gen_string(Ts&&... msgs) {
+			std::ostringstream oss;
+			(oss << ... << std::forward<Ts>(msgs));
+			return oss.str();
+		}
+
+
 	private:
 		static void log_time();
 		static void log(const std::string& msg, const std::string& type_name, char color,
 			std::string f_name, int32_t line);
 		static void set_color(char color);
 	};
-	
+
 	class timer {
 	public:
 		timer(const char* name);
@@ -75,4 +85,17 @@ namespace feng {
 
 	};
 
+}
+
+#include <glm/glm.hpp>
+#include <ostream>
+
+inline std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
+    os << "vec3(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const glm::vec4& v) {
+    os << "vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+    return os;
 }

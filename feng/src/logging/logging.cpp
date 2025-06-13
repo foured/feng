@@ -1,13 +1,14 @@
 #include "logging.h"
 
+#include <glad/glad.h>
+
 #include <iostream>
 #include <ctime>
 #include <iomanip>
 #include <exception>
 
-
 #ifdef _WIN32
-	#include "Windows.h"
+#include "Windows.h"
 #endif
 
 #pragma warning(disable : 4996)
@@ -44,6 +45,29 @@ namespace feng {
 	void logger::throw_error(const std::string& msg, const std::string& func_name, int32_t line) {
 		log_error(msg, func_name, line);
 		throw std::exception(msg.c_str());
+	}
+
+	std::string logger::get_error_string(uint32_t err) {
+		switch (err) {
+		case GL_NO_ERROR:								
+			return "GL_NO_ERROR";
+		case GL_INVALID_ENUM:							
+			return "GL_INVALID_ENUM";
+		case GL_INVALID_VALUE:							
+			return "GL_INVALID_VALUE";
+		case GL_INVALID_OPERATION:						
+			return "GL_INVALID_OPERATION";
+		case GL_STACK_OVERFLOW:							
+			return "GL_STACK_OVERFLOW";
+		case GL_STACK_UNDERFLOW:						
+			return "GL_STACK_UNDERFLOW";
+		case GL_OUT_OF_MEMORY:							
+			return "GL_OUT_OF_MEMORY";
+		case GL_INVALID_FRAMEBUFFER_OPERATION:			
+			return "GL_INVALID_FRAMEBUFFER_OPERATION";
+		default:                   
+			return "Unknown OpenGL error: " + std::to_string(err);
+		}
 	}
 
 	void logger::log(const std::string& msg, const std::string& type_name, char color, std::string func_name, int32_t line) {
@@ -96,7 +120,7 @@ namespace feng {
 		int64_t end = std::chrono::time_point_cast<std::chrono::milliseconds>(end_timepoint)
 			.time_since_epoch().count();
 
-		LOG_INFO(_name + " : " + std::to_string(end - start) + "ms");
+		LOG_INFO(_name + ": " + std::to_string(end - start) + "ms");
 
 		_stopped = true;
 	}
