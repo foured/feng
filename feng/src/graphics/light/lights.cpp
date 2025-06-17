@@ -6,6 +6,8 @@
 
 #include "../../utilities/utilities.h"
 
+using namespace feng::util;
+
 namespace feng {
 
 	dir_light::dir_light(uint32_t shadowmap_size) 
@@ -36,17 +38,11 @@ namespace feng {
 		glm::vec3 light_pos = center - direction * radius * 2.0f;
 		glm::mat4 light_view = glm::lookAt(light_pos, center, glm::vec3(0, 1, 0));
 
+		ortho_matrix_setup ortho_setup = ortho_matrix_setup::calculate_in_light_space(min, max, light_view, model);
 
-		auto [min_ls, max_ls] = utilities::calculate_min_max_light_space(min, max, light_view, model);
-
-		float l = min_ls.x, r = max_ls.x;
-		float b = min_ls.y, t = max_ls.y;
-		float n = -max_ls.z, f = -min_ls.z;
-
-		glm::mat4 light_proj = glm::ortho(l, r, b, t, n, f);
+		glm::mat4 light_proj = ortho_setup.setup_matrix();
 		return light_proj * light_view;
 	}
-
 
 	glm::mat4 dir_light::generate_custom_lightspace_matrix(const aabb& bounds, const glm::mat4& model) {
 		return generate_custom_lightspace_matrix(bounds.min, bounds.max, model);
@@ -60,18 +56,17 @@ namespace feng {
 		glm::vec3 light_pos = center - direction * radius * 2.0f;
 		glm::mat4 light_view = glm::lookAt(light_pos, center, glm::vec3(0, 1, 0));
 
-		auto [cmin_ls, cmax_ls] = utilities::calculate_min_max_light_space(cmin, cmax, light_view, model);
-		auto [rmin_ls, rmax_ls] = utilities::calculate_min_max_light_space(rmin, rmax, light_view, model);
+		ortho_matrix_setup caster_maxtrix_setup 
+			= ortho_matrix_setup::calculate_in_light_space(cmin, cmax, light_view, model);
+		ortho_matrix_setup receiver_maxtrix_setup
+			= ortho_matrix_setup::calculate_in_light_space(rmin, rmax, light_view, model);
 
-		float l = cmin_ls.x, r = cmax_ls.x;
-		float b = cmin_ls.y, t = cmax_ls.y;
+		ortho_matrix_setup final_matrix_setup = ortho_matrix_setup::overlap_depth(caster_maxtrix_setup, receiver_maxtrix_setup);
+		final_matrix_setup.transform_to_square();
+		final_matrix_setup.scale(0.1f);
 
-		float cn = -cmax_ls.z, cf = -cmin_ls.z;
-		float rn = -rmax_ls.z, rf = -rmin_ls.z;
+		glm::mat4 light_proj = final_matrix_setup.setup_matrix();
 
-		float n = std::min(cn, rn), f = std::max(cf, rf);
-
-		glm::mat4 light_proj = glm::ortho(l, r, b, t, n, f);
 		return light_proj * light_view;
 	}
 
@@ -83,7 +78,7 @@ namespace feng {
 		_depthmap_framebuffer = framebuffer(_shadowmap_size, _shadowmap_size);
 		_depthmap_framebuffer.bind();
 		_shadowmap = _depthmap_framebuffer.allocate_and_attach_texture(
-			GL_DEPTH_ATTACHMENT, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT);
+			GL_DEPTH_ATTACHMENT, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT);
 		const float border_color[] = { 1.0, 1.0, 1.0, 1.0 };
 		_shadowmap.set_param_fv(GL_TEXTURE_BORDER_COLOR, border_color);
 		_depthmap_framebuffer.set_draw_buffer(GL_NONE);

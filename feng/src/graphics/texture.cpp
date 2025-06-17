@@ -80,6 +80,57 @@ namespace feng {
 		glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, type, data);
 	}
 
+	void texture::allocate(uint32_t width, uint32_t height, int32_t internalformat, void* data) {
+		uint32_t format = 0;
+		uint32_t type = 0;
+
+		switch (internalformat) {
+		case GL_R8:
+			format = GL_RED;
+			type = GL_UNSIGNED_BYTE;
+			break;
+		case GL_R32F:
+			format = GL_RED;
+			type = GL_FLOAT;
+			break;
+		case GL_R32UI:
+			format = GL_RED_INTEGER;
+			type = GL_UNSIGNED_INT;
+			break;
+		case GL_RG8:
+			format = GL_RG;
+			type = GL_UNSIGNED_BYTE;
+			break;
+		case GL_RGB8:
+			format = GL_RGB;
+			type = GL_UNSIGNED_BYTE;
+			break;
+		case GL_RGBA8:
+			format = GL_RGBA;
+			type = GL_UNSIGNED_BYTE;
+			break;
+		case GL_RGBA32F:
+			format = GL_RGBA;
+			type = GL_FLOAT;
+			break;
+		case GL_DEPTH_COMPONENT24:
+			format = GL_DEPTH_COMPONENT;
+			type = GL_UNSIGNED_INT;
+			break;
+		case GL_DEPTH24_STENCIL8:
+			format = GL_DEPTH_STENCIL;
+			type = GL_UNSIGNED_INT_24_8;
+			break;
+		default:
+			LOG_WARNING("Unsupported internal format: " + std::to_string(internalformat) + ". Using GL_RGBA and GL_UNSIGNED_BYTE as default.");
+			format = GL_RGBA;
+			type = GL_UNSIGNED_BYTE;
+			break;
+		}
+
+		allocate(width, height, internalformat, format, type, data);
+	}
+
 	void texture::set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s, int32_t wrap_t) {
 		if(min_filter != NULL)
 			set_param_i(GL_TEXTURE_MIN_FILTER, min_filter);
@@ -93,6 +144,7 @@ namespace feng {
 
 	void* texture::get_pixels() {
 		bind();
+
 		uint8_t noc = no_channels();
 		uint8_t pixel_size = get_pixel_size();
 
@@ -126,24 +178,6 @@ namespace feng {
 		return { data, width, height, no_channels };
 	}
 
-	uint8_t texture::no_channels() const{
-		switch (_format)
-		{
-		case (GL_RED):
-			return 1;
-		case (GL_RG):
-			return 2;
-		case (GL_RGB):
-			return 3;
-		case (GL_RGBA):
-			return 4;
-		case (GL_DEPTH_COMPONENT):
-			return 4;
-		}
-		LOG_WARNING("Unknown texture format detected. Returning '4'.");
-		return 4;
-	}
-
 	uint32_t texture::format() const {
 		return _format;
 	}
@@ -154,30 +188,6 @@ namespace feng {
 
 	uint32_t texture::type() const {
 		return _type;
-	}
-
-	uint8_t texture::get_pixel_size() const {
-		switch (_type) {
-		case GL_FLOAT:                  return 4;
-		case GL_HALF_FLOAT:             return 2;
-		case GL_INT:                    return 4;
-		case GL_UNSIGNED_INT:           return 4;
-		case GL_SHORT:                  return 2;
-		case GL_UNSIGNED_SHORT:         return 2;
-		case GL_BYTE:                   return 1;
-		case GL_UNSIGNED_BYTE:          return 1;
-		case GL_UNSIGNED_INT_24_8:      return 4;
-		case GL_UNSIGNED_INT_10F_11F_11F_REV: return 4;
-		case GL_UNSIGNED_INT_5_9_9_9_REV:     return 4;
-		case GL_UNSIGNED_INT_2_10_10_10_REV:  return 4;
-		case GL_UNSIGNED_INT_8_8_8_8:         return 4;
-		case GL_UNSIGNED_SHORT_5_6_5:         return 2;
-		case GL_UNSIGNED_SHORT_4_4_4_4:       return 2;
-		case GL_UNSIGNED_SHORT_5_5_5_1:       return 2;
-		default:
-			LOG_WARNING("Unsupported texture type: " + std::to_string(_type) + " returning 1");
-			return 1;
-		}
 	}
 
 	void texture::activate_slot(uint32_t slot) {
@@ -240,7 +250,7 @@ namespace feng {
 		uint8_t n = no_channels();
 		file->write_raw(n);
 		file->write_raw(_aiTtype);
-		uint64_t no_pixeles = _width * _height * n;
+		uint64_t no_pixeles = _width * _height * n * get_pixel_size();
 		file->write_raw(no_pixeles);
 		void* data = get_pixels();
 		file->write_raw((char*)data, no_pixeles);
@@ -288,6 +298,124 @@ namespace feng {
 			LOG_ERROR("Failed to load texture.");
 		}
 		free(data);
+	}
+
+	uint8_t texture::get_pixel_size() const {
+		switch (_type) {
+		case GL_FLOAT:                  return 4;
+		case GL_HALF_FLOAT:             return 2;
+		case GL_INT:                    return 4;
+		case GL_UNSIGNED_INT:           return 4;
+		case GL_SHORT:                  return 2;
+		case GL_UNSIGNED_SHORT:         return 2;
+		case GL_BYTE:                   return 1;
+		case GL_UNSIGNED_BYTE:          return 1;
+		case GL_UNSIGNED_INT_24_8:      return 4;
+		case GL_UNSIGNED_INT_10F_11F_11F_REV: return 4;
+		case GL_UNSIGNED_INT_5_9_9_9_REV:     return 4;
+		case GL_UNSIGNED_INT_2_10_10_10_REV:  return 4;
+		case GL_UNSIGNED_INT_8_8_8_8:         return 4;
+		case GL_UNSIGNED_SHORT_5_6_5:         return 2;
+		case GL_UNSIGNED_SHORT_4_4_4_4:       return 2;
+		case GL_UNSIGNED_SHORT_5_5_5_1:       return 2;
+		default:
+			LOG_WARNING("Unsupported texture type: " + std::to_string(_type) + " returning 1");
+			return 1;
+		}
+	}
+
+	uint8_t texture::no_channels() const {
+		switch (_format)
+		{
+			// Single channel
+		case GL_RED:
+		case GL_RED_INTEGER:
+		case GL_LUMINANCE:                  // Legacy
+		case GL_ALPHA:                      // Legacy
+		case GL_R8:
+		case GL_R16:
+		case GL_R16F:
+		case GL_R32F:
+		case GL_R8I:
+		case GL_R8UI:
+		case GL_R16I:
+		case GL_R16UI:
+		case GL_R32I:
+		case GL_R32UI:
+			return 1;
+
+			// Dual channel
+		case GL_RG:
+		case GL_RG_INTEGER:
+		case GL_LUMINANCE_ALPHA:            // Legacy
+		case GL_RG8:
+		case GL_RG16:
+		case GL_RG16F:
+		case GL_RG32F:
+		case GL_RG8I:
+		case GL_RG8UI:
+		case GL_RG16I:
+		case GL_RG16UI:
+		case GL_RG32I:
+		case GL_RG32UI:
+			return 2;
+
+			// Triple channel
+		case GL_RGB:
+		case GL_RGB_INTEGER:
+		case GL_BGR:
+		case GL_BGR_INTEGER:
+		case GL_RGB8:
+		case GL_RGB16:
+		case GL_RGB16F:
+		case GL_RGB32F:
+		case GL_RGB8I:
+		case GL_RGB8UI:
+		case GL_RGB16I:
+		case GL_RGB16UI:
+		case GL_RGB32I:
+		case GL_RGB32UI:
+			return 3;
+
+			// Quadruple channel
+		case GL_RGBA:
+		case GL_RGBA_INTEGER:
+		case GL_BGRA:
+		case GL_BGRA_INTEGER:
+		case GL_RGBA8:
+		case GL_RGBA16:
+		case GL_RGBA16F:
+		case GL_RGBA32F:
+		case GL_RGBA8I:
+		case GL_RGBA8UI:
+		case GL_RGBA16I:
+		case GL_RGBA16UI:
+		case GL_RGBA32I:
+		case GL_RGBA32UI:
+			return 4;
+
+			// Depth/stencil
+		case GL_DEPTH_COMPONENT:
+		case GL_DEPTH_COMPONENT16:
+		case GL_DEPTH_COMPONENT24:
+		case GL_DEPTH_COMPONENT32:
+		case GL_DEPTH_COMPONENT32F:
+			return 1;
+
+		case GL_STENCIL_INDEX:
+		case GL_STENCIL_INDEX1:
+		case GL_STENCIL_INDEX4:
+		case GL_STENCIL_INDEX8:
+		case GL_STENCIL_INDEX16:
+			return 1;
+
+		case GL_DEPTH_STENCIL:
+		case GL_DEPTH24_STENCIL8:
+		case GL_DEPTH32F_STENCIL8:
+			return 2;
+		}
+		LOG_WARNING("Unknown texture format detected (value: %d). Returning '4'.", _format);
+		return 4;
 	}
 
 }

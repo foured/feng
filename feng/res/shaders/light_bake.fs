@@ -16,10 +16,8 @@ void main() {
     vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
-    float shadow = PCSS(shadowMap, projCoords, LIGHT_SIZE);
+    float shadow = PCSS(shadowMap, projCoords);
     float value = texture(inputTexture, fs_in.TexCoords).r;
 
     FragColor = max(shadow, value);
-    //FragColor = 1 - shadow;
-    //FragColor = 0.5;
 }

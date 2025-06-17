@@ -74,44 +74,41 @@ int main() {
 	scene sc1;
 	skybox sb(&am->shaders.skybox_shader, skybox_faces);
 
-	sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
+	//sptr_mdl backpack_m = sc1.register_model("res/models/survival_guitar_backpack/scene.gltf");
 	sptr_mdl cube1 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 0, 0), glm::vec3(0.2)));
-	sptr_mdl cube2 = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(0.6)));
+	sptr_mdl plane1 = sc1.register_model(primitives::generate_plane_mesh(glm::vec3(1, 1, 1), glm::vec3(0.6)));
 	sptr_mdl light_cube = sc1.register_model(primitives::generate_cube_mesh(glm::vec3(1, 1, 1), glm::vec3(1)));
 
-	sptr_ins bp_i = sc1.add_instance();
-	bp_i.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	bp_i->add_component<model_instance>(backpack_m);
-	bp_i->transform.set_size(glm::vec3(0.005f));
-	bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
-	LOG_INFO("bp_i: " + bp_i->get_uuid_string());
+	//sptr_ins bp_i = sc1.add_instance();
+	//bp_i.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	//bp_i->add_component<model_instance>(backpack_m);
+	//bp_i->transform.set_size(glm::vec3(0.005f));
+	//bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
 
 	sptr_ins cube1_i1 = sc1.add_instance();
 	cube1_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i1.get()->add_component<model_instance>(cube1);
-	LOG_INFO("cube1_i1: " + cube1_i1->get_uuid_string());
 
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
+	auto cube1_i2_mi = cube1_i2->try_get_component<model_instance>();
 	cube1_i2.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2.get()->transform.set_position(glm::vec3(2, 2, -2));
 	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 10, 0.5));
-	LOG_INFO("cube1_i2: " + cube1_i2->get_uuid_string());
 
 	//bottom
-	sptr_ins cube2_i1 = sc1.add_instance();
-	auto cube2_i1_mi = cube2_i1.get()->add_component<model_instance>(cube2);
+	sptr_ins plane1_i1 = sc1.add_instance();
+	auto plane1_i1_mi = plane1_i1.get()->add_component<model_instance>(plane1);
 	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	cube2_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	cube2_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
-	cube2_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
+	plane1_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	plane1_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
+	plane1_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
 
-	sptr_ins light_cube_i1 = sc1.add_instance();
-	light_cube_i1.get()->add_component<model_instance>(light_cube);
+	//sptr_ins light_cube_i1 = sc1.add_instance();
+	//light_cube_i1.get()->add_component<model_instance>(light_cube);
 	//light_cube_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
-	light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
-	LOG_INFO("light_cube_i1: " + light_cube_i1->get_uuid_string());
+	//light_cube_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	//light_cube_i1.get()->transform.set_size(glm::vec3(0.1f));
+	//light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
 
 	sptr_ins flash_light_i = sc1.add_instance();
 	flash_light_i.get()->add_component<flash_light>(&sc1);
@@ -185,7 +182,6 @@ int main() {
 
 	//LOG_INFO(std::to_string(std::filesystem::file_size("scene1.fstp")));
 
-	editor::lightbaker::bake(&sc1, "scene1.fstp");
 	//data::scene_serializer::serialize_models(&sc1, "pack1.fmp");
 	//data::scene_serializer::serialize(&sc1, "scene1.fsp");
 
@@ -195,14 +191,16 @@ int main() {
 
 	sc1.generate_lightspace_matrices();
 	
-	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
-		cube2_i1_mi->calculate_bounds(), sc1.model_matrix);
+	//sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
+	//	plane1_i1_mi->calculate_bounds(), sc1.model_matrix);	
+	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(cube1_i2_mi->calculate_bounds(),
+		plane1_i1_mi->calculate_bounds(), sc1.model_matrix);
 
-	glm::mat4 floor_lml = sc1.dir_light.generate_custom_lightspace_matrix(cube2_i1_mi->calculate_bounds(), sc1.model_matrix);
+	glm::mat4 floor_lml = sc1.dir_light.generate_custom_lightspace_matrix(plane1_i1_mi->calculate_bounds(), sc1.model_matrix);
 
 	helpers::box_renderer light_view_box(&am->shaders.debug_box_shader, sc1.dir_light.lightspace_matrix);
 	helpers::box_renderer floor_lml_box(&am->shaders.debug_box_shader, floor_lml);
-	helpers::box_renderer floor_bounds(&am->shaders.debug_box_shader, cube2_i1_mi->calculate_bounds().scale(sc1.model_matrix));
+	helpers::box_renderer floor_bounds(&am->shaders.debug_box_shader, plane1_i1_mi->calculate_bounds().scale(sc1.model_matrix));
 
 	bool is_spot_light_working = false;
 	ui.start();

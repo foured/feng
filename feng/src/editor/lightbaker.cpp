@@ -1,3 +1,4 @@
+#ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 #include "lightbaker.h"
 
 #include <array>
@@ -41,7 +42,7 @@ namespace feng::editor {
 				receiver_instance = receiver_pair.first;
 				receiver_model_instance = receiver_pair.second;
 
-				int32_t shadow_texture_res = calculate_shadow_texture_res(receiver_pair);
+				int32_t shadow_texture_res = calculate_shadow_texture_res(receiver_model_instance);
 
 				std::array<texture, 2> shadow_textures = std::array<texture, 2>();
 				std::array<framebuffer, 2> shadow_framebuffers = {
@@ -52,24 +53,13 @@ namespace feng::editor {
 				for (size_t i = 0; i < 2; i++) {
 					shadow_textures[i].generate();
 					shadow_textures[i].bind();
-					shadow_textures[i].allocate(shadow_texture_res, shadow_texture_res, GL_R32F, GL_RED, GL_FLOAT);
+					shadow_textures[i].allocate(shadow_texture_res, shadow_texture_res, GL_R32F);
 					shadow_textures[i].set_params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 				
 					shadow_framebuffers[i].bind();
 					shadow_framebuffers[i].attach_texture2d(shadow_textures[i], GL_COLOR_ATTACHMENT0);
 					shadow_framebuffers[i].unbind();
 				}
-
-				//texture shadow_texture;
-				//shadow_texture.generate();
-				//shadow_texture.bind();
-				//shadow_texture.allocate(shadow_texture_res, shadow_texture_res, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
-				//shadow_texture.set_params(GL_NEAREST, GL_NEAREST);
-				//
-				//framebuffer shadow_framebuffer(shadow_texture_res, shadow_texture_res);
-				//shadow_framebuffer.bind();
-				//shadow_framebuffer.attach_texture2d(shadow_texture, GL_COLOR_ATTACHMENT0);
-				//shadow_framebuffer.unbind();
 
 				bool t = false;
 				for (const auto& caster_pair : casters) {
@@ -116,17 +106,14 @@ namespace feng::editor {
 					shadow_textures[i].delete_buffer();
 					shadow_framebuffers[i].delete_buffer();
 				}
+
 			}
+			glCullFace(GL_BACK);
 		}
 	}
 
-	int32_t lightbaker::calculate_shadow_texture_res(const im_pair& pair){
-		aabb model_bounds = pair.second.get()->get_model()->bounds;
-		transform* i_transform = &pair.first.get()->transform;
-		glm::vec3 min = model_bounds.min * i_transform->get_size();
-		glm::vec3 max = model_bounds.max * i_transform->get_size();
-		glm::vec3 size = glm::abs(max - min);
-		float volume = size.x * size.y * size.z;
+	int32_t lightbaker::calculate_shadow_texture_res(const std::shared_ptr<model_instance>& model_instance){
+		float volume = model_instance->calculate_bounds().volume();
 		uint32_t shadow_texture_resolution;
 		if (volume <= 1)
 			shadow_texture_resolution = 64;
@@ -137,8 +124,9 @@ namespace feng::editor {
 		else if (volume <= 500)
 			shadow_texture_resolution = 512;
 		else
-			shadow_texture_resolution = 4096;
+			shadow_texture_resolution = 2048;
 		return shadow_texture_resolution;
 	}
 
 }
+#endif

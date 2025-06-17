@@ -47,9 +47,24 @@ namespace feng {
         20, 22, 23
     };
 
+    const std::vector<vertex> plane_vertices{
+        { glm::vec3(-1, 0, -1),  glm::vec3(0, 1, 0), glm::vec2(0, 0), glm::vec3(1.0f, 0.0f, 0.0f) },
+        { glm::vec3(-1, 0, 1),  glm::vec3(0, 1, 0), glm::vec2(0, 1), glm::vec3(1.0f, 0.0f, 0.0f) },
+        { glm::vec3(1, 0, 1),  glm::vec3(0, 1, 0), glm::vec2(1, 1), glm::vec3(1.0f, 0.0f, 0.0f) },
+        { glm::vec3(1, 0, -1),  glm::vec3(0, 1, 0), glm::vec2(1, 0), glm::vec3(1.0f, 0.0f, 0.0f) },
+    };
+
+    const std::vector<uint32_t> plane_indices{
+        0, 1, 2,
+        2, 3, 0
+    };
+
 	struct primitives {
         static std::vector<mesh> generate_cube_mesh(std::vector<texture> textures);
         static std::vector<mesh> generate_cube_mesh(glm::vec3 diffuse, glm::vec3 specular);
+
+        static std::vector<mesh> generate_plane_mesh(std::vector<texture> textures);
+        static std::vector<mesh> generate_plane_mesh(glm::vec3 diffuse, glm::vec3 specular);
 	};
 
 }

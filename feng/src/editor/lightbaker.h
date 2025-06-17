@@ -1,3 +1,4 @@
+#ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 #pragma once
 
 #include <filesystem>
@@ -14,7 +15,8 @@ namespace feng::editor {
 	private:
 		using im_pair = std::pair<std::shared_ptr<instance>, std::shared_ptr<model_instance>>;
 
-		static int32_t calculate_shadow_texture_res(const im_pair& pair);
+		static int32_t calculate_shadow_texture_res(const std::shared_ptr<model_instance>& model_instance);
 	};
 
 }
+#endif

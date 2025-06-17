@@ -10,9 +10,16 @@ namespace feng {
 		max = glm::vec3(std::numeric_limits<float>().min());
 	}
 	
-	float aabb::volume() {
+	float aabb::volume() const{
 		glm::vec3 size = glm::abs(max - min);
-		return size.x * size.y * size.z;
+		float v = 1.0f;
+		if (size.x != 0)
+			v *= size.x;
+		if (size.y != 0)
+			v *= size.y;
+		if (size.z != 0)
+			v *= size.z;
+		return v;
 	}
 
 	aabb aabb::scale(const glm::mat4& model) {

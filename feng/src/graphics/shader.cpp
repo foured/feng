@@ -57,7 +57,7 @@ namespace feng {
 			glDeleteShader(sp);
 
 		std::string res_str = "Compiled shader: ";
-		for (auto sp : additional_progs)
+		for (const auto& sp : additional_progs)
 			res_str += "'" + std::string(sp.path) + "' ";
 		LOG_ACTION(res_str);
 	}
@@ -87,8 +87,8 @@ namespace feng {
 		size_t include_pos = shader_code.find(SHADER_INCLUDE_WORD);
 		std::vector<std::string> included_headers;
 		while (include_pos != std::string::npos) {
-			uint32_t ob_pos = shader_code.find(SHADER_INCLUDE_OPEN_BRACKET_CHAR, include_pos);
-			uint32_t cb_pos = shader_code.find(SHADER_INCLUDE_CLOSE_BRACKET_CHAR, include_pos);
+			size_t ob_pos = shader_code.find(SHADER_INCLUDE_OPEN_BRACKET_CHAR, include_pos);
+			size_t cb_pos = shader_code.find(SHADER_INCLUDE_CLOSE_BRACKET_CHAR, include_pos);
 			if ((ob_pos == std::string::npos) || (cb_pos == std::string::npos)) {
 				LOG_ERROR("Error to find include brackets in shader.");
 				return shader_code;

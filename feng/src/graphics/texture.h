@@ -25,6 +25,7 @@ namespace feng {
 		// Just 0, 1, 2... NO GL_TEXTURE0
 		void bind_to_slot(uint32_t slot);
 		void allocate(uint32_t width, uint32_t height, int32_t internalformat, uint32_t format, uint32_t type = GL_FLOAT, void* data = NULL);
+		void allocate(uint32_t width, uint32_t height, int32_t internalformat, void* data = NULL);
 		void set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s = NULL, int32_t wrap_t = NULL);
 		void generate_mipmap();
 		void delete_buffer();
