@@ -1,6 +1,6 @@
 #pragma once
 
-namespace feng::containers {
+namespace feng {
 
 	template<typename T>
 	struct binary_tree_node {

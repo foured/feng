@@ -9,14 +9,17 @@ namespace feng {
 
 	void transform::set_position(glm::vec3 val) {
 		_position = val;
+		changed_this_frame = true;
 	}
 
 	void transform::set_size(glm::vec3 val) {
 		_size = val;
+		changed_this_frame = true;
 	}
 
 	void transform::set_rotation(glm::vec3 val) {
 		_rotation = val;
+		changed_this_frame = true;
 	}
 	
 	glm::vec3 transform::get_position() const {

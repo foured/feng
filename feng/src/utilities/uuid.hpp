@@ -4,7 +4,7 @@
 #include <random>
 	
 #include "singleton.hpp"
-#include "../logic/containers/binary_tree.hpp"
+#include "../algorithms/binary_tree.hpp"
 #include "../logging/logging.h"
 
 #include "../fng.h"
@@ -32,7 +32,7 @@ namespace feng::util {
 	private:
 		friend class uuid_owner;
 
-		containers::binary_tree<uuid_type> _ids;
+		binary_tree<uuid_type> _ids;
 
 		std::random_device _rd;
 		std::mt19937_64 _gen;

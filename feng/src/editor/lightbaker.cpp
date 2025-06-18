@@ -113,7 +113,8 @@ namespace feng::editor {
 	}
 
 	int32_t lightbaker::calculate_shadow_texture_res(const std::shared_ptr<model_instance>& model_instance){
-		float volume = model_instance->calculate_bounds().volume();
+		// Don`t use volume (could be 0)
+		// float volume = model_instance->calculate_bounds().volume();
 		uint32_t shadow_texture_resolution;
 		if (volume <= 1)
 			shadow_texture_resolution = 64;

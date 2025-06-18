@@ -153,10 +153,13 @@
     <ClCompile Include="src\logic\world\components\flash_light.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\logic\world\tags\shadow_texture_owner.cpp">
+    <ClCompile Include="src\graphics\gaussian_blur.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\gaussian_blur.cpp">
+    <ClCompile Include="src\algorithms\octree.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logic\world\components\simple_collider.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -284,7 +287,7 @@
     <ClInclude Include="src\graphics\helpers\fullscreen_quad.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\logic\containers\binary_tree.hpp">
+    <ClInclude Include="src\algorithms\binary_tree.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\utilities\singleton.hpp">
@@ -347,13 +350,22 @@
     <ClInclude Include="src\logic\world\tag.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\logic\world\tags\shadow_texture_owner.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\helpers\box_renderer.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\gaussian_blur.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\algorithms\octree.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logic\func_link.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logic\world\components\simple_collider.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logic\contexts\bounds_updater.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

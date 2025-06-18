@@ -70,6 +70,16 @@ namespace feng {
 			return std::shared_ptr<T>();
 		}
 
+		template<typename T>
+		std::shared_ptr<T> try_find_component_of_type() const {
+			for (const auto& component : _components) {
+				if (auto t = std::dynamic_pointer_cast<T>(component)) {
+					return t;
+				}
+			}
+			return std::shared_ptr<T>();
+		}
+
 		//==================
 		// TAGS
 		//==================

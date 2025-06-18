@@ -42,7 +42,7 @@
 	#define GL_CHECK_ERRORS()
 #endif
 
-#define THROW_ERROR(msg) feng::logger::throw_error(msg, __FUNCTION__, __LINE__)
+#define THROW_ERROR(...) feng::logger::throw_error(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
 
 namespace feng {
 

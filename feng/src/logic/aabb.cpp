@@ -5,21 +5,18 @@ namespace feng {
 	aabb::aabb(glm::vec3 min, glm::vec3 max)
 		: min(min), max(max) { }
 
+	glm::vec3 aabb::size() const {
+		return max - min;
+	}
+
 	void aabb::set_numeric_limits() {
 		min = glm::vec3(std::numeric_limits<float>().max());
 		max = glm::vec3(std::numeric_limits<float>().min());
 	}
 	
 	float aabb::volume() const{
-		glm::vec3 size = glm::abs(max - min);
-		float v = 1.0f;
-		if (size.x != 0)
-			v *= size.x;
-		if (size.y != 0)
-			v *= size.y;
-		if (size.z != 0)
-			v *= size.z;
-		return v;
+		glm::vec3 size = max - min;
+		return size.x * size.y * size.z;
 	}
 
 	aabb aabb::scale(const glm::mat4& model) {
@@ -28,5 +25,16 @@ namespace feng {
 		return aabb(nmax, nmin);
 	}
 
+	bool aabb::can_fit(const aabb& target) const {
+		glm::vec3 csize = size();
+		glm::vec3 tsize = target.size();
+		return tsize.x <= csize.x && tsize.y <= csize.y && tsize.z <= csize.z;
+	}
+
+	bool aabb::contains(const aabb& target) const {
+		return target.min.x >= min.x && target.max.x <= max.x &&
+			target.min.y >= min.y && target.max.y <= max.y &&
+			target.min.z >= min.z && target.max.z <= max.z;
+	}
 
 }

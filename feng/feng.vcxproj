@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="lib\glad.c" />
     <ClCompile Include="lib\stb.cpp" />
+    <ClCompile Include="src\algorithms\octree.cpp" />
     <ClCompile Include="src\editor\lightbaker.cpp" />
     <ClCompile Include="src\graphics\batching\text_batcher.cpp" />
     <ClCompile Include="src\graphics\cubemap.cpp" />
@@ -189,14 +190,15 @@
     <ClCompile Include="src\logic\world\components\flash_light.cpp" />
     <ClCompile Include="src\logic\world\components\line_animator.cpp" />
     <ClCompile Include="src\logic\world\components\model_instance.cpp" />
+    <ClCompile Include="src\logic\world\components\simple_collider.cpp" />
     <ClCompile Include="src\logic\world\instance.cpp" />
     <ClCompile Include="src\logic\world\scene.cpp" />
-    <ClCompile Include="src\logic\world\tags\shadow_texture_owner.cpp" />
     <ClCompile Include="src\logic\world\transform.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\algorithms\octree.h" />
     <ClInclude Include="src\editor\lightbaker.h" />
     <ClInclude Include="src\fng.h" />
     <ClInclude Include="src\graphics\batching\text_batcher.h" />
@@ -233,7 +235,8 @@
     <ClInclude Include="src\io\camera.h" />
     <ClInclude Include="src\io\input.h" />
     <ClInclude Include="src\logging\logging.h" />
-    <ClInclude Include="src\logic\containers\binary_tree.hpp" />
+    <ClInclude Include="src\algorithms\binary_tree.hpp" />
+    <ClInclude Include="src\logic\contexts\bounds_updater.h" />
     <ClInclude Include="src\logic\data_management\assets_manager.h" />
     <ClInclude Include="src\logic\data_management\buffer.hpp" />
     <ClInclude Include="src\logic\data_management\files.h" />
@@ -241,10 +244,12 @@
     <ClInclude Include="src\logic\data_management\serializable.h" />
     <ClInclude Include="src\logic\event.hpp" />
     <ClInclude Include="src\logic\aabb.h" />
+    <ClInclude Include="src\logic\func_link.hpp" />
     <ClInclude Include="src\logic\world\component.h" />
     <ClInclude Include="src\logic\world\components\flash_light.h" />
     <ClInclude Include="src\logic\world\components\line_animator.h" />
     <ClInclude Include="src\logic\world\components\model_instance.h" />
+    <ClInclude Include="src\logic\world\components\simple_collider.h" />
     <ClInclude Include="src\logic\world\instance.h" />
     <ClInclude Include="src\logic\world\scene.h" />
     <ClInclude Include="src\logic\ui\components\slider.h" />
@@ -255,7 +260,6 @@
     <ClInclude Include="src\logic\ui\uitransform.h" />
     <ClInclude Include="src\logic\ui\ui_layer.h" />
     <ClInclude Include="src\logic\world\tag.h" />
-    <ClInclude Include="src\logic\world\tags\shadow_texture_owner.h" />
     <ClInclude Include="src\logic\world\transform.h" />
     <ClInclude Include="src\utilities\files_in_folder.hpp" />
     <ClInclude Include="src\utilities\fps_counter.h" />

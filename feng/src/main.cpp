@@ -4,37 +4,42 @@
 #include <stb/stb_image.h>
 #include <glm/glm.hpp>
 
+#include "io/camera.h"
+#include "io/input.h"
+
+#include "utilities/utilities.h"
+#include "utilities/uuid.hpp"
+#include "utilities/fps_counter.h"
+
+#include "logging/logging.h"
+
 #include "graphics/window.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
-#include "io/camera.h"
-#include "utilities/utilities.h"
-#include "io/input.h"
-#include "logging/logging.h"
 #include "graphics/model.h"
 #include "graphics/gl_buffers/framebuffer.hpp"
 #include "graphics/skybox.h"
 #include "graphics/model2d.h"
 #include "graphics/primitives2d.h"
+#include "graphics/helpers/box_renderer.hpp"
 #include "graphics/uimodel.h"
-#include "logic/ui/ui_layer.h"
-#include "logic/ui/ui.h"
-#include "logic/ui/components/slider.h"
 #include "graphics/text/text_renderer.h"
 #include "graphics/batching/text_batcher.h"
 #include "graphics/light/lights.h"
 #include "graphics/gl_buffers/ssbo.hpp"
 #include "graphics/primitives.h"
 #include "graphics/helpers/fullscreen_quad.hpp"
-#include "utilities/uuid.hpp"
+
+#include "logic/data_management/assets_manager.h"
+#include "logic/data_management/scene_serializer.h"
+#include "logic/ui/ui_layer.h"
+#include "logic/ui/ui.h"
+#include "logic/ui/components/slider.h"
 #include "logic/world/scene.h"
 #include "logic/world/components/model_instance.h"
 #include "logic/world/components/line_animator.h"
-#include "logic/data_management/assets_manager.h"
-#include "logic/data_management/scene_serializer.h"
 #include "logic/world/components/flash_light.h"
-#include "utilities/fps_counter.h"
-#include "graphics/helpers/box_renderer.hpp"
+#include "logic/world/components/simple_collider.h"
 
 #include "editor/lightbaker.h"
 
@@ -86,22 +91,23 @@ int main() {
 	//bp_i->transform.set_position(glm::vec3(0.0f, 3.0f, 0.0f));
 
 	sptr_ins cube1_i1 = sc1.add_instance();
-	cube1_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	cube1_i1.get()->add_component<model_instance>(cube1);
+	cube1_i1->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	cube1_i1->add_component<model_instance>(cube1);
+	cube1_i1->add_component<simple_collider>();
 
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
 	auto cube1_i2_mi = cube1_i2->try_get_component<model_instance>();
-	cube1_i2.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	cube1_i2.get()->transform.set_position(glm::vec3(2, 2, -2));
-	cube1_i2.get()->transform.set_size(glm::vec3(0.5, 10, 0.5));
+	cube1_i2->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	cube1_i2->transform.set_position(glm::vec3(2, 2, -2));
+	cube1_i2->transform.set_size(glm::vec3(0.5, 10, 0.5));
 
 	//bottom
 	sptr_ins plane1_i1 = sc1.add_instance();
 	auto plane1_i1_mi = plane1_i1.get()->add_component<model_instance>(plane1);
 	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	plane1_i1.get()->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	plane1_i1.get()->transform.set_position(glm::vec3(0, -2, 0));
-	plane1_i1.get()->transform.set_size(glm::vec3(20, 0.5f, 20));
+	plane1_i1->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	plane1_i1->transform.set_position(glm::vec3(0, -2, 0));
+	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
 
 	//sptr_ins light_cube_i1 = sc1.add_instance();
 	//light_cube_i1.get()->add_component<model_instance>(light_cube);
@@ -111,7 +117,7 @@ int main() {
 	//light_cube_i1.get()->transform.set_position(glm::vec3(1.3f, 0, -2));
 
 	sptr_ins flash_light_i = sc1.add_instance();
-	flash_light_i.get()->add_component<flash_light>(&sc1);
+	flash_light_i->add_component<flash_light>(&sc1);
 
 	sc1.dir_light = dir_light(glm::vec3(0.2f, -1.0f, -0.3f), glm::vec3(0.1f), glm::vec3(0.6f), glm::vec3(0.7f), 4 * 1024);
 	sc1.point_lights[0] = point_light{

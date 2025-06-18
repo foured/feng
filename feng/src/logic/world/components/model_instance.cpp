@@ -7,7 +7,7 @@
 namespace feng {
 
 	model_instance::model_instance(instance* instance, std::shared_ptr<model> model)
-		: component(instance), _model(model) {}
+		: component(instance), _model(model) {	}
 
 	void model_instance::start() {
 
@@ -35,16 +35,17 @@ namespace feng {
 		_model = scene->find_model(model_uuid);
 	}
 
-	void model_instance::render_alone(shader& shader) {
-		_model->render_single_instance(shader, _instance);
-	}
 
-	aabb model_instance::calculate_bounds() {
+	aabb model_instance::calculate_bounds() const {
 		aabb* mb = &_model->bounds;
 		transform* t = &_instance->transform;
 		glm::vec3 max = mb->max * t->get_size() + t->get_position();
 		glm::vec3 min = mb->min * t->get_size() + t->get_position();
 		return aabb(max, min);
+	}
+
+	void model_instance::render_alone(shader& shader) {
+		_model->render_single_instance(shader, _instance);
 	}
 
 	std::shared_ptr<model> model_instance::get_model() const
