@@ -75,7 +75,6 @@ int main() {
 	//======================
 	//    CREATING SCENE
 	//======================
-
 	scene sc1;
 	skybox sb(&am->shaders.skybox_shader, skybox_faces);
 
@@ -94,20 +93,25 @@ int main() {
 	cube1_i1->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i1->add_component<model_instance>(cube1);
 	cube1_i1->add_component<simple_collider>();
+	LOG_INFO("cube1_i1 ", cube1_i1->get_uuid_string());
 
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
 	auto cube1_i2_mi = cube1_i2->try_get_component<model_instance>();
+	//cube1_i2->add_component<line_animator>(glm::vec3(2, 2, -2), glm::vec3(2, -2, -2), 0.4f);
 	cube1_i2->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2->transform.set_position(glm::vec3(2, 2, -2));
-	cube1_i2->transform.set_size(glm::vec3(0.5, 10, 0.5));
+	cube1_i2->transform.set_size(glm::vec3(0.5, 2, 0.5));
+	LOG_INFO("cube1_i2 ", cube1_i2->get_uuid_string());
 
 	//bottom
 	sptr_ins plane1_i1 = sc1.add_instance();
-	auto plane1_i1_mi = plane1_i1.get()->add_component<model_instance>(plane1);
+	auto plane1_i1_mi = plane1_i1->add_component<model_instance>(plane1);
+	plane1_i1->add_component<simple_collider>();
 	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	plane1_i1->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	plane1_i1->transform.set_position(glm::vec3(0, -2, 0));
 	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
+	LOG_INFO("plane1_i1 ", plane1_i1->get_uuid_string());
 
 	//sptr_ins light_cube_i1 = sc1.add_instance();
 	//light_cube_i1.get()->add_component<model_instance>(light_cube);

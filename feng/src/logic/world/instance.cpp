@@ -19,6 +19,7 @@ namespace feng {
 	}
 
 	void instance::update() {
+		transform.changed_this_frame = false;
 		for (auto& c : _components) {
 			if (c.get()->is_active)
 				c.get()->update();

@@ -92,8 +92,8 @@ namespace feng {
 		_depthmap_framebuffer.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		//glDisable(GL_CULL_FACE);
-		glCullFace(GL_FRONT); // Use for PCSS
+		glDisable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT); // Use for PCSS
 	}
 
 	void dir_light::full_render_preparations(shader& shader, glm::mat4 model) {
@@ -104,8 +104,8 @@ namespace feng {
 	}
 
 	void dir_light::render_cleanup() {
-		//glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK); // Use for PCSS
+		glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK); // Use for PCSS
 		_depthmap_framebuffer.unbind();
 	}
 

@@ -6,6 +6,9 @@
 
 namespace feng {
 
+	scene::scene() 
+		: _octree(glm::vec3(100), 1000) { }
+
 	void scene::start() {
 		_framebuffer_change_sub = window::on_framebuffer_size.subscribe([this](int32_t width, int32_t height) {
 				calculate_projection_matrix();
@@ -16,6 +19,15 @@ namespace feng {
 		for (auto& inst : _instances)
 			if (inst.get()->is_active)
 				inst.get()->start();
+
+		for (auto& inst : _instances) {
+			std::shared_ptr<simple_collider> collider = inst->try_get_component<simple_collider>();
+			if (collider) {
+				if (!_octree.add_insance(collider)) {
+					LOG_WARNING("Instance ", inst->get_uuid_string(), " is out of octree bounds");
+				}
+			}
+		}
 	}
 
 	void scene::update() {
@@ -27,6 +39,8 @@ namespace feng {
 		for (auto& inst : _instances)
 			if (inst.get()->is_active)
 				inst.get()->update();
+
+		_octree.update();
 	}
 
 	void scene::register_model(sptr_mdl model) {

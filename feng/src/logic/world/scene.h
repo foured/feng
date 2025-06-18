@@ -13,6 +13,7 @@
 #include "../../graphics/gl_buffers/ssbo.hpp"
 #include "../../io/camera.h"
 #include "../event.hpp"
+#include "../../algorithms/octree.h"
 
 namespace feng {
 	
@@ -29,7 +30,6 @@ namespace feng {
 
 	class scene : public util::uuid_owner {
 	public:
-
 		dir_light dir_light;
 		std::array<point_light, MAX_POINT_LIGHTS> point_lights;
 		std::array<spot_light, MAX_SPOT_LIGHTS> spot_lights;
@@ -37,6 +37,8 @@ namespace feng {
 		glm::mat4 model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));;
 
 		camera main_camera;
+
+		scene();
 
 		//==================
 		// USUAL
@@ -120,6 +122,8 @@ namespace feng {
 		event<int32_t, int32_t>::subscription _framebuffer_change_sub;
 
 		aabb _bounds;
+
+		octree::node _octree;
 
 	};
 

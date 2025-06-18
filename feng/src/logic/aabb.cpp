@@ -9,6 +9,10 @@ namespace feng {
 		return max - min;
 	}
 
+	glm::vec3 aabb::center() const {
+		return (min + max) * 0.5f;
+	}
+
 	void aabb::set_numeric_limits() {
 		min = glm::vec3(std::numeric_limits<float>().max());
 		max = glm::vec3(std::numeric_limits<float>().min());
@@ -35,6 +39,13 @@ namespace feng {
 		return target.min.x >= min.x && target.max.x <= max.x &&
 			target.min.y >= min.y && target.max.y <= max.y &&
 			target.min.z >= min.z && target.max.z <= max.z;
+	}
+
+	bool aabb::intersects(const aabb& target) const {
+		return
+			max.x >= target.min.x && min.x <= target.max.x &&
+			max.y >= target.min.y && min.y <= target.max.y &&
+			max.z >= target.min.z && min.z <= target.max.z;
 	}
 
 }

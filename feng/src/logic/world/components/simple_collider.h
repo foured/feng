@@ -19,6 +19,7 @@ namespace feng {
 		bool update_bounds();
 
 		bool context_expired() const;
+		bool intersects(std::shared_ptr<simple_collider> target) const;
 
 		void start();
 		void update();
@@ -31,6 +32,7 @@ namespace feng {
 		std::weak_ptr<bounds_updater_context> _updater_context;
 
 		bool search_for_context_and_set();
+		bool update_bounds_forced();
 
 	};
 

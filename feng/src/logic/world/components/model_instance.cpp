@@ -41,7 +41,7 @@ namespace feng {
 		transform* t = &_instance->transform;
 		glm::vec3 max = mb->max * t->get_size() + t->get_position();
 		glm::vec3 min = mb->min * t->get_size() + t->get_position();
-		return aabb(max, min);
+		return aabb(min, max);
 	}
 
 	void model_instance::render_alone(shader& shader) {
