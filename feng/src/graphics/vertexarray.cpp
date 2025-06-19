@@ -31,7 +31,7 @@ namespace feng {
 		glDrawArrays(mode, 0, no_vertices);
 	}
 
-	void vertexarray::draw_elements_inctanced(int32_t mode, int32_t count, int32_t type,
+	void vertexarray::draw_elements_instanced(int32_t mode, int32_t count, int32_t type,
 		const void* indices, int32_t primcount) {
 		glDrawElementsInstanced(mode, count, type, indices, primcount);
 	}

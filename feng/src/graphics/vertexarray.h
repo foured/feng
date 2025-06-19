@@ -14,7 +14,7 @@ namespace feng {
 			bool triangulate, uint32_t data_size, uint32_t offset, int32_t devisor = 0);
 		void draw_elements(int32_t mode, uint32_t no_indices);
 		void draw_arrays(int32_t mode, uint32_t no_vertices);
-		void draw_elements_inctanced(int32_t mode, int32_t count, int32_t type, 
+		void draw_elements_instanced(int32_t mode, int32_t count, int32_t type, 
 			const void *indices, int32_t primcount);
 		void free();
 

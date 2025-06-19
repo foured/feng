@@ -41,7 +41,7 @@ namespace feng {
 			shader_2d.set_3float("color", _color);
 		}
 		vertex_array.bind();
-		vertex_array.draw_elements_inctanced(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0, no_instances);
+		vertex_array.draw_elements_instanced(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0, no_instances);
 
 		vertexarray::unbind();
 		glActiveTexture(GL_TEXTURE0);

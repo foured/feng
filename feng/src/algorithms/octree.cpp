@@ -2,6 +2,8 @@
 
 #include "../logic/world/instance.h"
 
+#include "../utilities/utilities.h"
+
 namespace feng::octree {
 	
 	// PUBLIC-------------------------------------------------------------------------------------------------------------
@@ -29,6 +31,8 @@ namespace feng::octree {
 	}
 
 	void node::update() {
+		utilities::test_octree_visualiser->add_instance(_bounds);
+
 		// processing death
 		if (!_root && _objects.size() == 0 && _no_children == 0) {
 			_time_to_death -= 1;

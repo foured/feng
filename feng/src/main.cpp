@@ -17,17 +17,17 @@
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 #include "graphics/model.h"
-#include "graphics/gl_buffers/framebuffer.hpp"
-#include "graphics/skybox.h"
 #include "graphics/model2d.h"
-#include "graphics/primitives2d.h"
-#include "graphics/helpers/box_renderer.hpp"
 #include "graphics/uimodel.h"
+#include "graphics/skybox.h"
+#include "graphics/primitives2d.h"
+#include "graphics/primitives.h"
 #include "graphics/text/text_renderer.h"
 #include "graphics/batching/text_batcher.h"
 #include "graphics/light/lights.h"
+#include "graphics/gl_buffers/framebuffer.hpp"
 #include "graphics/gl_buffers/ssbo.hpp"
-#include "graphics/primitives.h"
+#include "graphics/helpers/box_renderer.h"
 #include "graphics/helpers/fullscreen_quad.hpp"
 
 #include "logic/data_management/assets_manager.h"
@@ -174,43 +174,22 @@ int main() {
 
 	ui::ui ui(am->shaders.ui_shader);
 	auto layer1 = ui.create_layer();
-	layer1->support_input = true;
-
-	texture dir_light_shadowmap = sc1.dir_light.get_texture();
-	auto texture_display_model = ui.create_model(primitives2d::generate_square_mesh(dir_light_shadowmap));
-	auto texture_display = ui.add_instance(layer1, texture_display_model);
-	int32_t a = 300;
-	texture_display->uitransform.set_size_pix({a, a});
-	texture_display->uitransform.set_anchor(ui::anchor::BOTTOM_RIGHT);
-	texture_display->uitransform.set_pos_pix({-a, a});
+	layer1->support_input = false;
 
 	text_batcher tb;
 
 	//============================
 	//    PREPARATIONS TO LOOP
 	//============================
-
-	//LOG_INFO(std::to_string(std::filesystem::file_size("scene1.fstp")));
-
-	//data::scene_serializer::serialize_models(&sc1, "pack1.fmp");
-	//data::scene_serializer::serialize(&sc1, "scene1.fsp");
-
-	//data::scene_serializer::deserialize_models(&sc1, "pack1.fmp");
-	//data::scene_serializer::deserialize(&sc1, "scene1.fsp");
-	//data::scene_serializer::deserialize_baked_light(&sc1, "scene1.fstp");
-
 	sc1.generate_lightspace_matrices();
 	
-	//sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
-	//	plane1_i1_mi->calculate_bounds(), sc1.model_matrix);	
-	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(cube1_i2_mi->calculate_bounds(),
-		plane1_i1_mi->calculate_bounds(), sc1.model_matrix);
+	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
+		plane1_i1_mi->calculate_bounds(), sc1.model_matrix);	
 
 	glm::mat4 floor_lml = sc1.dir_light.generate_custom_lightspace_matrix(plane1_i1_mi->calculate_bounds(), sc1.model_matrix);
 
-	helpers::box_renderer light_view_box(&am->shaders.debug_box_shader, sc1.dir_light.lightspace_matrix);
-	helpers::box_renderer floor_lml_box(&am->shaders.debug_box_shader, floor_lml);
-	helpers::box_renderer floor_bounds(&am->shaders.debug_box_shader, plane1_i1_mi->calculate_bounds().scale(sc1.model_matrix));
+	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(
+		&am->shaders.debug_box_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 100);
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -278,10 +257,11 @@ int main() {
 		
 		sc1.render_models(am->shaders.obj_shader);
 
-		light_view_box.render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.main_camera.get_view_matrix(), sc1.get_projection_matrix());
-		floor_bounds.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.main_camera.get_view_matrix(), sc1.get_projection_matrix());
-		floor_lml_box.render(glm::vec3(0.0f, 0.0f, 1.0f), sc1.main_camera.get_view_matrix(), sc1.get_projection_matrix());
-
+		utilities::test_octree_visualiser->update_buffers();
+		utilities::test_octree_visualiser->render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
+																			   sc1.main_camera.get_view_matrix(), 
+																			   sc1.get_projection_matrix());
+		utilities::test_octree_visualiser->clear_instances();
 		sb.render(sc1.main_camera.get_view_matrix());
 		main_framebuffer.unbind();
 

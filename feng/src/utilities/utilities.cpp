@@ -86,7 +86,7 @@ namespace feng {
 	double utilities::_frame_time = 0;
 	double utilities::_delta_time = 0;
 	bool utilities::_is_first = true;
-
+	std::unique_ptr<helpers::box_renderer_instanced> utilities::test_octree_visualiser = nullptr;
 
 	double utilities::delta_time() {
 		return _delta_time;

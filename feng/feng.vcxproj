@@ -154,6 +154,7 @@
     <ClCompile Include="src\graphics\batching\text_batcher.cpp" />
     <ClCompile Include="src\graphics\cubemap.cpp" />
     <ClCompile Include="src\graphics\gaussian_blur.cpp" />
+    <ClCompile Include="src\graphics\helpers\box_renderer.cpp" />
     <ClCompile Include="src\graphics\light\lights.cpp" />
     <ClCompile Include="src\graphics\light\shadowmap_offset_texture.cpp" />
     <ClCompile Include="src\graphics\mesh.cpp" />
@@ -213,7 +214,7 @@
     <ClInclude Include="src\graphics\gl_buffers\renderbuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
-    <ClInclude Include="src\graphics\helpers\box_renderer.hpp" />
+    <ClInclude Include="src\graphics\helpers\box_renderer.h" />
     <ClInclude Include="src\graphics\helpers\fullscreen_quad.hpp" />
     <ClInclude Include="src\graphics\light\lights.h" />
     <ClInclude Include="src\graphics\light\shadowmap_offset_texture.h" />

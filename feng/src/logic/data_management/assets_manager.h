@@ -24,6 +24,7 @@ namespace feng {
 			shader gaussian_blur_shader;
 
 			shader debug_box_shader;
+			shader debug_box_inst_shader;
 
 			void load();
 		};

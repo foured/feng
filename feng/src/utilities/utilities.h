@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#include "../graphics/helpers/box_renderer.h"
+
 namespace feng {
 
 	namespace util {
@@ -34,6 +36,8 @@ namespace feng {
 		static int32_t round_to(int32_t val, int32_t align);
 
 		static std::string strip(const std::string& str);
+
+		static std::unique_ptr<helpers::box_renderer_instanced> test_octree_visualiser;
 
 	private:
 		static double _last_frame_time, _frame_time, _delta_time;
