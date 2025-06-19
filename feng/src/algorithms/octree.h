@@ -49,11 +49,21 @@ namespace feng::octree {
 		int8_t _time_to_death = OCTREE_LIFESPAN;
 
 		node(glm::vec3 pos, float width, node* parent);
+		
+		void check_collisions();
+		void check_against(const std::vector<obj_type>& strangers);
+		void on_collision(obj_type object1, obj_type object2);
 
+		void push_object(obj_type object);
 		bool try_add_instance_upward(obj_type object);
 		void add_instance_good_conditions(obj_type object);
 		node* generate_octant(octants specification);
-		bool contains(obj_type object) const;
+		node* generate_octant(uint8_t id);
+		void revive_dead_octants();
+
+		bool contains(const obj_type& object) const;
+		bool intersects(const obj_type& object) const;
+		bool can_fit(const obj_type& object) const;
 
 	};
 

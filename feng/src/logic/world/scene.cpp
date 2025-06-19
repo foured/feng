@@ -7,7 +7,7 @@
 namespace feng {
 
 	scene::scene() 
-		: _octree(glm::vec3(20), 200) { }
+		: _octree(glm::vec3(23), 210) { }
 
 	void scene::start() {
 		_framebuffer_change_sub = window::on_framebuffer_size.subscribe([this](int32_t width, int32_t height) {

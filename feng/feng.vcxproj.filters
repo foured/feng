@@ -165,6 +165,9 @@
     <ClCompile Include="src\graphics\helpers\box_renderer.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\logic\world\components\size_animator.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\logging\logging.h">
@@ -369,6 +372,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\helpers\box_renderer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logic\world\components\size_animator.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

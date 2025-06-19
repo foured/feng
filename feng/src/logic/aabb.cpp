@@ -36,7 +36,8 @@ namespace feng {
 	}
 
 	bool aabb::contains(const aabb& target) const {
-		return target.min.x >= min.x && target.max.x <= max.x &&
+		return 
+			target.min.x >= min.x && target.max.x <= max.x &&
 			target.min.y >= min.y && target.max.y <= max.y &&
 			target.min.z >= min.z && target.max.z <= max.z;
 	}

@@ -192,6 +192,7 @@
     <ClCompile Include="src\logic\world\components\line_animator.cpp" />
     <ClCompile Include="src\logic\world\components\model_instance.cpp" />
     <ClCompile Include="src\logic\world\components\simple_collider.cpp" />
+    <ClCompile Include="src\logic\world\components\size_animator.cpp" />
     <ClCompile Include="src\logic\world\instance.cpp" />
     <ClCompile Include="src\logic\world\scene.cpp" />
     <ClCompile Include="src\logic\world\transform.cpp" />
@@ -251,6 +252,7 @@
     <ClInclude Include="src\logic\world\components\line_animator.h" />
     <ClInclude Include="src\logic\world\components\model_instance.h" />
     <ClInclude Include="src\logic\world\components\simple_collider.h" />
+    <ClInclude Include="src\logic\world\components\size_animator.h" />
     <ClInclude Include="src\logic\world\instance.h" />
     <ClInclude Include="src\logic\world\scene.h" />
     <ClInclude Include="src\logic\ui\components\slider.h" />

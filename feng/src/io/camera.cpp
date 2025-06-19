@@ -12,7 +12,7 @@ namespace feng {
 		_sensitivity(sensitivity),
 		_yaw(-90.0f),
 		_pitch(0.0f),
-		_speed(1.0f),
+		_speed(8.0f),
 		_zoom(45.0f) {
 		update_vectors();
 	}
