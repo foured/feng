@@ -112,18 +112,19 @@ int main() {
 
 	//cube1_i1->add_component<size_animator>(glm::vec3(1.0f), glm::vec3(5.0f), 1.0f);
 
-	//for (int i = 0; i < 7; i++) {
-	//	sptr_ins random_instance = sc1.copy_instance(cube1_i1);
-	//	random_instance->transform.set_position(random_vec3(-20, 20));
-	//}
+	for (int i = 0; i < 7; i++) {
+		sptr_ins random_instance = sc1.copy_instance(cube1_i1);
+		random_instance->transform.set_position(random_vec3(-20, 20));
+	}
 
 	//bottom
 	sptr_ins plane1_i1 = sc1.add_instance();
 	auto plane1_i1_mi = plane1_i1->add_component<model_instance>(plane1);
 	plane1_i1->add_component<simple_collider>();
+	//plane1_i1->add_component<line_animator>(glm::vec3(0, -2, -5), glm::vec3(0, -2, 150), 10);
 	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	plane1_i1->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	plane1_i1->transform.set_position(glm::vec3(0, -2, 5));
+	plane1_i1->transform.set_position(glm::vec3(0, -2, 20));
 	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
 	LOG_INFO("plane1_i1 ", plane1_i1->get_uuid_string());
 
@@ -203,7 +204,7 @@ int main() {
 	glm::mat4 floor_lml = sc1.dir_light.generate_custom_lightspace_matrix(plane1_i1_mi->calculate_bounds(), sc1.model_matrix);
 
 	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(
-		&am->shaders.debug_box_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 200);
+		&am->shaders.debug_box_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 500);
 
 	bool is_spot_light_working = false;
 	ui.start();

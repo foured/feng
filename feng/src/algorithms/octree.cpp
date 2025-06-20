@@ -27,7 +27,56 @@ namespace feng::octree {
 		if (!contains(object)) {
 			return false;
 		}
-		add_instance_good_conditions(object);
+		
+		push_object(object);
+
+		if (_last_node || (_objects.size() <= OCTREE_POPULATION_LIMIT && are_octants_empty()))
+			return true;
+
+		revive_dead_octants();
+
+		std::vector<obj_type> remaining;
+		for (auto& obj : _objects) {
+			bool inserted = false;
+			for (auto& child : _octants) {
+				if (child->add_insance(obj)) {
+					inserted = true;
+					break;
+				}
+			}
+			if (!inserted)
+				remaining.push_back(obj);
+		}
+
+		_objects.clear();
+
+		if (remaining.size() > 0) {
+			LOG_INFO("Splitting: ", remaining.size(), " ", remaining[0]->get_instance()->get_uuid_string());
+			// check if can be stored in children
+			std::vector<node*> intersections;
+			for (auto& object : remaining) {
+				for (auto& octant : _octants) {
+					if (octant->intersects(object)) {
+						intersections.push_back(octant);
+					}
+				}
+
+				if (intersections.empty())
+					THROW_ERROR("Object stands in octant but doesnt intersect with its children");
+
+				if (intersections.size() < NUM_OCTANTS) {
+					for (auto& octant : intersections) {
+						//octant->push_object(object);
+						octant->add_to_optimal_intersecting_node(object);
+					}
+				}
+				else {
+					_objects.push_back(object);
+				}
+				intersections.clear();
+			}
+		}
+
 		return true;
 	}
 
@@ -57,22 +106,12 @@ namespace feng::octree {
 			}
 		}
 
-		// processing moving objects
-		std::vector<obj_type> remaining;
-		for (obj_type& object : _objects) {
-			if (object->update_bounds() && !contains(object) 
-				&& _parent) {
-				if (!_parent->try_add_instance_upward(object))
-					LOG_WARNING("Object moved out from octree ", object->get_instance()->get_uuid_string());
-			}
-			else {
-				remaining.push_back(object);
-			}
+		if (_objects.size() > 0) {
+			// processing moving objects
+		
+			// processing collisions
+			check_collisions();
 		}
-		_objects = std::move(remaining);
-
-		// processing collisions
-		check_collisions();
 	}
 
 	// PRIVATE-------------------------------------------------------------------------------------------------------------
@@ -120,6 +159,20 @@ namespace feng::octree {
 		}
 	}
 
+	void node::add_to_optimal_intersecting_node(obj_type object) {
+		// _no_children == 0 || _last_node || 
+		if (!can_fit(object) || _no_children == 0 || _last_node) {
+			push_object(object);
+			return;
+		}
+
+		revive_dead_octants();
+
+		for (const auto& octant : _octants)
+			if (octant->intersects(object))
+				octant->add_to_optimal_intersecting_node(object);
+	}
+
 	node* node::generate_octant(octants specification) {
 		float half_size = _bounds.size().x / 2.0f;
 		float quarter = half_size / 2.0f;
@@ -132,10 +185,10 @@ namespace feng::octree {
 		case octants::LBF: offset = { -quarter, -quarter,  quarter }; break; // Left  Bottom Front
 		case octants::LTB: offset = { -quarter,  quarter, -quarter }; break; // Left  Top    Back
 		case octants::LTF: offset = { -quarter,  quarter,  quarter }; break; // Left  Top    Front
-		case octants::RBB: offset = { quarter,  -quarter, -quarter }; break;  // Right Bottom Back
-		case octants::RBF: offset = { quarter,  -quarter,  quarter }; break;  // Right Bottom Front
-		case octants::RTB: offset = { quarter,   quarter, -quarter }; break;  // Right Top    Back
-		case octants::RTF: offset = { quarter,   quarter,  quarter }; break;  // Right Top    Front
+		case octants::RBB: offset = { quarter,  -quarter, -quarter }; break; // Right Bottom Back
+		case octants::RBF: offset = { quarter,  -quarter,  quarter }; break; // Right Bottom Front
+		case octants::RTB: offset = { quarter,   quarter, -quarter }; break; // Right Top    Back
+		case octants::RTF: offset = { quarter,   quarter,  quarter }; break; // Right Top    Front
 		}
 
 		glm::vec3 new_center = center + offset;
@@ -157,71 +210,32 @@ namespace feng::octree {
 		}
 	}
 
+	bool node::are_octants_empty() {
+		for (uint8_t i = 0; i < NUM_OCTANTS; i++) {
+			if (_octants[i] != nullptr && !_octants[i]->empty()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	void node::push_object(obj_type object) {
 		_objects.push_back(object);
 		_time_to_death = OCTREE_LIFESPAN;
 	}
 
-	bool node::try_add_instance_upward(obj_type object) {
-		if (!contains(object)) {
-			if (_parent)
-				return _parent->try_add_instance_upward(object);
-			else
+	bool node::empty() const {
+		if (_objects.size() > 0)
+			return false;
+		if (_no_children == 0)
+			return true;
+		
+		for (uint8_t i = 0; i < NUM_OCTANTS; i++) {
+			if (_octants[i] != nullptr && !_octants[i]->empty()) {
 				return false;
+			}
 		}
-		add_instance_good_conditions(object);
 		return true;
-	}
-
-	void node::add_instance_good_conditions(obj_type object) {
-		push_object(object);
-
-		if (_last_node || _objects.size() <= OCTREE_POPULATION_LIMIT)
-			return;
-
-		revive_dead_octants();
-
-		std::vector<obj_type> remaining;
-
-		for (auto& obj : _objects) {
-			bool inserted = false;
-			for (auto& child : _octants) {
-				if (child->add_insance(obj)) {
-					inserted = true;
-					break;
-				}
-			}
-			if (!inserted)
-				remaining.push_back(obj);
-		}
-
-		_objects = std::move(remaining);
-		remaining.clear();
-
-		// check if can be stored in children
-		std::vector<node*> intersections;
-		for (auto& object : _objects) {
-			for (auto& octant : _octants) {
-				if (octant->intersects(object)) {
-					intersections.push_back(octant);
-				}
-			}
-
-			if (intersections.empty())
-				THROW_ERROR("Object stands in octant but doesnt intersect with its children");
-
-			if (intersections.size() < NUM_OCTANTS) {
-				for (auto& octant : intersections) {
-					octant->push_object(object);
-				}
-			}
-			else {
-				remaining.push_back(object);
-			}
-			intersections.clear();
-		}
-
-		_objects = std::move(remaining);
 	}
 
 	bool node::contains(const obj_type& object) const{
@@ -234,6 +248,11 @@ namespace feng::octree {
 
 	bool node::can_fit(const obj_type& object) const {
 		return _bounds.can_fit(object->bounds);
+	}
+
+	aabb node::octant_size() const {
+		glm::vec3 half_size = _bounds.size() * 0.5f;
+		return aabb(glm::vec3(0), half_size);
 	}
 
 }

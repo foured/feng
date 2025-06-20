@@ -23,10 +23,16 @@ namespace feng {
 		return size.x * size.y * size.z;
 	}
 
-	aabb aabb::scale(const glm::mat4& model) {
+	aabb aabb::scale(const glm::mat4& model) const {
 		glm::vec3 nmax = glm::vec3(model * glm::vec4(max, 1.0f));
 		glm::vec3 nmin = glm::vec3(model * glm::vec4(min, 1.0f));
-		return aabb(nmax, nmin);
+		return aabb(nmin, nmax);
+	}
+
+	aabb aabb::scale(float factor) const {
+		glm::vec3 nmin = factor * min;
+		glm::vec3 nmax = factor * max;
+		return aabb(nmin, nmax);
 	}
 
 	bool aabb::can_fit(const aabb& target) const {

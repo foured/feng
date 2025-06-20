@@ -16,7 +16,8 @@ namespace feng {
 
 		void set_numeric_limits();
 		float volume() const;
-		aabb scale(const glm::mat4& model);
+		aabb scale(const glm::mat4& model) const;
+		aabb scale(float factor) const;
 		bool can_fit(const aabb& target) const;
 		bool contains(const aabb& target) const;
 		bool intersects(const aabb& target) const;

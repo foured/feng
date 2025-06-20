@@ -36,9 +36,10 @@ namespace feng {
 		for (const auto& m : _models)
 			m.get()->clear_instances();
 
-		for (auto& inst : _instances)
+		for (auto& inst : _instances) {
 			if (inst.get()->is_active)
 				inst.get()->update();
+		}
 
 		_octree.update();
 	}
@@ -165,14 +166,6 @@ namespace feng {
 
 				_bounds.max = glm::max(_bounds.max, max);
 				_bounds.min = glm::min(_bounds.min, min);
-
-				//i++;
-				//if (i == 4) {
-				//	_bounds.max = max;
-				//	_bounds.min = min;
-				//	LOG_INFO(instance->get_uuid_string());
-				//	return;
-				//}
 			}
 		}
 	}
