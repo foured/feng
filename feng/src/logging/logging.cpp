@@ -47,6 +47,11 @@ namespace feng {
 		throw std::exception(msg.c_str());
 	}
 
+	void logger::call_assert(const std::string& msg, const std::string& func_name, int32_t line) {
+		log(msg, "ASSERT", WIN_LOGGIN_COLOR_YELLOW, func_name, line);
+		std::abort();
+	}
+
 	std::string logger::get_error_string(uint32_t err) {
 		switch (err) {
 		case GL_NO_ERROR:								

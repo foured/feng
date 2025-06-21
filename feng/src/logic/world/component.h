@@ -13,7 +13,7 @@ enum class component_list : uint32_t {
 namespace feng {
 	class instance;
 
-	class component : public util::uuid_owner, public data::serializable {
+	class component : public data::serializable {
 	public:
 		component(instance* instance);
 
@@ -24,6 +24,8 @@ namespace feng {
 		virtual std::shared_ptr<component> copy(instance* new_instance) = 0;
 
 		instance* get_instance() const;
+		uuid_type get_instance_uuid() const;
+		std::string get_instance_uuid_string() const;
 
 		virtual void serialize(data::wfile* file) = 0;
 		virtual void deserialize(data::rfile* file, scene* scene) = 0;

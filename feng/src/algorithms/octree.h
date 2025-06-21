@@ -4,6 +4,7 @@
 
 #include <array>
 #include <vector>
+#include <memory>
 
 #include "../logic/aabb.h"
 #include "../logic/world/components/simple_collider.h"
@@ -14,6 +15,7 @@
 #define OCTREE_LIFESPAN 10 // in frames
 
 namespace feng::octree {
+	using obj_type = std::shared_ptr<simple_collider>;
 
 	enum class octants : uint8_t {
 		LBB = 0, // Left  Bottom Back
@@ -26,17 +28,32 @@ namespace feng::octree {
 		RTF = 7  // Right Top    Front
 	};
 
+	class object_type {
+	public:
+		object_type(std::shared_ptr<simple_collider> object);
+
+		bool is_static() const;
+
+		simple_collider* get() const;
+		simple_collider* operator->();
+		const simple_collider* operator->() const;
+
+	private:
+		std::weak_ptr<simple_collider> _object;
+		bool _is_static;
+
+	};
 
 	class node {
 	public:
-		using obj_type = std::shared_ptr<simple_collider>;
-
 		node(glm::vec3 pos, float width);
 		~node();
 		// TODO: add constructor with bounds
 
 		bool add_insance(obj_type object);
 		void update();
+			
+		void delete_unused_children();
 
 	private:
 		aabb _bounds;

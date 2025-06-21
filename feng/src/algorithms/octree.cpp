@@ -1,12 +1,39 @@
 #include "octree.h"
 
 #include "../logic/world/instance.h"
-
 #include "../utilities/utilities.h"
 
 namespace feng::octree {
 	
-	// PUBLIC-------------------------------------------------------------------------------------------------------------
+	// OBJECT TYPE -----------------------------------------------------------------------------------------------------
+	
+	// PUBLIC-----------------------------------------------------------------------------------------------------------
+	object_type::object_type(std::shared_ptr<simple_collider> object)
+		: _object(object) {
+		_is_static = object->get_instance()->flags.get(INST_FLAG_STATIC);
+	}
+
+	bool object_type::is_static() const {
+		return _is_static;
+	}
+
+	simple_collider* object_type::get() const {
+		auto ptr = _object.lock();
+		FENG_ASSERT(ptr, "The octree object was destroyed, but someone is trying to work with it.");
+		return ptr.get();
+	}
+
+	simple_collider* object_type::operator->() {
+		return get();
+	}
+
+	const simple_collider* object_type::operator->() const {
+		return get();
+	}
+
+	// NODE ------------------------------------------------------------------------------------------------------------
+
+	// PUBLIC-----------------------------------------------------------------------------------------------------------
 	node::node(glm::vec3 pos, float width) 
 		: _root(true) {
 		float hw = width / 2.0f;
@@ -18,8 +45,10 @@ namespace feng::octree {
 
 	node::~node() {
 		for (auto& child : _octants) {
-			delete child;
-			child = nullptr;
+			if (child != nullptr) {
+				delete child;
+				child = nullptr;
+			}
 		}
 	}
 
@@ -51,7 +80,7 @@ namespace feng::octree {
 		_objects.clear();
 
 		if (remaining.size() > 0) {
-			LOG_INFO("Splitting: ", remaining.size(), " ", remaining[0]->get_instance()->get_uuid_string());
+			LOG_INFO("Separating objects: ", remaining.size());
 			// check if can be stored in children
 			std::vector<node*> intersections;
 			for (auto& object : remaining) {
@@ -108,9 +137,31 @@ namespace feng::octree {
 
 		if (_objects.size() > 0) {
 			// processing moving objects
-		
+			 
+			//std::vector<obj_type> remaining;
+			//for (auto& object : _objects) {
+			//	if (object->update_bounds() && !contains(object)) {
+			//		if (!_parent || !_parent->add_insance(object)) {
+			//			LOG_WARNING("Object ", object->get_instance_uuid_string(), " moved out of octree bounds");
+			//		}
+			//	}
+			//	else {
+			//		remaining.push_back(object);
+			//	}
+			//}
+			//if(remaining.size() != _objects.size())
+			//	_objects = std::move(remaining);
+
 			// processing collisions
 			check_collisions();
+		}
+	}
+
+	void node::delete_unused_children() {
+		for (auto& octant : _octants) {
+			if (octant != nullptr && octant->empty()) {
+				delete octant;
+			}
 		}
 	}
 
@@ -161,7 +212,7 @@ namespace feng::octree {
 
 	void node::add_to_optimal_intersecting_node(obj_type object) {
 		// _no_children == 0 || _last_node || 
-		if (!can_fit(object) || _no_children == 0 || _last_node) {
+		if (!can_fit(object) || _last_node || _no_children == 0) {
 			push_object(object);
 			return;
 		}

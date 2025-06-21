@@ -13,4 +13,12 @@ namespace feng {
 		return _instance;
 	}
 
+	uuid_type component::get_instance_uuid() const {
+		return _instance->get_uuid();
+	}
+
+	std::string component::get_instance_uuid_string() const {
+		return _instance->get_uuid_string();
+	}
+
 }

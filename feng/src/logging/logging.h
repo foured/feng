@@ -43,6 +43,13 @@
 #endif
 
 #define THROW_ERROR(...) feng::logger::throw_error(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
+#define FENG_ASSERT(condition, ...) \
+    do { \
+        if (!(condition)) { \
+            feng::logger::call_assert(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__); \
+        } \
+    } while(0)
+										
 
 namespace feng {
 
@@ -53,6 +60,7 @@ namespace feng {
 		static void log_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void log_warning(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void throw_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
+		static void call_assert(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 
 		static std::string get_error_string(uint32_t err);
 
@@ -63,11 +71,11 @@ namespace feng {
 			return oss.str();
 		}
 
+		static void log(const std::string& msg, const std::string& type_name, char color,
+			std::string f_name, int32_t line);
 
 	private:
 		static void log_time();
-		static void log(const std::string& msg, const std::string& type_name, char color,
-			std::string f_name, int32_t line);
 		static void set_color(char color);
 	};
 
