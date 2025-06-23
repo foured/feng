@@ -42,6 +42,9 @@ namespace feng {
 			batch.vertex_array.set_attrib_pointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
 			_size_array_buffer.bind();
 			batch.vertex_array.set_attrib_pointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0, 1);
+			_rot_array_buffer.bind();
+			//batch.vertex_array.set_attrib_pointer(9, 3 * 3, GL_FLOAT, GL_FALSE, sizeof(glm::mat3), 0, 1);
+			batch.vertex_array.set_atrib_pointer_matrix<4>(9, 0, 1);
 			vertexarray::unbind();
 		}
 	}
@@ -57,7 +60,7 @@ namespace feng {
 
 		_rot_array_buffer.generate();
 		_rot_array_buffer.bind();
-		_rot_array_buffer.buffer_data<glm::vec3>(MAX_NO_MODEL_INSTANCES * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
+		_rot_array_buffer.buffer_data<glm::mat4>(MAX_NO_MODEL_INSTANCES * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
 	}
 
 	void model::update_instances_buffers() {
@@ -69,7 +72,7 @@ namespace feng {
 		_size_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * no_instances, &_sizes[0]);
 
 		_rot_array_buffer.bind();
-		_rot_array_buffer.buffer_sub_data(0, sizeof(glm::vec3) * no_instances, &_rotations[0]);
+		_rot_array_buffer.buffer_sub_data(0, sizeof(glm::mat4) * no_instances, &_rotations[0]);
 	}
 
 	void model::add_instance(instance* i) {
@@ -297,7 +300,7 @@ namespace feng {
 	void model::add_instance_render_data(instance* instance) {
 		_positions.push_back(instance->transform.get_position());
 		_sizes.push_back(instance->transform.get_size());
-		_rotations.push_back(instance->transform.get_rotation());
+		_rotations.push_back(instance->transform.get_rotation_matrix3x3());
 	}
 
 	void model::batch_meshes() {

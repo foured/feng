@@ -168,6 +168,9 @@
     <ClCompile Include="src\logic\world\components\size_animator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\physics\collider.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\logging\logging.h">
@@ -375,6 +378,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\logic\world\components\size_animator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\physics\collider.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

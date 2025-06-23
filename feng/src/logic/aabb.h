@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <glm/glm.hpp>
 
 namespace feng {
@@ -16,11 +17,15 @@ namespace feng {
 
 		void set_numeric_limits();
 		float volume() const;
-		aabb scale(const glm::mat4& model) const;
-		aabb scale(float factor) const;
 		bool can_fit(const aabb& target) const;
 		bool contains(const aabb& target) const;
 		bool intersects(const aabb& target) const;
+
+		aabb scale(const glm::mat4& model) const;
+		aabb scale(const glm::vec3& v) const;
+		aabb scale(float factor) const;
+		aabb offset(const glm::vec3& p) const;
+		aabb fit_rotation(const glm::mat3& rotation) const;
 
 	};
 

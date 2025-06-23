@@ -61,7 +61,8 @@ namespace feng {
 		std::string _directory;
 		bool _disable_faceculling;
 
-		std::vector<glm::vec3> _positions, _sizes, _rotations;
+		std::vector<glm::vec3> _positions, _sizes;
+		std::vector<glm::mat4> _rotations;
 		arraybuffer _pos_array_buffer, _size_array_buffer, _rot_array_buffer;
 		std::vector<instance*> _instances;
 

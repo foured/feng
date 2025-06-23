@@ -23,18 +23,6 @@ namespace feng {
 		return size.x * size.y * size.z;
 	}
 
-	aabb aabb::scale(const glm::mat4& model) const {
-		glm::vec3 nmax = glm::vec3(model * glm::vec4(max, 1.0f));
-		glm::vec3 nmin = glm::vec3(model * glm::vec4(min, 1.0f));
-		return aabb(nmin, nmax);
-	}
-
-	aabb aabb::scale(float factor) const {
-		glm::vec3 nmin = factor * min;
-		glm::vec3 nmax = factor * max;
-		return aabb(nmin, nmax);
-	}
-
 	bool aabb::can_fit(const aabb& target) const {
 		glm::vec3 csize = size();
 		glm::vec3 tsize = target.size();
@@ -53,6 +41,40 @@ namespace feng {
 			max.x >= target.min.x && min.x <= target.max.x &&
 			max.y >= target.min.y && min.y <= target.max.y &&
 			max.z >= target.min.z && min.z <= target.max.z;
+	}
+
+
+	aabb aabb::scale(const glm::mat4& model) const {
+		glm::vec3 nmax = glm::vec3(model * glm::vec4(max, 1.0f));
+		glm::vec3 nmin = glm::vec3(model * glm::vec4(min, 1.0f));
+		return aabb(nmin, nmax);
+	}
+
+	aabb aabb::scale(const glm::vec3& v) const {
+		return aabb(min * v, max * v);
+	}
+
+	aabb aabb::scale(float factor) const {
+		return aabb(min * factor, max * factor);
+	}
+
+	aabb aabb::offset(const glm::vec3& p) const {
+		return aabb(min + p, max + p);
+	}
+
+	aabb aabb::fit_rotation(const glm::mat3& rotation) const {
+		glm::vec3 c = center();
+		glm::vec3 e = 0.5f * size();
+
+		glm::mat3 abs_rot = glm::mat3(
+			glm::abs(rotation[0]),
+			glm::abs(rotation[1]),
+			glm::abs(rotation[2])
+		);
+
+		glm::vec3 new_e = abs_rot * e;
+
+		return { c - new_e , c + new_e };
 	}
 
 }

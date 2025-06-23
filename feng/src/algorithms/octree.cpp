@@ -23,6 +23,10 @@ namespace feng::octree {
 		return ptr.get();
 	}
 
+	bool object_type::expired() const {
+		return _object.expired();
+	}
+
 	simple_collider* object_type::operator->() {
 		return get();
 	}
@@ -44,7 +48,7 @@ namespace feng::octree {
 	}
 
 	node::~node() {
-		for (auto& child : _octants) {
+		for (auto child : _octants) {
 			if (child != nullptr) {
 				delete child;
 				child = nullptr;
@@ -52,7 +56,11 @@ namespace feng::octree {
 		}
 	}
 
-	bool node::add_insance(obj_type object) {
+	bool node::add_insance(std::shared_ptr<simple_collider> object) {
+		return add_insance(new object_type(object));
+	}
+
+	bool node::add_insance(object_type* object) {
 		if (!contains(object)) {
 			return false;
 		}
@@ -64,10 +72,10 @@ namespace feng::octree {
 
 		revive_dead_octants();
 
-		std::vector<obj_type> remaining;
-		for (auto& obj : _objects) {
+		std::vector<object_type*> remaining;
+		for (auto obj : _objects) {
 			bool inserted = false;
-			for (auto& child : _octants) {
+			for (auto child : _octants) {
 				if (child->add_insance(obj)) {
 					inserted = true;
 					break;
@@ -80,29 +88,31 @@ namespace feng::octree {
 		_objects.clear();
 
 		if (remaining.size() > 0) {
-			LOG_INFO("Separating objects: ", remaining.size());
+			//LOG_INFO("Separating objects: ", remaining.size());
 			// check if can be stored in children
 			std::vector<node*> intersections;
-			for (auto& object : remaining) {
-				for (auto& octant : _octants) {
-					if (octant->intersects(object)) {
-						intersections.push_back(octant);
+			for (auto object : remaining) {
+				if (object->is_static()) {
+					for (auto octant : _octants) {
+						if (octant->intersects(object)) {
+							intersections.push_back(octant);
+						}
 					}
-				}
 
-				if (intersections.empty())
-					THROW_ERROR("Object stands in octant but doesnt intersect with its children");
+					if (intersections.empty())
+						THROW_ERROR("Object stands in octant but doesnt intersect with its children");
 
-				if (intersections.size() < NUM_OCTANTS) {
-					for (auto& octant : intersections) {
-						//octant->push_object(object);
-						octant->add_to_optimal_intersecting_node(object);
+					if (intersections.size() < NUM_OCTANTS) {
+						for (auto octant : intersections) {
+							//octant->push_object(object);
+							octant->add_to_optimal_intersecting_node(object);
+						}
 					}
+					else {
+						_objects.push_back(object);
+					}
+					intersections.clear();
 				}
-				else {
-					_objects.push_back(object);
-				}
-				intersections.clear();
 			}
 		}
 
@@ -136,21 +146,30 @@ namespace feng::octree {
 		}
 
 		if (_objects.size() > 0) {
-			// processing moving objects
-			 
-			//std::vector<obj_type> remaining;
-			//for (auto& object : _objects) {
-			//	if (object->update_bounds() && !contains(object)) {
-			//		if (!_parent || !_parent->add_insance(object)) {
-			//			LOG_WARNING("Object ", object->get_instance_uuid_string(), " moved out of octree bounds");
-			//		}
-			//	}
-			//	else {
-			//		remaining.push_back(object);
-			//	}
-			//}
-			//if(remaining.size() != _objects.size())
-			//	_objects = std::move(remaining);
+			
+			// processing objects : 
+			//		- check if moved
+			//		- check if died
+
+			std::vector<object_type*> remaining;
+			remaining.reserve(_objects.size());
+			for (auto object : _objects) {
+				if (!object->expired()) {
+					if (!object->is_static() && object->get()->update_bounds() && !contains(object)) {
+						if (!_parent || !_parent->add_insance(object)) {
+							LOG_WARNING("Object ", object->get()->get_instance_uuid_string(), " moved out of octree bounds");
+						}
+					}
+					else {
+						remaining.push_back(object);
+					}
+				}
+				else {
+					delete object;
+				}
+			}
+			_objects = std::move(remaining);
+				
 
 			// processing collisions
 			check_collisions();
@@ -158,7 +177,7 @@ namespace feng::octree {
 	}
 
 	void node::delete_unused_children() {
-		for (auto& octant : _octants) {
+		for (auto octant : _octants) {
 			if (octant != nullptr && octant->empty()) {
 				delete octant;
 			}
@@ -173,44 +192,47 @@ namespace feng::octree {
 		_root = _parent == nullptr;
 	}
 
-	void node::on_collision(obj_type object1, obj_type object2) {
+	void node::on_collision(object_type* object1, object_type* object2) {
 
 	}
 
 	void node::check_collisions() {
 		for (size_t i = 0; i < _objects.size(); ++i) {
 			for (size_t j = i + 1; j < _objects.size(); ++j) {
-				if (_objects[i]->intersects(_objects[j])) {
+				// if both static, no reason to check
+				if ((!_objects[i]->is_static() || !_objects[j]->is_static()) && 
+					_objects[i]->get()->intersects(_objects[j]->get())) {
 					on_collision(_objects[i], _objects[j]);
 				}
 			}
 		}
 
-		for (auto& octant : _octants) {
+		for (auto octant : _octants) {
 			if (octant != nullptr) {
 				octant->check_against(_objects);
-				octant->check_collisions();
 			}
 		}
 	}
 
-	void node::check_against(const std::vector<obj_type>& strangers) {
-		for (const auto& stranger : strangers) {
-			for (const auto& local : _objects) {
-				if (stranger->intersects(local)) {
+	void node::check_against(const std::vector<object_type*>& strangers) {
+		for (auto stranger : strangers) {
+			for (auto local : _objects) {
+				// if both static, no reason to check
+				if ((!local->is_static() || !stranger->is_static()) &&
+					stranger->get()->intersects(local->get())) {
 					on_collision(stranger, local);
 				}
 			}
 		}
 
-		for (auto& octant : _octants) {
+		for (auto octant : _octants) {
 			if (octant != nullptr) {
 				octant->check_against(strangers);
 			}
 		}
 	}
 
-	void node::add_to_optimal_intersecting_node(obj_type object) {
+	void node::add_to_optimal_intersecting_node(object_type* object) {
 		// _no_children == 0 || _last_node || 
 		if (!can_fit(object) || _last_node || _no_children == 0) {
 			push_object(object);
@@ -219,7 +241,7 @@ namespace feng::octree {
 
 		revive_dead_octants();
 
-		for (const auto& octant : _octants)
+		for (const auto octant : _octants)
 			if (octant->intersects(object))
 				octant->add_to_optimal_intersecting_node(object);
 	}
@@ -270,7 +292,7 @@ namespace feng::octree {
 		return true;
 	}
 
-	void node::push_object(obj_type object) {
+	void node::push_object(object_type* object) {
 		_objects.push_back(object);
 		_time_to_death = OCTREE_LIFESPAN;
 	}
@@ -289,16 +311,16 @@ namespace feng::octree {
 		return true;
 	}
 
-	bool node::contains(const obj_type& object) const{
-		return _bounds.contains(object->bounds);
+	bool node::contains(object_type* object) const{
+		return _bounds.contains(object->get()->bounds);
 	}
 
-	bool node::intersects(const obj_type& object) const {
-		return _bounds.intersects(object->bounds);
+	bool node::intersects(object_type* object) const {
+		return _bounds.intersects(object->get()->bounds);
 	}
 
-	bool node::can_fit(const obj_type& object) const {
-		return _bounds.can_fit(object->bounds);
+	bool node::can_fit(object_type* object) const {
+		return _bounds.can_fit(object->get()->bounds);
 	}
 
 	aabb node::octant_size() const {

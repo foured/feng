@@ -121,7 +121,7 @@ namespace feng {
 	void scene::generate_lightspace_matrices() {
 		//dir_light.generate_lightspace_matrix();
 		calculate_bounds();
-		dir_light.lightspace_matrix = dir_light.generate_custom_lightspace_matrix(_bounds, model_matrix);
+		dir_light.lightspace_matrix = dir_light.generate_custom_lightspace_matrix(_bounds);
 		for (auto& point_light : point_lights)
 			point_light.generate_lightspace_matrices();
 	}

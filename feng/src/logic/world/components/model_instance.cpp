@@ -37,11 +37,12 @@ namespace feng {
 
 
 	aabb model_instance::calculate_bounds() const {
-		aabb* mb = &_model->bounds;
 		transform* t = &_instance->transform;
-		glm::vec3 max = mb->max * t->get_size() + t->get_position();
-		glm::vec3 min = mb->min * t->get_size() + t->get_position();
-		return aabb(min, max);
+		aabb bounds = _model->bounds;
+		bounds = bounds.scale(t->get_size());
+		bounds = bounds.fit_rotation(t->get_rotation_matrix3x3());
+		bounds = bounds.offset(t->get_position());
+		return bounds; 
 	}
 
 	void model_instance::render_alone(shader& shader) {

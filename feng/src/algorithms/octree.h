@@ -15,7 +15,6 @@
 #define OCTREE_LIFESPAN 10 // in frames
 
 namespace feng::octree {
-	using obj_type = std::shared_ptr<simple_collider>;
 
 	enum class octants : uint8_t {
 		LBB = 0, // Left  Bottom Back
@@ -33,6 +32,7 @@ namespace feng::octree {
 		object_type(std::shared_ptr<simple_collider> object);
 
 		bool is_static() const;
+		bool expired() const;
 
 		simple_collider* get() const;
 		simple_collider* operator->();
@@ -50,7 +50,8 @@ namespace feng::octree {
 		~node();
 		// TODO: add constructor with bounds
 
-		bool add_insance(obj_type object);
+		bool add_insance(std::shared_ptr<simple_collider> object);
+		bool add_insance(object_type* object);
 		void update();
 			
 		void delete_unused_children();
@@ -59,7 +60,7 @@ namespace feng::octree {
 		aabb _bounds;
 		node* _parent = nullptr;
 		std::array<node*, NUM_OCTANTS> _octants;
-		std::vector<obj_type> _objects;
+		std::vector<object_type*> _objects;
 		bool _last_node = false;
 		bool _root = false;
 		uint8_t _no_children = 0;
@@ -68,20 +69,20 @@ namespace feng::octree {
 		node(glm::vec3 pos, float width, node* parent);
 		
 		void check_collisions();
-		void check_against(const std::vector<obj_type>& strangers);
-		void on_collision(obj_type object1, obj_type object2);
+		void check_against(const std::vector<object_type*>& strangers);
+		void on_collision(object_type* object1, object_type* object2);
 
-		void add_to_optimal_intersecting_node(obj_type object);
-		void push_object(obj_type object);
+		void add_to_optimal_intersecting_node(object_type* object);
+		void push_object(object_type* object);
 		node* generate_octant(octants specification);
 		node* generate_octant(uint8_t id);
 		void revive_dead_octants();
 		bool are_octants_empty();
 
 		bool empty() const;
-		bool contains(const obj_type& object) const;
-		bool intersects(const obj_type& object) const;
-		bool can_fit(const obj_type& object) const;
+		bool contains(object_type* object) const;
+		bool intersects(object_type* object) const;
+		bool can_fit(object_type* object) const;
 		aabb octant_size() const;
 
 	};

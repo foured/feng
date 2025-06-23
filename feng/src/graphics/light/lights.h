@@ -34,11 +34,11 @@ namespace feng {
         // MATRICES
         //===================
         void generate_lightspace_matrix();
-        glm::mat4 generate_custom_lightspace_matrix(const glm::vec3& min, const glm::vec3& max, const glm::mat4& model);
-        glm::mat4 generate_custom_lightspace_matrix(const aabb& bounds, const glm::mat4& model);
+        glm::mat4 generate_custom_lightspace_matrix(const glm::vec3& min, const glm::vec3& max);
+        glm::mat4 generate_custom_lightspace_matrix(const aabb& bounds);
         glm::mat4 generate_custom_relative_lightspace_matrix(const glm::vec3& cmin, const glm::vec3& cmax,
-            const glm::vec3& rmin, const glm::vec3& rmax, const glm::mat4& model);
-        glm::mat4 generate_custom_relative_lightspace_matrix(const aabb& caster, const aabb& receiver, const glm::mat4& model);
+            const glm::vec3& rmin, const glm::vec3& rmax);
+        glm::mat4 generate_custom_relative_lightspace_matrix(const aabb& caster, const aabb& receiver);
 
         void generate_buffers();
         void render_preparations();

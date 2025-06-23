@@ -14,9 +14,9 @@ namespace feng {
 		glBindVertexArray(_id);
 	}
 
-	void vertexarray::set_attrib_pointer(uint32_t index, uint32_t no_data_elements, GLenum element_type,
-		bool triangulate, uint32_t data_size, uint32_t offset, int32_t devisor) {
-		glVertexAttribPointer(index, no_data_elements, element_type, triangulate, data_size, (void*)offset);
+	void vertexarray::set_attrib_pointer(uint32_t index, int32_t no_data_elements, GLenum element_type,
+		bool normalized, int32_t data_size, uint32_t offset, int32_t devisor) {
+		glVertexAttribPointer(index, no_data_elements, element_type, normalized, data_size, (void*)offset);
 		glEnableVertexAttribArray(index);
 
 		if (devisor != 0)

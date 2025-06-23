@@ -20,13 +20,14 @@ namespace feng {
 		}
 
 		void ortho_matrix_setup::scale(float k) {
+			float d = std::abs(k - 1);
 			float lrc = (l + r) / 2.0f;
-			l += (l - lrc) * k;
-			r += (r - lrc) * k;
+			l += (l - lrc) * d;
+			r += (r - lrc) * d;
 
 			float btc = (b + t) / 2.0f;
-			b += (b - btc) * k;
-			t += (t - btc) * k;
+			b += (b - btc) * d;
+			t += (t - btc) * d;
 		}
 
 		void ortho_matrix_setup::transform_to_square() {
@@ -51,7 +52,7 @@ namespace feng {
 		// Static -----------------------------------------------------------------------------------------------
 
 		ortho_matrix_setup ortho_matrix_setup::calculate_in_light_space(glm::vec3 min, glm::vec3 max,
-			const glm::mat4& light_view, const glm::mat4& model) {
+			const glm::mat4& light_view) {
 			std::vector<glm::vec3> corners = {
 			{ min.x, min.y, min.z },
 			{ min.x, min.y, max.z },
@@ -65,7 +66,7 @@ namespace feng {
 
 			glm::vec3 min_ls(FLT_MAX), max_ls(-FLT_MAX);
 			for (const auto& c : corners) {
-				glm::vec3 light_space_pos = glm::vec3(light_view * model * glm::vec4(c, 1.0f));
+				glm::vec3 light_space_pos = glm::vec3(light_view * glm::vec4(c, 1.0f));
 				min_ls = glm::min(min_ls, light_space_pos);
 				max_ls = glm::max(max_ls, light_space_pos);
 			}

@@ -10,6 +10,14 @@ layout (location = 6) in float aTexIdxs;
 // dynamic
 layout (location = 7) in vec3 aOffset;
 layout (location = 8) in vec3 aSize;
+// rotation
+// 4 vec4s to store a 4x4 rotation matrix
+layout (location = 9) in vec4 aRotation_1;
+layout (location = 10) in vec4 aRotation_2;
+layout (location = 11) in vec4 aRotation_3;
+layout (location = 12) in vec4 aRotation_4;
+
+
 
 #include<defines.glsl>
 #include<lights_structures.glsl>
@@ -43,13 +51,16 @@ uniform mat4 lightSpaceMatrix;
 
 void main()
 {
+    mat4 rotation = mat4(aRotation_1, aRotation_2, aRotation_3, aRotation_4);
+    vec4 realPos = vec4(vec3(rotation * vec4(aPos * aSize, 1.0)) + aOffset, 1.0);
+
     vs_out.DiffuseCol = aDiffuse;
     vs_out.SpecCol = aSpecular;
     vs_out.d_map_idx = int(aTexIdxs) & 0xFF;
     vs_out.s_map_idx = (int(aTexIdxs) >> 8) & 0xFF;
     vs_out.n_map_idx = (int(aTexIdxs) >> 16) & 0xFF;
 
-    vs_out.FragPos = vec3(model * vec4(aPos * aSize + aOffset, 1.0));
+    vs_out.FragPos = vec3(model * realPos);
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;  
     vs_out.TexCoords = aTexCoords;
     //vs_out.ViewPos = vec3(model * vec4(viewPos, 1.0));
@@ -61,7 +72,7 @@ void main()
     vs_out.NoSpotLights = noSpotLights;
     vs_out.SpotLights = spotLights;
 
-    vs_out.FragPosLightSpace = lightSpaceMatrix * model * vec4(aPos * aSize + aOffset, 1.0);
+    vs_out.FragPosLightSpace = lightSpaceMatrix * realPos;
 
     for(int i = 0; i < MAX_POINT_LIGHTS; i++){
         vs_out.PointLights[i].position = vec3(model * vec4(pointLights[i].position, 1.0));
@@ -88,6 +99,5 @@ void main()
         }
     }
 
-    
-    gl_Position = projection * view * vec4(vec3(model * vec4(aPos * aSize + aOffset, 1.0)), 1.0);
+    gl_Position = projection * view * model * realPos;
 }

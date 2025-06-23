@@ -4,6 +4,7 @@
 #include <chrono>
 #include <sstream>
 
+#define FENG_DEBUG
 #define FENG_LOGGIN
 //#define LOG_FUNC_NAME
 
@@ -50,7 +51,6 @@
         } \
     } while(0)
 										
-
 namespace feng {
 
 	class logger {
@@ -95,15 +95,16 @@ namespace feng {
 
 }
 
+
 #include <glm/glm.hpp>
 #include <ostream>
 
 inline std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
-    os << "vec3(" << v.x << ", " << v.y << ", " << v.z << ")";
-    return os;
+	os << "vec3(" << v.x << ", " << v.y << ", " << v.z << ")";
+	return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const glm::vec4& v) {
-    os << "vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
-    return os;
+	os << "vec4(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+	return os;
 }

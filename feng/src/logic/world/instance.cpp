@@ -20,9 +20,10 @@ namespace feng {
 	}
 
 	void instance::update() {
-		//if (flags.get(INST_FLAG_STATIC) && transform.changed_this_frame)
-		//	LOG_WARNING("Static object ", get_uuid_string(), " is moving, scaling or rotating");
-
+#ifndef FENG_DEBUG
+		if (flags.get(INST_FLAG_STATIC) && transform.changed_this_frame)
+			LOG_WARNING("Static object ", get_uuid_string(), " is moving, scaling or rotating");
+#endif
 		transform.changed_this_frame = false;
 		for (auto& c : _components) {
 			if (c.get()->is_active)

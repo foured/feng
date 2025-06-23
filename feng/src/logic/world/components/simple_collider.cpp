@@ -37,6 +37,10 @@ namespace feng {
 	}
 
 	bool simple_collider::intersects(std::shared_ptr<simple_collider> target) const {
+		return intersects(target.get());
+	}
+
+	bool simple_collider::intersects(simple_collider* target) const {
 		return bounds.intersects(target->bounds);
 	}
 

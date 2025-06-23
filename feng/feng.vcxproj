@@ -197,6 +197,7 @@
     <ClCompile Include="src\logic\world\scene.cpp" />
     <ClCompile Include="src\logic\world\transform.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\physics\collider.cpp" />
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -264,6 +265,7 @@
     <ClInclude Include="src\logic\ui\ui_layer.h" />
     <ClInclude Include="src\logic\world\tag.h" />
     <ClInclude Include="src\logic\world\transform.h" />
+    <ClInclude Include="src\physics\collider.h" />
     <ClInclude Include="src\utilities\files_in_folder.hpp" />
     <ClInclude Include="src\utilities\fps_counter.h" />
     <ClInclude Include="src\utilities\singleton.hpp" />

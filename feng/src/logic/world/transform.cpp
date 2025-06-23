@@ -19,6 +19,7 @@ namespace feng {
 
 	void transform::set_rotation(glm::vec3 val) {
 		_rotation = val;
+		_rotation_matrix = glm::mat3_cast(glm::quat(glm::radians(val)));
 		changed_this_frame = true;
 	}
 	
@@ -32,6 +33,10 @@ namespace feng {
 
 	glm::vec3 transform::get_rotation() const {
 		return _rotation;
+	}
+
+	glm::mat3 transform::get_rotation_matrix3x3() const {
+		return _rotation_matrix;
 	}
 
 }

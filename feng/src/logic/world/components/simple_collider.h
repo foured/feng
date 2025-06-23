@@ -20,6 +20,7 @@ namespace feng {
 
 		bool context_expired() const;
 		bool intersects(std::shared_ptr<simple_collider> target) const;
+		bool intersects(simple_collider* target) const;
 
 		void start();
 		void update();

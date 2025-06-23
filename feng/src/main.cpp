@@ -42,6 +42,8 @@
 #include "logic/world/components/flash_light.h"
 #include "logic/world/components/simple_collider.h"
 
+#include "physics/collider.h"
+
 #include "editor/lightbaker.h"
 
 #define PRINT(msg) std::cout << msg << '\n'
@@ -112,6 +114,8 @@ int main() {
 
 	sptr_ins cube1_i3 = sc1.copy_instance(cube1_i1);
 	cube1_i3->transform.set_position(glm::vec3(0, 4, 0));
+	cube1_i3->transform.set_rotation(glm::vec3(0, 45, 0));
+	auto cube1_i3_mi = cube1_i3->try_get_component<model_instance>();
 
 	//cube1_i1->add_component<size_animator>(glm::vec3(1.0f), glm::vec3(5.0f), 1.0f);
 
@@ -127,8 +131,10 @@ int main() {
 	//plane1_i1->add_component<line_animator>(glm::vec3(0, -2, -5), glm::vec3(0, -2, 90), 10);
 	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	plane1_i1->flags.set(INST_FLAG_CAST_SHADOWS, false);
+	//plane1_i1->flags.set(INST_FLAG_STATIC, false);
 	plane1_i1->transform.set_position(glm::vec3(0, -2, -5));
 	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
+	plane1_i1->transform.set_rotation(glm::vec3(0, 0, 0));
 	LOG_INFO("plane1_i1 ", plane1_i1->get_uuid_string());
 
 	//sptr_ins light_cube_i1 = sc1.add_instance();
@@ -194,6 +200,14 @@ int main() {
 	auto layer1 = ui.create_layer();
 	layer1->support_input = false;
 
+	//texture dir_light_shadowmap = sc1.dir_light.get_texture();
+	//auto texture_display_model = ui.create_model(primitives2d::generate_square_mesh(dir_light_shadowmap));
+	//auto texture_display = ui.add_instance(layer1, texture_display_model); 
+	//int32_t a = 300;
+	//texture_display->uitransform.set_size_pix({ a, a });
+	//texture_display->uitransform.set_anchor(ui::anchor::BOTTOM_RIGHT);
+	//texture_display->uitransform.set_pos_pix({ -a, a });
+
 	text_batcher tb;
 
 	//============================
@@ -202,12 +216,18 @@ int main() {
 	sc1.generate_lightspace_matrices();
 	
 	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
-		plane1_i1_mi->calculate_bounds(), sc1.model_matrix);	
+		plane1_i1_mi->calculate_bounds());	
 
-	glm::mat4 floor_lml = sc1.dir_light.generate_custom_lightspace_matrix(plane1_i1_mi->calculate_bounds(), sc1.model_matrix);
+	helpers::box_renderer lightspace_box(&am->shaders.debug_box_shader, sc1.dir_light.lightspace_matrix);
 
 	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(
 		&am->shaders.debug_box_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 200);
+
+	//glm::quat test_rotation(glm::radians(glm::vec3(0.0f, 45.0f, 0.0f)));
+	//aabb test_box(glm::vec3(-3), glm::vec3(3));
+
+	helpers::box_renderer test_box_renderer(&am->shaders.debug_box_shader, 
+		cube1_i3_mi->calculate_bounds());
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -279,6 +299,13 @@ int main() {
 		utilities::test_octree_visualiser->render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
 																			   sc1.main_camera.get_view_matrix(), 
 																			   sc1.get_projection_matrix());
+		lightspace_box.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.model_matrix,
+														   sc1.main_camera.get_view_matrix(),
+														   sc1.get_projection_matrix());
+		test_box_renderer.render(glm::vec3(0, 0, 1), sc1.model_matrix,
+													 sc1.main_camera.get_view_matrix(),
+													 sc1.get_projection_matrix());
+
 		utilities::test_octree_visualiser->clear_instances();
 		sb.render(sc1.main_camera.get_view_matrix());
 		main_framebuffer.unbind();

@@ -31,25 +31,25 @@ namespace feng {
 		lightspace_matrix = light_projection * light_view;
 	}
 
-	glm::mat4 dir_light::generate_custom_lightspace_matrix(const glm::vec3& min, const glm::vec3& max, const glm::mat4& model) {
+	glm::mat4 dir_light::generate_custom_lightspace_matrix(const glm::vec3& min, const glm::vec3& max) {
 		glm::vec3 center = (min + max) * 0.5f;
 		float radius = glm::length(max - min) * 0.5f;
 
 		glm::vec3 light_pos = center - direction * radius * 2.0f;
 		glm::mat4 light_view = glm::lookAt(light_pos, center, glm::vec3(0, 1, 0));
 
-		ortho_matrix_setup ortho_setup = ortho_matrix_setup::calculate_in_light_space(min, max, light_view, model);
+		ortho_matrix_setup ortho_setup = ortho_matrix_setup::calculate_in_light_space(min, max, light_view);
 
 		glm::mat4 light_proj = ortho_setup.setup_matrix();
 		return light_proj * light_view;
 	}
 
-	glm::mat4 dir_light::generate_custom_lightspace_matrix(const aabb& bounds, const glm::mat4& model) {
-		return generate_custom_lightspace_matrix(bounds.min, bounds.max, model);
+	glm::mat4 dir_light::generate_custom_lightspace_matrix(const aabb& bounds) {
+		return generate_custom_lightspace_matrix(bounds.min, bounds.max);
 	}
 
 	glm::mat4 dir_light::generate_custom_relative_lightspace_matrix(const glm::vec3& cmin, const glm::vec3& cmax,
-		const glm::vec3& rmin, const glm::vec3& rmax, const glm::mat4& model) {
+		const glm::vec3& rmin, const glm::vec3& rmax) {
 		glm::vec3 center = (cmin + cmax) * 0.5f;
 		float radius = glm::length(cmax - cmin) * 0.5f;
 
@@ -57,21 +57,21 @@ namespace feng {
 		glm::mat4 light_view = glm::lookAt(light_pos, center, glm::vec3(0, 1, 0));
 
 		ortho_matrix_setup caster_maxtrix_setup 
-			= ortho_matrix_setup::calculate_in_light_space(cmin, cmax, light_view, model);
+			= ortho_matrix_setup::calculate_in_light_space(cmin, cmax, light_view);
 		ortho_matrix_setup receiver_maxtrix_setup
-			= ortho_matrix_setup::calculate_in_light_space(rmin, rmax, light_view, model);
+			= ortho_matrix_setup::calculate_in_light_space(rmin, rmax, light_view);
 
 		ortho_matrix_setup final_matrix_setup = ortho_matrix_setup::overlap_depth(caster_maxtrix_setup, receiver_maxtrix_setup);
 		final_matrix_setup.transform_to_square();
-		final_matrix_setup.scale(0.1f);
+		final_matrix_setup.scale(1.1f);
 
 		glm::mat4 light_proj = final_matrix_setup.setup_matrix();
 
 		return light_proj * light_view;
 	}
 
-	glm::mat4 dir_light::generate_custom_relative_lightspace_matrix(const aabb& caster, const aabb& receiver, const glm::mat4& model) {
-		return generate_custom_relative_lightspace_matrix(caster.min, caster.max, receiver.min, receiver.max, model);
+	glm::mat4 dir_light::generate_custom_relative_lightspace_matrix(const aabb& caster, const aabb& receiver) {
+		return generate_custom_relative_lightspace_matrix(caster.min, caster.max, receiver.min, receiver.max);
 	}
 
 	void dir_light::generate_buffers() {

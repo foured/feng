@@ -1,6 +1,8 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace feng {
 
@@ -18,10 +20,14 @@ namespace feng {
 		glm::vec3 get_size() const;
 		glm::vec3 get_rotation() const;
 
+		glm::mat3 get_rotation_matrix3x3() const;
+
 	private:
 		glm::vec3 _position;
 		glm::vec3 _size;
-		glm::vec3 _rotation;
+		glm::vec3 _rotation{0, 0, 0};
+
+		glm::mat3 _rotation_matrix = glm::identity<glm::mat3>();
 
 	};
 
