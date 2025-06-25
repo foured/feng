@@ -31,16 +31,22 @@ namespace feng::octree {
 	public:
 		object_type(std::shared_ptr<simple_collider> object);
 
+		bool moved_out_of_bounds = false;
+
 		bool is_static() const;
 		bool expired() const;
+		bool is_inserted() const;
+		void set_inserted();
 
 		simple_collider* get() const;
+		std::shared_ptr<simple_collider> get_sp() const;
 		simple_collider* operator->();
 		const simple_collider* operator->() const;
 
 	private:
 		std::weak_ptr<simple_collider> _object;
-		bool _is_static;
+		bool _static = false;
+		bool _inserted = false;
 
 	};
 
@@ -54,6 +60,8 @@ namespace feng::octree {
 		bool add_insance(object_type* object);
 		void update();
 			
+		uint32_t find_instance(std::shared_ptr<simple_collider> instance);
+
 		void delete_unused_children();
 
 	private:
@@ -71,6 +79,9 @@ namespace feng::octree {
 		void check_collisions();
 		void check_against(const std::vector<object_type*>& strangers);
 		void on_collision(object_type* object1, object_type* object2);
+
+		bool add_instance_upwards(object_type* object);
+		bool add_instance_udownwards(object_type* object);
 
 		void add_to_optimal_intersecting_node(object_type* object);
 		void push_object(object_type* object);
