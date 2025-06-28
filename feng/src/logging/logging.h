@@ -99,6 +99,11 @@ namespace feng {
 #include <glm/glm.hpp>
 #include <ostream>
 
+inline std::ostream& operator<<(std::ostream& os, const glm::vec2& v) {
+	os << "vec2(" << v.x << ", " << v.y << ")";
+	return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
 	os << "vec3(" << v.x << ", " << v.y << ", " << v.z << ")";
 	return os;

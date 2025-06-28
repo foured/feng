@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <optional>
 #include <glm/glm.hpp>
 
 namespace feng {
@@ -26,6 +27,8 @@ namespace feng {
 		aabb scale(float factor) const;
 		aabb offset(const glm::vec3& p) const;
 		aabb fit_rotation(const glm::mat3& rotation) const;
+		aabb intersect_unsafe(const aabb& target);
+		std::optional<aabb> intersect_safe(const aabb& target);
 
 	};
 

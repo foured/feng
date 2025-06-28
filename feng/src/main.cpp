@@ -41,6 +41,7 @@
 #include "logic/world/components/size_animator.h"
 #include "logic/world/components/flash_light.h"
 #include "logic/world/components/simple_collider.h"
+#include "logic/world/components/box_collider.h"
 
 #include "physics/collider.h"
 
@@ -65,11 +66,17 @@ glm::vec3 random_vec3(float min = -1.0f, float max = 1.0f) {
 	return glm::vec3(dist(rng), dist(rng), dist(rng));
 }
 
+struct foo {
+	int8_t  a;
+	int64_t b;
+	int16_t c;
+};
+
 int main() {
 #ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 	LOG_WARNING("'IMPLEMENT_WORK_IN_PROGRESS_CODE' was detected!");
 #endif
-
+	
 	//========================
 	//    CREATING OBJECTS
 	//========================
@@ -110,12 +117,17 @@ int main() {
 	cube1_i2->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2->transform.set_position(glm::vec3(2, 2, -2));
 	cube1_i2->transform.set_size(glm::vec3(0.5, 2, 0.5));
+	cube1_i2->add_component<box_collider>();
 	LOG_INFO("cube1_i2 ", cube1_i2->get_uuid_string());
 
 	sptr_ins cube1_i3 = sc1.copy_instance(cube1_i1);
-	cube1_i3->transform.set_position(glm::vec3(0, 4, 0));
+	cube1_i3->flags.set(INST_FLAG_STATIC, false);
+	cube1_i3->transform.set_position(glm::vec3(1, 4, -1));
 	cube1_i3->transform.set_rotation(glm::vec3(0, 45, 0));
 	auto cube1_i3_mi = cube1_i3->try_get_component<model_instance>();
+	cube1_i3->add_component<box_collider>();
+	cube1_i3->add_component<line_animator>(glm::vec3(1, 4, -1), glm::vec3(1, 4, 10), 5);
+	LOG_INFO("cube1_i3 ", cube1_i3->get_uuid_string());
 
 	//cube1_i1->add_component<size_animator>(glm::vec3(1.0f), glm::vec3(5.0f), 1.0f);
 
@@ -134,7 +146,6 @@ int main() {
 	//plane1_i1->flags.set(INST_FLAG_STATIC, false);
 	plane1_i1->transform.set_position(glm::vec3(0, -2, -5));
 	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
-	plane1_i1->transform.set_rotation(glm::vec3(0, 0, 0));
 	LOG_INFO("plane1_i1 ", plane1_i1->get_uuid_string());
 
 	//sptr_ins light_cube_i1 = sc1.add_instance();
@@ -226,8 +237,8 @@ int main() {
 	//glm::quat test_rotation(glm::radians(glm::vec3(0.0f, 45.0f, 0.0f)));
 	//aabb test_box(glm::vec3(-3), glm::vec3(3));
 
-	helpers::box_renderer test_box_renderer(&am->shaders.debug_box_shader, 
-		cube1_i3_mi->calculate_bounds());
+	//helpers::box_renderer test_box_renderer(&am->shaders.debug_box_shader, 
+	//	cube1_i3_mi->calculate_bounds());
 
 	bool is_spot_light_working = false;
 	ui.start();
@@ -246,10 +257,12 @@ int main() {
 		//    SETUP DATA
 		//==================
 
-		if (input::get_key_down(GLFW_KEY_F)) is_spot_light_working = !is_spot_light_working;
-		if (input::get_key_down(GLFW_KEY_T)) 
-			//sc1.main_camera.position = glm::mat3(sc1.model_matrix) * light_cube_i1->transform.get_position();
+		if (input::get_key_down(GLFW_KEY_F)) { 
+			is_spot_light_working = !is_spot_light_working; 
+		}
+		if (input::get_key_down(GLFW_KEY_T)) {
 			sc1.main_camera.position = glm::mat3(sc1.model_matrix) * glm::vec3(1.3f, 0, -2);
+		}
 
 		sc1.bind_matrices_ssbo();
 		sc1.bind_lights_ssbo();
@@ -302,9 +315,9 @@ int main() {
 		lightspace_box.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.model_matrix,
 														   sc1.main_camera.get_view_matrix(),
 														   sc1.get_projection_matrix());
-		test_box_renderer.render(glm::vec3(0, 0, 1), sc1.model_matrix,
-													 sc1.main_camera.get_view_matrix(),
-													 sc1.get_projection_matrix());
+		//test_box_renderer.render(glm::vec3(0, 0, 1), sc1.model_matrix,
+		//											 sc1.main_camera.get_view_matrix(),
+		//											 sc1.get_projection_matrix());
 
 		utilities::test_octree_visualiser->clear_instances();
 		sb.render(sc1.main_camera.get_view_matrix());

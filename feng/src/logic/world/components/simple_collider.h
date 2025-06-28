@@ -3,8 +3,9 @@
 #include <memory>
 
 #include "../component.h"
-#include "../../aabb.h"
+#include "../../../algorithms/aabb.h"
 #include "../../contexts/bounds_updater.h"
+#include "../../../physics/collider.h"
 
 namespace feng {
 
@@ -19,8 +20,10 @@ namespace feng {
 		bool update_bounds();
 
 		bool context_expired() const;
+		bool collider_expired() const;
 		bool intersects(std::shared_ptr<simple_collider> target) const;
 		bool intersects(simple_collider* target) const;
+		void check_collision(std::shared_ptr<simple_collider> other);
 
 		void start();
 		void update();
@@ -31,8 +34,10 @@ namespace feng {
 
 	private:
 		std::weak_ptr<bounds_updater_context> _updater_context;
+		std::weak_ptr<collider_base> _collider_base;
 
-		bool search_for_context_and_set();
+		bool search_for_context();
+		bool search_for_collider();
 		bool update_bounds_forced();
 
 	};

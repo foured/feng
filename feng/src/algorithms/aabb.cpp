@@ -77,4 +77,25 @@ namespace feng {
 		return { c - new_e , c + new_e };
 	}
 
+	aabb aabb::intersect_unsafe(const aabb& target) {
+		glm::vec3 rmin{
+			std::max(min.x, target.min.x),
+			std::max(min.y, target.min.y),
+			std::max(min.z, target.min.z)
+		};
+		glm::vec3 rmax{
+			std::min(max.x, target.max.x),
+			std::min(max.y, target.max.y),
+			std::min(max.z, target.max.z)
+		};
+		return aabb(rmin, rmax);
+	}
+
+	std::optional<aabb> aabb::intersect_safe(const aabb& target) {
+		if (intersects(target)) {
+			return intersect_unsafe(target);
+		}
+		return std::nullopt;
+	}
+
 }

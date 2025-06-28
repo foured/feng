@@ -42,6 +42,8 @@ namespace feng {
 		}
 
 		_octree.update();
+		_octree.process_left_objects();
+		_octree.check_collisions();
 	}
 
 	void scene::register_model(sptr_mdl model) {
@@ -148,6 +150,16 @@ namespace feng {
 		}
 		LOG_WARNING("There are not as many spot lights as expected (max: " + std::to_string(MAX_SPOT_LIGHTS) + ")");
 		return -1;
+	}
+
+	// OCTREE----------------------------------------------------------------------------------------------------------
+
+	uint32_t scene::find_in_octree(std::shared_ptr<instance> instance) {
+		auto sim_col = instance->try_get_component<simple_collider>();
+		if (sim_col) {
+			return _octree.find_instance(sim_col);
+		}
+		return 0;
 	}
 
 	void scene::calculate_bounds() {

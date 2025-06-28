@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+
 #include <string>
 
 #include "../graphics/helpers/box_renderer.h"
@@ -27,6 +28,8 @@ namespace feng {
 
 	class utilities {
 	public:
+		static std::unique_ptr<helpers::box_renderer_instanced> test_octree_visualiser;
+
 		static double delta_time();
 		static void update_delta_time();
 		
@@ -36,8 +39,9 @@ namespace feng {
 		static int32_t round_to(int32_t val, int32_t align);
 		static std::string strip(const std::string& str);
 
-		static std::unique_ptr<helpers::box_renderer_instanced> test_octree_visualiser;
-
+		static glm::mat3 deg2mat3x3(const glm::vec3& deg);
+		static glm::mat4 deg2mat4x4(const glm::vec3& deg);
+		static glm::vec3 mul(const glm::mat4& m, const glm::vec3& p);
 
 	private:
 		static double _last_frame_time, _frame_time, _delta_time;

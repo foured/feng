@@ -175,7 +175,7 @@
     <ClCompile Include="src\io\camera.cpp" />
     <ClCompile Include="src\io\input.cpp" />
     <ClCompile Include="src\logging\logging.cpp" />
-    <ClCompile Include="src\logic\aabb.cpp" />
+    <ClCompile Include="src\algorithms\aabb.cpp" />
     <ClCompile Include="src\logic\data_management\assets_manager.cpp" />
     <ClCompile Include="src\logic\data_management\files.cpp" />
     <ClCompile Include="src\logic\data_management\scene_serializer.cpp" />
@@ -188,6 +188,7 @@
     <ClCompile Include="src\logic\ui\uitransform.cpp" />
     <ClCompile Include="src\logic\ui\ui_layer.cpp" />
     <ClCompile Include="src\logic\world\component.cpp" />
+    <ClCompile Include="src\logic\world\components\box_collider.cpp" />
     <ClCompile Include="src\logic\world\components\flash_light.cpp" />
     <ClCompile Include="src\logic\world\components\line_animator.cpp" />
     <ClCompile Include="src\logic\world\components\model_instance.cpp" />
@@ -246,9 +247,10 @@
     <ClInclude Include="src\logic\data_management\scene_serializer.h" />
     <ClInclude Include="src\logic\data_management\serializable.h" />
     <ClInclude Include="src\logic\event.hpp" />
-    <ClInclude Include="src\logic\aabb.h" />
+    <ClInclude Include="src\algorithms\aabb.h" />
     <ClInclude Include="src\logic\func_link.hpp" />
     <ClInclude Include="src\logic\world\component.h" />
+    <ClInclude Include="src\logic\world\components\box_collider.h" />
     <ClInclude Include="src\logic\world\components\flash_light.h" />
     <ClInclude Include="src\logic\world\components\line_animator.h" />
     <ClInclude Include="src\logic\world\components\model_instance.h" />

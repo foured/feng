@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../aabb.h"
+#include "../../algorithms/aabb.h"
 
 namespace feng {
 

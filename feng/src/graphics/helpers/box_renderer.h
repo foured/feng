@@ -7,7 +7,7 @@
 #include "../vertexarray.h"
 #include "../gl_buffers/arraybuffer.hpp"
 #include "../gl_buffers/elementarraybuffer.hpp"
-#include "../../logic/aabb.h"
+#include "../../algorithms/aabb.h"
 #include "../shader.h"
 
 namespace feng::helpers {

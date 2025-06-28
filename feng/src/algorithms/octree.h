@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-#include "../logic/aabb.h"
+#include "aabb.h"
 #include "../logic/world/components/simple_collider.h"
 
 #define MIN_OCTREE_WIDTH 0.25
@@ -30,8 +30,6 @@ namespace feng::octree {
 	class object_type {
 	public:
 		object_type(std::shared_ptr<simple_collider> object);
-
-		bool moved_out_of_bounds = false;
 
 		bool is_static() const;
 		bool expired() const;
@@ -58,30 +56,37 @@ namespace feng::octree {
 
 		bool add_insance(std::shared_ptr<simple_collider> object);
 		bool add_insance(object_type* object);
+
 		void update();
-			
+		void process_left_objects();
+		void check_collisions();
+
 		uint32_t find_instance(std::shared_ptr<simple_collider> instance);
 
 		void delete_unused_children();
 
-	private:
-		aabb _bounds;
-		node* _parent = nullptr;
-		std::array<node*, NUM_OCTANTS> _octants;
-		std::vector<object_type*> _objects;
-		bool _last_node = false;
-		bool _root = false;
-		uint8_t _no_children = 0;
-		int8_t _time_to_death = OCTREE_LIFESPAN;
+	private:                                     //  s  a  (size, alignment)
+		std::array<node*, NUM_OCTANTS> _octants; //  64 8
+		std::vector<object_type*> _left_objects; //  32 8
+		std::vector<object_type*> _objects;		 //  32 8
+		node* _parent = nullptr;				 //  8  8
+		aabb _bounds;							 //  24 4
+		bool _last_node = false;				 //  1  1
+		bool _root = false;                      //  1  1
+		uint8_t _no_children = 0;                //  1  1
+		int8_t _time_to_death = OCTREE_LIFESPAN; //  1  1
 
 		node(glm::vec3 pos, float width, node* parent);
 		
-		void check_collisions();
 		void check_against(const std::vector<object_type*>& strangers);
+		void check_against(object_type* stranger);
 		void on_collision(object_type* object1, object_type* object2);
+		void check_pair_collision(object_type* object1, object_type* object2);
+		// dynamic and static
+		void check_pair_collision_ds(object_type* d, object_type* s);
 
 		bool add_instance_upwards(object_type* object);
-		bool add_instance_udownwards(object_type* object);
+		void add_contained_instance(object_type* object);
 
 		void add_to_optimal_intersecting_node(object_type* object);
 		void push_object(object_type* object);

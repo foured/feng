@@ -11,8 +11,7 @@
 
 #define IS_ALIGNMENTABLE(T) \
 	const auto& t = TID(T);\
-	if(!feng::glstd::base_aligments.contains(t))\
-		THROW_ERROR("Error to find 'base aligment' for type: " + std::string(t.name()));
+	FENG_ASSERT(feng::glstd::base_aligments.contains(t), "Can`t find 'base aligment' for type: ", t.name());
 
 namespace feng::glstd {
 

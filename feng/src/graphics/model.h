@@ -8,7 +8,7 @@
 #include "mesh.h"
 #include "../utilities/uuid.hpp"
 #include "../logic/world/instance.h"
-#include "../logic/aabb.h"
+#include "../algorithms/aabb.h"
 #include "../logic/data_management/serializable.h"
 
 namespace feng {

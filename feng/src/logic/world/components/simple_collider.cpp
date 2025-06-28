@@ -7,7 +7,7 @@
 namespace feng {
 
 	simple_collider::simple_collider(instance* instance) : component(instance) {
-		if (!search_for_context_and_set()) {
+		if (!search_for_context()) {
 			LOG_WARNING("Can`t find bounds_updater_context in ", _instance->get_uuid_string());
 		}
 		else {
@@ -25,8 +25,13 @@ namespace feng {
 	}
 
 	bool simple_collider::update_bounds() {
-		if (!_instance->transform.changed_this_frame)
+		if (!_instance->transform.changed_this_frame) {
 			return false;
+		}
+
+		if (!collider_expired()) {
+			_collider_base.lock()->check_changes();
+		}
 
 		return update_bounds_forced();
 	}
@@ -34,6 +39,10 @@ namespace feng {
 
 	bool simple_collider::context_expired() const {
 		return _updater_context.expired();
+	}
+
+	bool simple_collider::collider_expired() const {
+		return _collider_base.expired();
 	}
 
 	bool simple_collider::intersects(std::shared_ptr<simple_collider> target) const {
@@ -44,9 +53,41 @@ namespace feng {
 		return bounds.intersects(target->bounds);
 	}
 
+	void simple_collider::check_collision(std::shared_ptr<simple_collider> other_sc) {
+		if (collider_expired() || other_sc->collider_expired()) {
+			return;
+		}
+
+		std::shared_ptr<collider_base> self = _collider_base.lock();
+		std::shared_ptr<collider_base> other = other_sc->_collider_base.lock();
+
+		if (self->was_changed_after_update()) {
+			self->update_collider_data();
+		}
+		if (other->was_changed_after_update()) {
+			other->update_collider_data();
+		}
+
+		collision_data* cd = new collision_data;
+		if (self->collides(other.get(), cd)) {
+			// self -> on collision
+			cd->invert();
+			// other -> on collision
+			LOG_INFO(get_instance_uuid_string(), " collides with ", other_sc->get_instance_uuid_string());
+		}
+
+	}
+
 	void simple_collider::start() {
-		if (context_expired() && !search_for_context_and_set())
+		if (context_expired() && !search_for_context()) {
 			THROW_ERROR("Instance ", _instance->get_uuid_string(), " has no bounds_updater_context");
+		}
+
+		search_for_collider();
+		if (!collider_expired()) {
+			LOG_INFO("Collider was found.");
+		}
+
 		update_bounds_forced();
 	}
 
@@ -70,7 +111,7 @@ namespace feng {
 
 	// PRIVATE ---------------------------------------------------------------------------------------------------------
 
-	bool simple_collider::search_for_context_and_set() {
+	bool simple_collider::search_for_context() {
 		std::shared_ptr<bounds_updater_context> buc = _instance->try_find_component_of_type<bounds_updater_context>();
 		if (buc) {
 			_updater_context = buc;
@@ -79,14 +120,23 @@ namespace feng {
 		return false;
 	}
 
+	bool simple_collider::search_for_collider() {
+		std::shared_ptr<collider_base> col = _instance->try_find_component_of_type<collider_base>();
+		if (col) {
+			_collider_base = col;
+			return true;
+		}
+		return false;
+	}
+
+
 	bool simple_collider::update_bounds_forced() {
 		auto context = _updater_context.lock();
-		if (!context && !search_for_context_and_set())
+		if (!context && !search_for_context())
 		{
 			LOG_WARNING("bounds_updater_context expired in ", _instance->get_uuid_string());
 			return false;
 		}
-
 		bounds = _updater_context.lock()->calculate_bounds();
 		return true;
 	}

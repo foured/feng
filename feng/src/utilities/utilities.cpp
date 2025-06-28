@@ -1,5 +1,7 @@
 #include "utilities.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../graphics/window.h"
@@ -127,6 +129,18 @@ namespace feng {
 
 		size_t end = str.find_last_not_of(' ');
 		return str.substr(start, end - start + 1);
+	}
+
+	glm::mat3 utilities::deg2mat3x3(const glm::vec3& deg) {
+		return glm::mat3_cast(glm::quat(glm::radians(deg)));
+	}
+
+	glm::mat4 utilities::deg2mat4x4(const glm::vec3& deg) {
+		return glm::mat4_cast(glm::quat(glm::radians(deg)));
+	}
+
+	glm::vec3 utilities::mul(const glm::mat4& m, const glm::vec3& p) {
+		return glm::vec3(m * glm::vec4(p, 1.0f));
 	}
 
 }

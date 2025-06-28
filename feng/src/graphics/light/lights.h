@@ -7,7 +7,7 @@
 #include "../gl_buffers/framebuffer.hpp"
 #include "../cubemap.h"
 #include "../texture.h"
-#include "../../logic/aabb.h"
+#include "../../algorithms/aabb.h"
 
 namespace feng {
 

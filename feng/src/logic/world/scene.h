@@ -100,6 +100,12 @@ namespace feng {
 		void bind_lights_ssbo();
 		size_t get_free_spot_light_idx();
 
+		//=======================
+		// OCTREE
+		//=======================
+
+		uint32_t find_in_octree(std::shared_ptr<instance> instance);
+
 		//======================
 		// OTHER
 		//======================
