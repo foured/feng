@@ -11,14 +11,19 @@ namespace feng {
 		model_instance(instance* instance, std::shared_ptr<model> model);
 
 		// Default
-		void start();
-		void update();
+		void start() override;
+		void late_start() override;
+		void update() override;
 		std::shared_ptr<component> copy(instance* new_instance);
 
 		// Overrides
 		void serialize(data::wfile* file) override;
 		void deserialize(data::rfile* file, scene* scene) override;
-		aabb calculate_bounds() const override;
+		
+		aabb get_base() const override;
+		glm::vec3 get_position() const override;
+		glm::vec3 get_size() const override;
+		glm::vec3 get_rotation() const override;
 
 		// Specific
 		void render_alone(shader& shader);

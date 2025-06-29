@@ -27,8 +27,9 @@ namespace feng {
 
 		flash_light(instance* instance, scene* scene, static_data data);
 		
-		void start();
-		void update();
+		void start() override;
+		void late_start() override;
+		void update() override;
 		std::shared_ptr<component> copy(instance* new_instance);
 
 		void serialize(data::wfile* file) override;

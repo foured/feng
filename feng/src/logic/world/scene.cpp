@@ -16,9 +16,17 @@ namespace feng {
 
 		calculate_projection_matrix();
 
-		for (auto& inst : _instances)
-			if (inst.get()->is_active)
+		for (auto& inst : _instances) {
+			if (inst.get()->is_active) {
 				inst.get()->start();
+			}
+		}
+
+		for (auto& inst : _instances) {
+			if (inst.get()->is_active) {
+				inst.get()->late_start();
+			}
+		}
 
 		for (auto& inst : _instances) {
 			std::shared_ptr<simple_collider> collider = inst->try_get_component<simple_collider>();

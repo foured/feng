@@ -30,7 +30,7 @@ OCTREE
 COLLISION
 	* SAT
 	
-	-коллайдер может быть больше, чем simple_collider.bounds надо каждый коллайдер сделать bounds_updater
+	+ коллайдер может быть больше, чем simple_collider::bounds надо каждый коллайдер сделать bounds_updater
 		
 ОСВЕЩЕНИЕ
 	- добавить поворот объектов для point light 

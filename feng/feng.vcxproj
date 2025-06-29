@@ -177,6 +177,7 @@
     <ClCompile Include="src\io\input.cpp" />
     <ClCompile Include="src\logging\logging.cpp" />
     <ClCompile Include="src\algorithms\aabb.cpp" />
+    <ClCompile Include="src\logic\contexts\bounds_updater_context.cpp" />
     <ClCompile Include="src\logic\data_management\assets_manager.cpp" />
     <ClCompile Include="src\logic\data_management\files.cpp" />
     <ClCompile Include="src\logic\data_management\scene_serializer.cpp" />

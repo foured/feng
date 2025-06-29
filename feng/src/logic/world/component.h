@@ -20,7 +20,9 @@ namespace feng {
 		bool is_active = true;
 
 		virtual void start() = 0;
+		virtual void late_start() = 0;
 		virtual void update() = 0;
+
 		virtual std::shared_ptr<component> copy(instance* new_instance) = 0;
 
 		instance* get_instance() const;

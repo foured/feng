@@ -1,5 +1,7 @@
 #include "simple_collider.h"
 
+#include <ranges>
+
 #include "../instance.h"
 #include "../../data_management/files.h"
 #include "../scene.h"
@@ -7,12 +9,12 @@
 namespace feng {
 
 	simple_collider::simple_collider(instance* instance) : component(instance) {
-		if (!search_for_context()) {
-			LOG_WARNING("Can`t find bounds_updater_context in ", _instance->get_uuid_string());
-		}
-		else {
-			update_bounds_forced();
-		}
+		//if (!search_for_context()) {
+		//	LOG_WARNING("Can`t find bounds_updater_context in ", _instance->get_uuid_string());
+		//}
+		//else {
+		//	update_bounds_forced();
+		//}
 	}
 
 	simple_collider::simple_collider(instance* instance, std::weak_ptr<bounds_updater_context> updater_context)
@@ -91,7 +93,9 @@ namespace feng {
 		if (collider_expired() && found_receivers) {
 			THROW_ERROR("Collision receivers were found but collider wasn`t.");
 		}
+	}
 
+	void simple_collider::late_start() {
 		update_bounds_forced();
 	}
 
@@ -116,9 +120,48 @@ namespace feng {
 	// PRIVATE ---------------------------------------------------------------------------------------------------------
 
 	bool simple_collider::search_for_context() {
-		std::shared_ptr<bounds_updater_context> buc = _instance->try_find_component_of_type<bounds_updater_context>();
-		if (buc) {
-			_updater_context = buc;
+		//std::shared_ptr<bounds_updater_context> buc = _instance->try_find_component_of_type<bounds_updater_context>();
+		//if (buc) {
+		//	_updater_context = buc;
+		//	return true;
+		//}
+		//return false;
+		using spc = std::shared_ptr<bounds_updater_context>;
+		std::vector<spc> contexts = _instance->try_find_components_of_type<bounds_updater_context>();
+
+		if (contexts.empty()) {
+			return false;
+		}
+
+		auto dependent = contexts | std::views::filter([](spc c) {
+				return c->get_autonomy() == bounds_updater_context::autonomy::dependent; 
+			});
+		std::vector<spc> filtered(dependent.begin(), dependent.end());
+
+		if (filtered.size() == 1) {
+			_updater_context = filtered[0];
+			return true;
+		}
+
+		if (filtered.size() > 1) {
+			_updater_context = filtered[0];
+			LOG_WARNING("More than one dependent bounds_updater_context were found.");
+			return true;
+		}
+
+		auto independent = contexts | std::views::filter([](spc c) {
+				return c->get_autonomy() == bounds_updater_context::autonomy::independent;
+			});
+		filtered = std::vector<spc>(independent.begin(), independent.end());
+
+		if (filtered.size() == 1) {
+			_updater_context = filtered[0];
+			return true;
+		}
+
+		if (filtered.size() > 1) {
+			_updater_context = filtered[0];
+			LOG_WARNING("More than one independent bounds_updater_context were found.");
 			return true;
 		}
 		return false;

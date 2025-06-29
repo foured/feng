@@ -8,6 +8,7 @@ namespace feng {
 	component::component(instance* instance) 
 		: _instance(instance) {	}
 
+	void component::late_start() {}
 
 	instance* component::get_instance() const {
 		return _instance;

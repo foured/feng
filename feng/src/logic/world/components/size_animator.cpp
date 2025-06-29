@@ -17,6 +17,10 @@ namespace feng {
 		_instance->transform.set_size(_start);
 	}
 
+	void size_animator::late_start() {
+
+	}
+
 	void size_animator::update() {
 		float k = _fets ? -1 : 1;
 		glm::vec3 d = _dir * _speed * (float)utilities::delta_time() * k;

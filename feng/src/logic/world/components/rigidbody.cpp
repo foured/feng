@@ -18,6 +18,10 @@ namespace feng {
 		_acceleration += physics::gravity_vec;
 	}
 
+	void rigidbody::late_start() {
+
+	}
+
 	void rigidbody::update() {
 		float dt = utilities::delta_time();
 

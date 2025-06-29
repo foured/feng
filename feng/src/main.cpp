@@ -132,7 +132,6 @@ int main() {
 	//cube1_i3->add_component<line_animator>(glm::vec3(1, 4, -1), glm::vec3(1, 4, 10), 5);
 	LOG_INFO("cube1_i3 ", cube1_i3->get_uuid_string());
 
-
 	//for (int i = 0; i < 7; i++) {
 	//	sptr_ins random_instance = sc1.copy_instance(cube1_i1);
 	//	random_instance->transform.set_position(random_vec3(-20, 20));

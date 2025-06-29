@@ -13,6 +13,10 @@ namespace feng {
 
 	}
 
+	void model_instance::late_start() {
+
+	}
+
 	void model_instance::update() {
 		_model.get()->add_instance(_instance);
 	}
@@ -35,14 +39,20 @@ namespace feng {
 		_model = scene->find_model(model_uuid);
 	}
 
+	aabb model_instance::get_base() const {
+		return  _model->bounds;
+	}
 
-	aabb model_instance::calculate_bounds() const {
-		transform* t = &_instance->transform;
-		aabb bounds = _model->bounds;
-		bounds = bounds.scale(t->get_size());
-		bounds = bounds.fit_rotation(t->get_rotation_matrix3x3());
-		bounds = bounds.offset(t->get_position());
-		return bounds; 
+	glm::vec3 model_instance::get_position() const {
+		return _instance->transform.get_position();
+	}
+
+	glm::vec3 model_instance::get_size() const {
+		return _instance->transform.get_size();
+	}
+
+	glm::vec3 model_instance::get_rotation() const {
+		return _instance->transform.get_rotation();
 	}
 
 	void model_instance::render_alone(shader& shader) {

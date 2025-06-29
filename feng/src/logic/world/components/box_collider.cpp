@@ -42,7 +42,12 @@ namespace feng {
 	}
 
 	void box_collider::start() {
+		find_independent(_instance);
 		update_collider_data();
+	}
+
+	void box_collider::late_start() {
+
 	}
 
 	void box_collider::update() {
@@ -54,9 +59,13 @@ namespace feng {
 	}
 
 	void box_collider::update_collider_data() {
-		glm::vec3 pos = _instance->transform.get_position() + _offset;
-		glm::vec3 size = _instance->transform.get_size() * _size;
-		glm::vec3 rot_vec = _instance->transform.get_rotation() + _rotation;
+		//glm::vec3 pos = _instance->transform.get_position() + _offset;
+		//glm::vec3 size = _instance->transform.get_size() * _size;
+		//glm::vec3 rot_vec = _instance->transform.get_rotation() + _rotation;
+
+		glm::vec3 pos = get_position();;
+		glm::vec3 size = get_size();
+		glm::vec3 rot_vec = get_rotation();
 
 		glm::mat4 T = glm::translate(glm::mat4(1.0f), pos);
 		glm::mat4 R = utilities::deg2mat4x4(rot_vec);
@@ -64,13 +73,16 @@ namespace feng {
 
 		glm::mat4 model = T * R * S;
 		
-		LOG_INFO(get_instance_uuid_string());
+		aabb bounds = get_base().limit_size();
+		std::array<glm::vec3, 8> corners = bounds.corners();
 
-		size_t len = cube_points.size();
+		size_t len = corners.size();
 		_points.clear();
 		_points.reserve(len);
+		LOG_INFO(get_instance_uuid_string());
 		for (size_t i = 0; i < len; i++) {
-			_points.push_back(utilities::mul(model, cube_points[i]));
+			_points.push_back(utilities::mul(model, corners[i]));
+			LOG_INFO(_points[i]);
 		}
 
 		len = cube_normals.size();
@@ -102,6 +114,18 @@ namespace feng {
 		}
 		_instance->transform.add_position(data.collision_data->axis * penetration);
 	}	
+
+	glm::vec3 box_collider::get_position() const {
+		return _independent.lock()->get_position() + _offset;
+	}
+
+	glm::vec3 box_collider::get_size() const {
+		return _independent.lock()->get_size() * _size;
+	}
+
+	glm::vec3 box_collider::get_rotation() const {
+		return _independent.lock()->get_rotation() + _rotation;
+	}
 
 	void box_collider::serialize(data::wfile* file)
 	{

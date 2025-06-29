@@ -45,6 +45,7 @@ namespace feng {
 		transform transform;
 
 		void start();
+		void late_start();
 		void update();
 
 		//==================

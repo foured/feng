@@ -16,6 +16,13 @@ namespace feng {
 			if (c.get()->is_active)
 				c.get()->start();
 		}
+	}
+
+	void instance::late_start() {
+		for (auto& c : _components) {
+			if (c.get()->is_active)
+				c.get()->late_start();
+		}
 		transform.changed_this_frame = false;
 	}
 

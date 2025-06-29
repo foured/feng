@@ -15,6 +15,10 @@ namespace feng {
 		_instance->transform.set_position(_start);
 	}
 
+	void line_animator::late_start() {
+
+	}
+
 	void line_animator::update() {
 		float k = _fets ? -1 : 1;
 		glm::vec3 d = _dir * _speed * (float)utilities::delta_time() * k;

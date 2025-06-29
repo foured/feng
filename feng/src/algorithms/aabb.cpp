@@ -1,5 +1,7 @@
 #include "aabb.h"
 
+#include "../utilities/utilities.h"
+
 namespace feng {
 
 	aabb::aabb(glm::vec3 min, glm::vec3 max)
@@ -43,6 +45,31 @@ namespace feng {
 			max.z >= target.min.z && min.z <= target.max.z;
 	}
 
+	std::array<glm::vec3, 8> aabb::corners() const {
+		return {
+			glm::vec3{min.x, min.y, min.z},
+			glm::vec3{min.x, min.y, max.z},
+			glm::vec3{min.x, max.y, min.z},
+			glm::vec3{min.x, max.y, max.z},
+			glm::vec3{max.x, min.y, min.z},
+			glm::vec3{max.x, min.y, max.z},
+			glm::vec3{max.x, max.y, min.z},
+			glm::vec3{max.x, max.y, max.z}
+		};
+	}
+
+	aabb aabb::limit_size(float min_size) const {
+		glm::vec3 c = center();
+		glm::vec3 half_size = (max - min) * 0.5f;
+
+		for (int i = 0; i < 3; ++i) {
+			if (half_size[i] < min_size * 0.5f) {
+				half_size[i] = min_size * 0.5f;
+			}
+		}
+
+		return aabb(c - half_size, c + half_size);
+	}
 
 	aabb aabb::scale(const glm::mat4& model) const {
 		glm::vec3 nmax = glm::vec3(model * glm::vec4(max, 1.0f));
@@ -77,7 +104,11 @@ namespace feng {
 		return { c - new_e , c + new_e };
 	}
 
-	aabb aabb::intersect_unsafe(const aabb& target) {
+	aabb aabb::fit_rotation(const glm::vec3& rotation) const {
+		return fit_rotation(utilities::deg2mat3x3(rotation));
+	}
+
+	aabb aabb::intersect_unsafe(const aabb& target) const {
 		glm::vec3 rmin{
 			std::max(min.x, target.min.x),
 			std::max(min.y, target.min.y),
@@ -91,7 +122,7 @@ namespace feng {
 		return aabb(rmin, rmax);
 	}
 
-	std::optional<aabb> aabb::intersect_safe(const aabb& target) {
+	std::optional<aabb> aabb::intersect_safe(const aabb& target) const {
 		if (intersects(target)) {
 			return intersect_unsafe(target);
 		}

@@ -11,8 +11,9 @@ namespace feng {
 	public:
 		rigidbody(instance* instance, float mass);
 		
-		void start();
-		void update();
+		void start() override;
+		void late_start() override;
+		void update() override;
 		std::shared_ptr<component> copy(instance* new_instance);
 
 		void add_force(const glm::vec3& force);

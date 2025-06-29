@@ -38,6 +38,10 @@ namespace feng {
 		update_static_data();
 	}
 
+	void flash_light::late_start() {
+
+	}
+
 	void flash_light::update() {
 		update_dynamic_data();
 	}

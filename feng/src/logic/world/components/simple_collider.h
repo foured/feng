@@ -26,8 +26,9 @@ namespace feng {
 		bool intersects(simple_collider* target) const;
 		void check_collision(std::shared_ptr<simple_collider> other);
 
-		void start();
-		void update();
+		void start() override;
+		void late_start() override;
+		void update() override;
 		std::shared_ptr<component> copy(instance* new_instance);
 
 		void serialize(data::wfile* file) override;
