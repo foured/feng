@@ -155,6 +155,7 @@
     <ClCompile Include="src\graphics\cubemap.cpp" />
     <ClCompile Include="src\graphics\gaussian_blur.cpp" />
     <ClCompile Include="src\graphics\helpers\box_renderer.cpp" />
+    <ClCompile Include="src\graphics\helpers\line_renderer.cpp" />
     <ClCompile Include="src\graphics\light\lights.cpp" />
     <ClCompile Include="src\graphics\light\shadowmap_offset_texture.cpp" />
     <ClCompile Include="src\graphics\mesh.cpp" />
@@ -192,6 +193,7 @@
     <ClCompile Include="src\logic\world\components\flash_light.cpp" />
     <ClCompile Include="src\logic\world\components\line_animator.cpp" />
     <ClCompile Include="src\logic\world\components\model_instance.cpp" />
+    <ClCompile Include="src\logic\world\components\rigidbody.cpp" />
     <ClCompile Include="src\logic\world\components\simple_collider.cpp" />
     <ClCompile Include="src\logic\world\components\size_animator.cpp" />
     <ClCompile Include="src\logic\world\instance.cpp" />
@@ -199,6 +201,7 @@
     <ClCompile Include="src\logic\world\transform.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\physics\collider.cpp" />
+    <ClCompile Include="src\physics\physics.cpp" />
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +222,7 @@
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
     <ClInclude Include="src\graphics\helpers\box_renderer.h" />
     <ClInclude Include="src\graphics\helpers\fullscreen_quad.hpp" />
+    <ClInclude Include="src\graphics\helpers\line_renderer.h" />
     <ClInclude Include="src\graphics\light\lights.h" />
     <ClInclude Include="src\graphics\light\shadowmap_offset_texture.h" />
     <ClInclude Include="src\graphics\mesh.h" />
@@ -240,7 +244,8 @@
     <ClInclude Include="src\io\input.h" />
     <ClInclude Include="src\logging\logging.h" />
     <ClInclude Include="src\algorithms\binary_tree.hpp" />
-    <ClInclude Include="src\logic\contexts\bounds_updater.h" />
+    <ClInclude Include="src\logic\contexts\bounds_updater_context.h" />
+    <ClInclude Include="src\logic\contexts\collision_receiver_context.h" />
     <ClInclude Include="src\logic\data_management\assets_manager.h" />
     <ClInclude Include="src\logic\data_management\buffer.hpp" />
     <ClInclude Include="src\logic\data_management\files.h" />
@@ -254,6 +259,7 @@
     <ClInclude Include="src\logic\world\components\flash_light.h" />
     <ClInclude Include="src\logic\world\components\line_animator.h" />
     <ClInclude Include="src\logic\world\components\model_instance.h" />
+    <ClInclude Include="src\logic\world\components\rigidbody.h" />
     <ClInclude Include="src\logic\world\components\simple_collider.h" />
     <ClInclude Include="src\logic\world\components\size_animator.h" />
     <ClInclude Include="src\logic\world\instance.h" />
@@ -268,6 +274,7 @@
     <ClInclude Include="src\logic\world\tag.h" />
     <ClInclude Include="src\logic\world\transform.h" />
     <ClInclude Include="src\physics\collider.h" />
+    <ClInclude Include="src\physics\physics.h" />
     <ClInclude Include="src\utilities\files_in_folder.hpp" />
     <ClInclude Include="src\utilities\fps_counter.h" />
     <ClInclude Include="src\utilities\singleton.hpp" />

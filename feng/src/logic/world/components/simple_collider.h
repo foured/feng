@@ -4,8 +4,9 @@
 
 #include "../component.h"
 #include "../../../algorithms/aabb.h"
-#include "../../contexts/bounds_updater.h"
+#include "../../contexts/bounds_updater_context.h"
 #include "../../../physics/collider.h"
+#include "../../contexts/collision_receiver_context.h"
 
 namespace feng {
 
@@ -33,12 +34,16 @@ namespace feng {
 		void deserialize(data::rfile* file, scene* scene) override;
 
 	private:
+		std::vector<std::weak_ptr<collision_receiver_context>> _collision_receivers;
 		std::weak_ptr<bounds_updater_context> _updater_context;
 		std::weak_ptr<collider_base> _collider_base;
 
 		bool search_for_context();
 		bool search_for_collider();
+		bool search_for_collision_receivers();
 		bool update_bounds_forced();
+
+		void trigger_collision_receivers(const advanced_collision_data& data) const;
 
 	};
 

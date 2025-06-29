@@ -27,8 +27,10 @@
 #include "graphics/light/lights.h"
 #include "graphics/gl_buffers/framebuffer.hpp"
 #include "graphics/gl_buffers/ssbo.hpp"
+
 #include "graphics/helpers/box_renderer.h"
 #include "graphics/helpers/fullscreen_quad.hpp"
+#include "graphics/helpers/line_renderer.h"
 
 #include "logic/data_management/assets_manager.h"
 #include "logic/data_management/scene_serializer.h"
@@ -42,6 +44,7 @@
 #include "logic/world/components/flash_light.h"
 #include "logic/world/components/simple_collider.h"
 #include "logic/world/components/box_collider.h"
+#include "logic/world/components/rigidbody.h"
 
 #include "physics/collider.h"
 
@@ -113,7 +116,6 @@ int main() {
 
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
 	auto cube1_i2_mi = cube1_i2->try_get_component<model_instance>();
-	//cube1_i2->add_component<line_animator>(glm::vec3(2, 2, -2), glm::vec3(2, -2, -2), 0.4f);
 	cube1_i2->flags.set(INST_FLAG_RCV_SHADOWS, false);
 	cube1_i2->transform.set_position(glm::vec3(2, 2, -2));
 	cube1_i2->transform.set_size(glm::vec3(0.5, 2, 0.5));
@@ -122,14 +124,14 @@ int main() {
 
 	sptr_ins cube1_i3 = sc1.copy_instance(cube1_i1);
 	cube1_i3->flags.set(INST_FLAG_STATIC, false);
-	cube1_i3->transform.set_position(glm::vec3(1, 4, -1));
+	cube1_i3->transform.set_position(glm::vec3(2, 6, 2));
 	cube1_i3->transform.set_rotation(glm::vec3(0, 45, 0));
 	auto cube1_i3_mi = cube1_i3->try_get_component<model_instance>();
 	cube1_i3->add_component<box_collider>();
-	cube1_i3->add_component<line_animator>(glm::vec3(1, 4, -1), glm::vec3(1, 4, 10), 5);
+	cube1_i3->add_component<rigidbody>(2.0f);
+	//cube1_i3->add_component<line_animator>(glm::vec3(1, 4, -1), glm::vec3(1, 4, 10), 5);
 	LOG_INFO("cube1_i3 ", cube1_i3->get_uuid_string());
 
-	//cube1_i1->add_component<size_animator>(glm::vec3(1.0f), glm::vec3(5.0f), 1.0f);
 
 	//for (int i = 0; i < 7; i++) {
 	//	sptr_ins random_instance = sc1.copy_instance(cube1_i1);
@@ -140,10 +142,8 @@ int main() {
 	sptr_ins plane1_i1 = sc1.add_instance();
 	auto plane1_i1_mi = plane1_i1->add_component<model_instance>(plane1);
 	plane1_i1->add_component<simple_collider>();
-	//plane1_i1->add_component<line_animator>(glm::vec3(0, -2, -5), glm::vec3(0, -2, 90), 10);
-	//cube2_i1.get()->flags.set(INST_FLAG_RCV_SHADOWS, false);
+	plane1_i1->add_component<box_collider>();
 	plane1_i1->flags.set(INST_FLAG_CAST_SHADOWS, false);
-	//plane1_i1->flags.set(INST_FLAG_STATIC, false);
 	plane1_i1->transform.set_position(glm::vec3(0, -2, -5));
 	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
 	LOG_INFO("plane1_i1 ", plane1_i1->get_uuid_string());
@@ -229,10 +229,14 @@ int main() {
 	sc1.dir_light.lightspace_matrix = sc1.dir_light.generate_custom_relative_lightspace_matrix(sc1.get_bounds(),
 		plane1_i1_mi->calculate_bounds());	
 
-	helpers::box_renderer lightspace_box(&am->shaders.debug_box_shader, sc1.dir_light.lightspace_matrix);
+	helpers::box_renderer lightspace_box(&am->shaders.debug_line_shader, sc1.dir_light.lightspace_matrix);
+	float axis_len = 5.0f;
+	helpers::line_renderer x_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(axis_len, 0, 0) });
+	helpers::line_renderer y_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, axis_len, 0) });
+	helpers::line_renderer z_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, 0, axis_len) });
 
 	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(
-		&am->shaders.debug_box_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 200);
+		&am->shaders.debug_line_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 200);
 
 	//glm::quat test_rotation(glm::radians(glm::vec3(0.0f, 45.0f, 0.0f)));
 	//aabb test_box(glm::vec3(-3), glm::vec3(3));
@@ -307,6 +311,7 @@ int main() {
 		}
 		
 		sc1.render_models(am->shaders.obj_shader);
+		sb.render(sc1.main_camera.get_view_matrix());
 
 		utilities::test_octree_visualiser->update_buffers();
 		utilities::test_octree_visualiser->render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
@@ -315,12 +320,22 @@ int main() {
 		lightspace_box.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.model_matrix,
 														   sc1.main_camera.get_view_matrix(),
 														   sc1.get_projection_matrix());
-		//test_box_renderer.render(glm::vec3(0, 0, 1), sc1.model_matrix,
-		//											 sc1.main_camera.get_view_matrix(),
-		//											 sc1.get_projection_matrix());
+
+		glDisable(GL_DEPTH_TEST);
+		x_axis.render(glm::vec3(1.0f, 0.0f, 0.0f), sc1.model_matrix,
+												   sc1.main_camera.get_view_matrix(),
+												   sc1.get_projection_matrix());
+
+		y_axis.render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
+												   sc1.main_camera.get_view_matrix(),
+												   sc1.get_projection_matrix());
+
+		z_axis.render(glm::vec3(0.0f, 0.0f, 1.0f), sc1.model_matrix,
+												   sc1.main_camera.get_view_matrix(),
+												   sc1.get_projection_matrix());
+		glEnable(GL_DEPTH_TEST);
 
 		utilities::test_octree_visualiser->clear_instances();
-		sb.render(sc1.main_camera.get_view_matrix());
 		main_framebuffer.unbind();
 
 		//==================================

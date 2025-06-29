@@ -2,7 +2,7 @@
 
 #include "../component.h"
 #include "../../../graphics/model.h"
-#include "../../contexts/bounds_updater.h"
+#include "../../contexts/bounds_updater_context.h"
 
 namespace feng {
 

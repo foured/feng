@@ -23,8 +23,8 @@ namespace feng {
 			shader light_bake;
 			shader gaussian_blur_shader;
 
-			shader debug_box_shader;
-			shader debug_box_inst_shader;
+			shader debug_line_shader;
+			shader debug_line_inst_shader;
 
 			void load();
 		};

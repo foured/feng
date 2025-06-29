@@ -15,8 +15,8 @@ namespace feng {
 	struct shader_sub_program {
 		shader_sub_program(const char* path, uint32_t type);
 
-		const char* path;
 		uint32_t type;
+		const char* path;
 	};
 
 	class shader {

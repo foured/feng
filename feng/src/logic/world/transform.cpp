@@ -4,25 +4,30 @@
 
 namespace feng {
 
-	transform::transform(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation)
-		: _position(pos), _size(size), _rotation(rotation) {}
+	transform::transform(const glm::vec3& pos, const glm::vec3& size, const glm::vec3& rotation)
+		: _position(pos), _size(size), _rotation(rotation) { }
 
-	void transform::set_position(glm::vec3 val) {
+	void transform::set_position(const glm::vec3& val) {
 		_position = val;
 		changed_this_frame = true;
 	}
 
-	void transform::set_size(glm::vec3 val) {
+	void transform::set_size(const glm::vec3& val) {
 		_size = val;
 		changed_this_frame = true;
 	}
 
-	void transform::set_rotation(glm::vec3 val) {
+	void transform::set_rotation(const glm::vec3& val) {
 		_rotation = val;
 		_rotation_matrix = glm::mat3_cast(glm::quat(glm::radians(val)));
 		changed_this_frame = true;
 	}
 	
+	void transform::add_position(const glm::vec3& offset) {
+		_position += offset;
+		changed_this_frame = true;
+	}
+
 	glm::vec3 transform::get_position() const {
 		return _position;
 	}

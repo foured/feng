@@ -6,10 +6,11 @@
 
 #include "../component.h"
 #include "../../../physics/collider.h"
+#include "../../contexts/collision_receiver_context.h"
 
 namespace feng {
 
-	class box_collider : public component, public sat_collider_base {
+	class box_collider : public component, public sat_collider_base, public collision_receiver_context {
 	public:
 		//box_collider(instance* instance,
 		//	const glm::vec3& offset = glm::vec3(0),
@@ -27,6 +28,8 @@ namespace feng {
 
 		void update_collider_data() override;
 		void check_changes() override;
+		
+		void on_collision(const advanced_collision_data& data) override;
 
 		void serialize(data::wfile* file) override;
 		void deserialize(data::rfile* file, scene* scene) override;

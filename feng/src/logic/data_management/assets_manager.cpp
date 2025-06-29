@@ -14,8 +14,8 @@ namespace feng {
 		dirlight_depth_shader = shader("res/shaders/depth/dirlight_depth.vs", "res/shaders/depth/dirlight_depth.fs");
 		pointlight_depth_shader = shader("res/shaders/depth/pointlight_depth.vs", "res/shaders/depth/pointlight_depth.fs", { shader_sub_program("res/shaders/depth/pointlight_depth.gs", GL_GEOMETRY_SHADER) }, { });
 		light_bake = shader("res/shaders/light_bake.vs", "res/shaders/light_bake.fs");
-		debug_box_shader = shader("res/shaders/debug_line.vs", "res/shaders/debug_line.fs");
-		debug_box_inst_shader = shader("res/shaders/debug_line_instanced.vs", "res/shaders/debug_line.fs");
+		debug_line_shader = shader("res/shaders/debug_line.vs", "res/shaders/debug_line.fs");
+		debug_line_inst_shader = shader("res/shaders/debug_line_instanced.vs", "res/shaders/debug_line.fs");
 		gaussian_blur_shader = shader("res/shaders/fullscreen_quad.vs", "res/shaders/gaussian.fs");
 	}
 

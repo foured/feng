@@ -5,6 +5,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/norm.hpp>
+#include <numeric>
 
 namespace feng {
 
@@ -138,7 +139,7 @@ namespace feng {
 
 		glm::vec3 dir = other->_center - _center;
 		float d = glm::dot(dir, out->axis);
-		if (d < 0) {
+		if (d > 0) {
 			out->invert();
 		}
 
@@ -180,6 +181,7 @@ namespace feng {
 	bool sat_collider_base::check_axis_sat(sat_collider_base* other, const glm::vec3& axis, collision_data* out) {
 		glm::vec2 proj1 = project_onto(axis);
 		glm::vec2 proj2 = other->project_onto(axis);
+
 		return check_overlap(proj1, proj2, axis, out);
 	}
 
@@ -237,11 +239,9 @@ namespace feng {
 	void sat_collider_base::calculate_center() {
 		_center = glm::vec3(0.0f);
 		FENG_ASSERT(!_points.empty(), "Collider points are empty.");
-		for (const auto& p : _points) {
-			_center += p;
-		}
-		float size = static_cast<float>(_points.size());
-		_center /= size;
+
+		_center = std::reduce(_points.begin(), _points.end(), glm::vec3(0.0f));
+		_center /= static_cast<float>(_points.size());
 	}
 
 	// SPHERE_COLLIDER--------------------------------------------------------------------------------------------------

@@ -64,6 +64,8 @@ namespace feng {
 
 		glm::mat4 model = T * R * S;
 		
+		LOG_INFO(get_instance_uuid_string());
+
 		size_t len = cube_points.size();
 		_points.clear();
 		_points.reserve(len);
@@ -78,6 +80,7 @@ namespace feng {
 		for (size_t i = 0; i < len; i++) {
 			_normals.push_back(glm::normalize(utilities::mul(normal_matrix, cube_normals[i])));
 		}
+		calculate_center();
 		_was_changed_after_update = false;
 	}
 
@@ -86,6 +89,19 @@ namespace feng {
 			_was_changed_after_update = true;
 		}
 	}
+
+	void box_collider::on_collision(const advanced_collision_data& data) {
+		if (_instance->flags.get(INST_FLAG_STATIC)) {
+			return;
+		}
+
+		float penetration = data.collision_data->penetration;
+		// hardcoded
+		if (!data.other->flags.get(INST_FLAG_STATIC) && data.other->transform.changed_this_frame) {
+			penetration *= 0.5f;
+		}
+		_instance->transform.add_position(data.collision_data->axis * penetration);
+	}	
 
 	void box_collider::serialize(data::wfile* file)
 	{

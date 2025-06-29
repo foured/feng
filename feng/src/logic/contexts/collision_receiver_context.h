@@ -1,0 +1,18 @@
+#pragma once
+
+#include "../../physics/collider.h"
+#include "../world/instance.h"
+
+namespace feng {
+
+	struct advanced_collision_data {
+		instance* other;
+		collision_data* collision_data;
+	};
+
+	class collision_receiver_context {
+	public:
+		virtual void on_collision(const advanced_collision_data& data) = 0;
+	};
+
+}

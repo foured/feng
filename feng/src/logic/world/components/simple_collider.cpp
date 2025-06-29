@@ -71,9 +71,12 @@ namespace feng {
 		collision_data* cd = new collision_data;
 		if (self->collides(other.get(), cd)) {
 			// self -> on collision
+			LOG_INFO("Collision axis: ", cd->axis);
+			trigger_collision_receivers({ other_sc->get_instance(), cd });
 			cd->invert();
 			// other -> on collision
-			LOG_INFO(get_instance_uuid_string(), " collides with ", other_sc->get_instance_uuid_string());
+			other_sc->trigger_collision_receivers({ get_instance(), cd });
+			//LOG_INFO(get_instance_uuid_string(), " collides with ", other_sc->get_instance_uuid_string());
 		}
 
 	}
@@ -84,8 +87,9 @@ namespace feng {
 		}
 
 		search_for_collider();
-		if (!collider_expired()) {
-			LOG_INFO("Collider was found.");
+		bool found_receivers = search_for_collision_receivers();
+		if (collider_expired() && found_receivers) {
+			THROW_ERROR("Collision receivers were found but collider wasn`t.");
 		}
 
 		update_bounds_forced();
@@ -129,6 +133,11 @@ namespace feng {
 		return false;
 	}
 
+	bool simple_collider::search_for_collision_receivers() {
+		_collision_receivers = _instance->
+			try_find_components_of_type<collision_receiver_context, std::weak_ptr<collision_receiver_context>>();
+		return !_collision_receivers.empty();
+	}
 
 	bool simple_collider::update_bounds_forced() {
 		auto context = _updater_context.lock();
@@ -139,6 +148,14 @@ namespace feng {
 		}
 		bounds = _updater_context.lock()->calculate_bounds();
 		return true;
+	}
+
+	void simple_collider::trigger_collision_receivers(const advanced_collision_data& data) const {
+		for (const auto& receiver : _collision_receivers) {
+			if (!receiver.expired()) {
+				receiver.lock()->on_collision(data);
+			}
+		}
 	}
 
 }

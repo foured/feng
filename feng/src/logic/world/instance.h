@@ -80,6 +80,17 @@ namespace feng {
 			return std::shared_ptr<T>();
 		}
 
+		template<typename T, typename wrapper = std::shared_ptr<T>>
+		std::vector<wrapper> try_find_components_of_type() const {
+			std::vector<wrapper> ret;
+			for (const auto& component : _components) {
+				if (auto t = std::dynamic_pointer_cast<T>(component)) {
+					ret.push_back(t);
+				}
+			}
+			return ret;
+		}
+
 		//==================
 		// TAGS
 		//==================
