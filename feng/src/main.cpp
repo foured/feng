@@ -69,17 +69,11 @@ glm::vec3 random_vec3(float min = -1.0f, float max = 1.0f) {
 	return glm::vec3(dist(rng), dist(rng), dist(rng));
 }
 
-struct foo {
-	int8_t  a;
-	int64_t b;
-	int16_t c;
-};
-
 int main() {
 #ifdef IMPLEMENT_WORK_IN_PROGRESS_CODE
 	LOG_WARNING("'IMPLEMENT_WORK_IN_PROGRESS_CODE' was detected!");
 #endif
-	
+
 	//========================
 	//    CREATING OBJECTS
 	//========================
@@ -125,7 +119,7 @@ int main() {
 	sptr_ins cube1_i3 = sc1.copy_instance(cube1_i1);
 	cube1_i3->flags.set(INST_FLAG_STATIC, false);
 	cube1_i3->transform.set_position(glm::vec3(2, 6, 2));
-	cube1_i3->transform.set_rotation(glm::vec3(0, 45, 0));
+	cube1_i3->transform.set_rotation(glm::vec3(0, 0, 0));
 	auto cube1_i3_mi = cube1_i3->try_get_component<model_instance>();
 	cube1_i3->add_component<box_collider>();
 	cube1_i3->add_component<rigidbody>(2.0f);
@@ -145,6 +139,7 @@ int main() {
 	plane1_i1->flags.set(INST_FLAG_CAST_SHADOWS, false);
 	plane1_i1->transform.set_position(glm::vec3(0, -2, -5));
 	plane1_i1->transform.set_size(glm::vec3(20, 0.5f, 20));
+	plane1_i1->transform.set_rotation(glm::vec3(20, 0, 0));
 	LOG_INFO("plane1_i1 ", plane1_i1->get_uuid_string());
 
 	//sptr_ins light_cube_i1 = sc1.add_instance();
@@ -233,6 +228,8 @@ int main() {
 	helpers::line_renderer x_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(axis_len, 0, 0) });
 	helpers::line_renderer y_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, axis_len, 0) });
 	helpers::line_renderer z_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, 0, axis_len) });
+	glm::vec3 d_pos(0, -1.97651, -4.99145);
+	helpers::line_renderer debug_axis(&am->shaders.debug_line_shader, { glm::vec3(0), d_pos });
 
 	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(
 		&am->shaders.debug_line_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 200);
@@ -312,13 +309,13 @@ int main() {
 		sc1.render_models(am->shaders.obj_shader);
 		sb.render(sc1.main_camera.get_view_matrix());
 
-		utilities::test_octree_visualiser->update_buffers();
-		utilities::test_octree_visualiser->render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
-																			   sc1.main_camera.get_view_matrix(), 
-																			   sc1.get_projection_matrix());
-		lightspace_box.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.model_matrix,
-														   sc1.main_camera.get_view_matrix(),
-														   sc1.get_projection_matrix());
+		//utilities::test_octree_visualiser->update_buffers();
+		//utilities::test_octree_visualiser->render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
+		//																	   sc1.main_camera.get_view_matrix(), 
+		//																	   sc1.get_projection_matrix());
+		//lightspace_box.render(glm::vec3(1.0f, 1.0f, 0.0f), sc1.model_matrix,
+		//												   sc1.main_camera.get_view_matrix(),
+		//												   sc1.get_projection_matrix());
 
 		glDisable(GL_DEPTH_TEST);
 		x_axis.render(glm::vec3(1.0f, 0.0f, 0.0f), sc1.model_matrix,
@@ -332,6 +329,11 @@ int main() {
 		z_axis.render(glm::vec3(0.0f, 0.0f, 1.0f), sc1.model_matrix,
 												   sc1.main_camera.get_view_matrix(),
 												   sc1.get_projection_matrix());
+
+		debug_axis.render(glm::vec3(0.0f, 0.0f, 0.0f), sc1.model_matrix,
+													   sc1.main_camera.get_view_matrix(),
+													   sc1.get_projection_matrix());
+
 		glEnable(GL_DEPTH_TEST);
 
 		utilities::test_octree_visualiser->clear_instances();

@@ -70,15 +70,12 @@ namespace feng {
 			other->update_collider_data();
 		}
 
-		collision_data* cd = new collision_data;
-		if (self->collides(other.get(), cd)) {
+		if (self->collides(other.get())) {
 			// self -> on collision
-			LOG_INFO("Collision axis: ", cd->axis);
-			trigger_collision_receivers({ other_sc->get_instance(), cd });
-			cd->invert();
+			trigger_collision_receivers({ other_sc->get_instance(), &self->lcd });
+			LOG_INFO("Collision axis: ", other->lcd.axis);
 			// other -> on collision
-			other_sc->trigger_collision_receivers({ get_instance(), cd });
-			//LOG_INFO(get_instance_uuid_string(), " collides with ", other_sc->get_instance_uuid_string());
+			other_sc->trigger_collision_receivers({ get_instance(), &other->lcd });
 		}
 
 	}

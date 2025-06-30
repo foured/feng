@@ -37,6 +37,10 @@ namespace feng {
 		static glm::vec2 ndc_to_pixel(glm::vec2 ndc_pos);
 
 		static int32_t round_to(int32_t val, int32_t align);
+		static bool compare_floats(float v1, float v2, float epsilon = FLT_EPSILON);
+		// no direction comparison
+		static bool compare_normals_nd(const glm::vec3& n1, const glm::vec3& n2, float epsilon = FLT_EPSILON);
+
 		static std::string strip(const std::string& str);
 
 		static glm::mat3 deg2mat3x3(const glm::vec3& deg);

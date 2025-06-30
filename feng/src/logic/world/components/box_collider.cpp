@@ -79,10 +79,8 @@ namespace feng {
 		size_t len = corners.size();
 		_points.clear();
 		_points.reserve(len);
-		LOG_INFO(get_instance_uuid_string());
 		for (size_t i = 0; i < len; i++) {
 			_points.push_back(utilities::mul(model, corners[i]));
-			LOG_INFO(_points[i]);
 		}
 
 		len = cube_normals.size();

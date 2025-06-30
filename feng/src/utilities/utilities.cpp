@@ -121,6 +121,15 @@ namespace feng {
 		return (val / align + 1) * align;
 	}
 
+	bool utilities::compare_floats(float v1, float v2, float epsilon) {
+		return std::abs(v1 - v2) < epsilon;
+	}
+
+	bool utilities::compare_normals_nd(const glm::vec3& n1, const glm::vec3& n2, float epsilon) {
+		float dot = glm::dot(n1, n2);
+		return utilities::compare_floats(std::abs(dot), 1.0f, epsilon);
+	}
+
 	std::string utilities::strip(const std::string& str) {
 		size_t start = str.find_first_not_of(' ');
 		if (start == std::string::npos) {
