@@ -119,7 +119,7 @@ int main() {
 	sptr_ins cube1_i3 = sc1.copy_instance(cube1_i1);
 	cube1_i3->flags.set(INST_FLAG_STATIC, false);
 	cube1_i3->transform.set_position(glm::vec3(2, 6, 2));
-	cube1_i3->transform.set_rotation(glm::vec3(0, 0, 0));
+	//cube1_i3->transform.set_rotation(glm::vec3(0, 45, 45));
 	auto cube1_i3_mi = cube1_i3->try_get_component<model_instance>();
 	cube1_i3->add_component<box_collider>();
 	cube1_i3->add_component<rigidbody>(2.0f);
@@ -228,8 +228,15 @@ int main() {
 	helpers::line_renderer x_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(axis_len, 0, 0) });
 	helpers::line_renderer y_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, axis_len, 0) });
 	helpers::line_renderer z_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, 0, axis_len) });
-	glm::vec3 d_pos(3, -4.15752, 1.00082);
-	helpers::line_renderer debug_axis(&am->shaders.debug_line_shader, { glm::vec3(0), d_pos });
+
+	glm::vec3 d1(2.00507, 2.70203, -3);
+	glm::vec3 d2(2.00507, 2.70203, -1);
+	glm::vec3 d3(2, 2.70711, -1);
+	glm::vec3 d4(2, 2.70711, -3);
+	helpers::line_renderer debug_axis1(&am->shaders.debug_line_shader, { d1, d2 });
+	helpers::line_renderer debug_axis2(&am->shaders.debug_line_shader, { d2, d3 });
+	helpers::line_renderer debug_axis3(&am->shaders.debug_line_shader, { d3, d4 });
+	helpers::line_renderer debug_axis4(&am->shaders.debug_line_shader, { d4, d1 });
 
 	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(
 		&am->shaders.debug_line_inst_shader, aabb(glm::vec3(-0.5f), glm::vec3(0.5f)), 200);
@@ -330,9 +337,17 @@ int main() {
 												   sc1.main_camera.get_view_matrix(),
 												   sc1.get_projection_matrix());
 
-		debug_axis.render(glm::vec3(0.0f, 0.0f, 0.0f), sc1.model_matrix,
+		debug_axis1.render(glm::vec3(0.0f, 0.0f, 0.0f), sc1.model_matrix,
 													   sc1.main_camera.get_view_matrix(),
 													   sc1.get_projection_matrix());
+
+		debug_axis2.render(glm::vec3(0.0f, 0.0f, 0.0f), sc1.model_matrix,
+			sc1.main_camera.get_view_matrix(),
+			sc1.get_projection_matrix());
+
+		debug_axis3.render(glm::vec3(0.0f, 0.0f, 0.0f), sc1.model_matrix,
+			sc1.main_camera.get_view_matrix(),
+			sc1.get_projection_matrix());
 
 		glEnable(GL_DEPTH_TEST);
 

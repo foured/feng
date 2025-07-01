@@ -71,10 +71,13 @@ namespace feng {
 		}
 
 		if (collider_base::collision_cycle(self.get(), other.get())) {
-			// self -> on collision
 			trigger_collision_receivers({ other_sc->get_instance(), &self->lcd });
 			LOG_INFO("Collision axis: ", other->lcd.axis);
-			// other -> on collision
+			LOG_INFO(self->lcd.contact.type_to_int());
+			//const polygon* pl = self->lcd.contact.get_pointer<polygon>();
+			//for (const auto& p : pl->points) {
+			//	LOG_INFO(p);
+			//}
 			other_sc->trigger_collision_receivers({ get_instance(), &other->lcd });
 		}
 

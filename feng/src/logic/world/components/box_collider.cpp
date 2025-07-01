@@ -109,9 +109,13 @@ namespace feng {
 	}
 
 	void box_collider::on_collision(const advanced_collision_data& data) {
-		LOG_INFO(data.collision_data->contact.type_to_int());
-		edge e = data.collision_data->contact.get<edge>();
-		LOG_INFO(e.p1, " ", e.p2);
+		//LOG_INFO(data.collision_data->contact.type_to_int());
+		//const polygon* pol = data.collision_data->contact.get_pointer<polygon>();
+		//for (const glm::vec3& point : pol->points) {
+		//	LOG_INFO(point);
+		//}
+		//const glm::vec3* point = data.collision_data->contact.get_pointer<glm::vec3>();
+		//LOG_INFO(*point);
 	}	
 
 	glm::vec3 box_collider::get_position() const {

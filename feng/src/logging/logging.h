@@ -6,7 +6,7 @@
 
 #define FENG_DEBUG
 #define FENG_LOGGIN
-//#define LOG_FUNC_NAME
+#define LOG_FUNC_NAME
 
 #define WIN_LOGGIN_COLOR_NORMAL 15
 #define WIN_LOGGIN_COLOR_DARK_BLUE 9

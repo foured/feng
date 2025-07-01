@@ -61,7 +61,20 @@ namespace feng {
 		std::variant<polygon, edge, glm::vec3> data;
 		collision_contact_type type;
 
-		template<typename T> 
+		uint32_t type_to_int() const;
+
+		template<typename T>
+		const T* get_pointer() const {
+			if (auto r = std::get_if<T>(&data)) {
+				return r;
+			}
+			THROW_ERROR("You are trying to get non-existent type from variant");
+		}
+
+		static collision_contact overlap(const collision_contact& c1, const collision_contact& c2);
+
+	private:
+		template<typename T>
 		T get() const {
 			if (std::holds_alternative<T>(data)) {
 				return std::get<T>(data);
@@ -69,11 +82,6 @@ namespace feng {
 			THROW_ERROR("You are trying to get non-existent type from variant");
 		}
 
-		uint32_t type_to_int() const;
-
-		static collision_contact overlap(const collision_contact& c1, const collision_contact& c2);
-
-	private:
 		static collision_contact overlap_edge_and_polygon(const collision_contact& ed, const collision_contact& pl);
 
 	};

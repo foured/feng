@@ -1,6 +1,7 @@
 #include "transform.h"
 
 #include <iostream>
+#include <glm/gtx/euler_angles.hpp>
 
 namespace feng {
 
@@ -19,7 +20,16 @@ namespace feng {
 
 	void transform::set_rotation(const glm::vec3& val) {
 		_rotation = val;
-		_rotation_matrix = glm::mat3_cast(glm::quat(glm::radians(val)));
+		//_rotation_matrix = glm::mat3_cast(glm::quat(glm::radians(val)));
+		glm::quat qx = glm::angleAxis(glm::radians(val.x), glm::vec3(1, 0, 0));
+		glm::quat qy = glm::angleAxis(glm::radians(val.y), glm::vec3(0, 1, 0));
+		glm::quat qz = glm::angleAxis(glm::radians(val.z), glm::vec3(0, 0, 1));
+
+		// Пример порядка (X затем Y затем Z)
+		glm::quat q = qz * qy * qx;
+
+		_rotation_matrix = glm::mat3_cast(q);
+
 		changed_this_frame = true;
 	}
 	

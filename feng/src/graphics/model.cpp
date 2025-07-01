@@ -429,7 +429,7 @@ namespace feng {
 			glActiveTexture(GL_TEXTURE0 + i);
 			textures[i].bind();
 		}
-
+		
 		vertex_array.bind();
 		vertex_array.draw_elements_instanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, no_instances);
 

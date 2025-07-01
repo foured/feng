@@ -7,8 +7,6 @@
 #include <glm/gtx/norm.hpp>
 #include <numeric>
 
-#define COLLISION_EPSILON 0.00001f
-
 namespace feng {
 
 	// TRIANGLE---------------------------------------------------------------------------------------------------------
@@ -101,7 +99,7 @@ namespace feng {
 
 		float d1 = glm::dot(normal, points[0]);
 		float d2 = glm::dot(normal, point);
-		return glm::abs(d2 - d1) < COLLISION_EPSILON;
+		return glm::abs(d2 - d1) < 0.0001;
 	}
 
 	void polygon::calculate_normal() {
@@ -131,15 +129,16 @@ namespace feng {
 			const glm::vec3& P0 = points[i];
 			const glm::vec3& P1 = points[(i + 1) % points.size()];
 			glm::vec3 edge_vec = P1 - P0;
-			glm::vec3 edge_normal = glm::normalize(glm::cross(edge_vec, normal)); // внутренн€€ нормаль
+			glm::vec3 edge_normal = glm::normalize(glm::cross(edge_vec, normal));
 
 			glm::vec3 w = seg.p1 - P0;
 			float denom = glm::dot(edge_normal, d);
 			float numer = -glm::dot(edge_normal, w);
 
 			if (std::abs(denom) < epsilon) {
-				if (numer < 0)
+				if (numer < 0) {
 					return std::nullopt;
+				}
 				continue;
 			}
 
@@ -347,7 +346,7 @@ namespace feng {
 		// edge - edge
 		collision_contact cc;
 		if (c1.type == collision_contact_type::edge && c2.type == collision_contact_type::edge) {
-			LOG_WARNING("Untested part");
+			LOG_WARNING("Untested part. If not working, try unkoment edge-cross part in collides_shape");
 			// mb have to add penetration
 			cc.type = collision_contact_type::edge;
 			cc.data = edge::overlap(std::get<edge>(c1.data), std::get<edge>(c1.data));
@@ -379,7 +378,7 @@ namespace feng {
 
 	collision_contact collision_contact::overlap_edge_and_polygon(const collision_contact& ed, 
 		const collision_contact& pl) {
-		std::optional<edge> res = std::get<polygon>(pl.data).cyrus_beck_clip(std::get<edge>(ed.data), COLLISION_EPSILON);
+		std::optional<edge> res = std::get<polygon>(pl.data).cyrus_beck_clip(std::get<edge>(ed.data), 1.0f / 100000.0f);
 
 		collision_contact cc;
 
@@ -432,7 +431,7 @@ namespace feng {
 				second->add_position(-1.0f * offset);
 				second->add_data_offset(offset);
 			}
-			LOG_INFO("collision_cycle");
+
 			collision_contact c1 = first->calculate_collision_contact();
 			collision_contact c2 = second->calculate_collision_contact();
 			collision_contact c3 = collision_contact::overlap(c1, c2);
@@ -494,25 +493,18 @@ namespace feng {
 		}
 
 		// Edge case
-		//size_t s1 = _points.size() - 1;
-		//size_t s2 = other->_points.size() - 1;
+		//size_t s1 = _points.size();
+		//size_t s2 = other->_points.size();
 		//glm::vec3 edge1, edge2, edge_axis;
 		//for (size_t i = 0; i < s1; i++) {
-		//	edge1 = _points[i + 1] - _points[i];
+		//	edge1 = _points[(i + 1) % s1] - _points[i];
 		//	for (size_t j = 0; j < s2; j++) {
-		//		edge2 = other->_points[j + 1] - other->_points[j];
+		//		edge2 = other->_points[(j + 1) % s2] - other->_points[j];
 		//		edge_axis = glm::cross(edge1, edge2);
 		//		if (glm::length2(edge_axis) > 1e-6f) {
-		//			if (!check_axis(other, glm::normalize(edge_axis), out)) {
+		//			if (!check_axis(other, glm::normalize(edge_axis))) {
 		//				return false;
 		//			}
-		//		}
-		//	}
-		//	edge2 = other->_points[s2] - other->_points[0];
-		//	edge_axis = glm::cross(edge1, edge2);
-		//	if (glm::length2(edge_axis) > 1e-6f) {
-		//		if (!check_axis(other, glm::normalize(edge_axis), out)) {
-		//			return false;
 		//		}
 		//	}
 		//}
@@ -522,9 +514,6 @@ namespace feng {
 		if (d > 0) {
 			lcd.invert();
 		}
-		//collision_contact c1 = calculate_collision_contact();
-		//collision_contact c2 = other->calculate_collision_contact();
-		//lcd.contact = collision_contact::overlap(c1, c2);
 
 		other->lcd.penetration = lcd.penetration;
 		other->lcd.axis = -1.0f * lcd.axis;
@@ -568,17 +557,17 @@ namespace feng {
 	collision_contact sat_collider_base::calculate_collision_contact() const {
 		float min = FLT_MAX;
 
+		float e = 0.00001;
 		std::vector<glm::vec3> closest;
 
 		for (const glm::vec3& p : _points) {
 			float d = glm::dot(p, lcd.axis);
-			if (d < min) { 
-				min = d; 
-				closest.clear();
+			if (utilities::compare_floats(d, min, e)) {
 				closest.push_back(p);
 			}
-			// fuck this floats
-			else if (utilities::compare_floats(d, min, COLLISION_EPSILON)) {
+			else if (d < min) { 
+				min = d; 
+				closest.clear();
 				closest.push_back(p);
 			}
 		}
@@ -598,7 +587,7 @@ namespace feng {
 			//p.points = std::move(closest);
 			//p.calculate_normal();
 #ifdef FENG_DEBUG
-			FENG_ASSERT(utilities::compare_normals_nd(lcd.axis, p.normal, COLLISION_EPSILON), "Noraml and axis are not the same");
+			FENG_ASSERT(utilities::compare_normals_nd(lcd.axis, p.normal, e), "Noraml and axis are not the same");
 #endif
 			cc.data = p;
 			cc.type = collision_contact_type::polygon;
@@ -697,6 +686,5 @@ namespace feng {
 	void sphere_collider_base::add_data_offset(const glm::vec3& offset) {
 		_center += offset;
 	}
-
 
 }
