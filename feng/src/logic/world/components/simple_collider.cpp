@@ -70,7 +70,7 @@ namespace feng {
 			other->update_collider_data();
 		}
 
-		if (self->collides(other.get())) {
+		if (collider_base::collision_cycle(self.get(), other.get())) {
 			// self -> on collision
 			trigger_collision_receivers({ other_sc->get_instance(), &self->lcd });
 			LOG_INFO("Collision axis: ", other->lcd.axis);

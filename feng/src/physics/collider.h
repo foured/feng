@@ -37,12 +37,16 @@ namespace feng {
 		std::vector<glm::vec3> points;
 		glm::vec3 normal;
 
+		bool is_convex_and_correct_order() const;
 		bool is_coplanar(const polygon& other) const;
 		bool is_coplanar(const glm::vec3& point) const;
 		void calculate_normal();
 
-		std::optional<edge> cyrus_beck_clip(const edge& seg, float epsilon = 1e-6f) const;
+		std::optional<edge> cyrus_beck_clip(const edge& seg, float epsilon = FLT_EPSILON) const;
 		std::optional<polygon> sutherland_hodgman_clip(const polygon& clipper);
+
+		static float orient(const glm::vec2& o, const glm::vec2& a, const glm::vec2& b);
+		static polygon make_convex_polygon(const std::vector<glm::vec3>& points);
 
 	};
 
@@ -64,6 +68,8 @@ namespace feng {
 			}
 			THROW_ERROR("You are trying to get non-existent type from variant");
 		}
+
+		uint32_t type_to_int() const;
 
 		static collision_contact overlap(const collision_contact& c1, const collision_contact& c2);
 
@@ -96,16 +102,24 @@ namespace feng {
 		virtual bool collides_shape(sat_collider_base* other) = 0;
 		virtual bool collides_shape(sphere_collider_base* other) = 0;
 
+		virtual bool is_static() const = 0;
+		virtual void add_position(const glm::vec3& offset) = 0;
+
 		bool was_changed_after_update();
+
+		static bool collision_cycle(collider_base* first, collider_base* second);
 
 	protected:
 		bool _was_changed_after_update = false;
 
 		virtual glm::vec2 project_onto(const glm::vec3& axis) const = 0;
-		virtual collision_contact calculate_collision_contact(const glm::vec3& axis) const = 0;
+		virtual collision_contact calculate_collision_contact() const = 0;
+
+		virtual void add_data_offset(const glm::vec3& offset) = 0;
 
 		bool check_overlap(const glm::vec2& proj1, const glm::vec2& proj2, const glm::vec3& axis);
 		bool check_axis(collider_base* other, const glm::vec3& axis);
+
 		static float calculate_penetration(const glm::vec2& v1, const glm::vec2& v2);
 
 	};
@@ -118,7 +132,7 @@ namespace feng {
 		bool collides_shape(sat_collider_base* other) override;
 		bool collides_shape(sphere_collider_base* other) override;
 
-		collision_contact calculate_collision_contact(const glm::vec3& axis) const override;
+		collision_contact calculate_collision_contact() const override;
 
 	protected:
 		std::vector<glm::vec3> _points;
@@ -128,6 +142,7 @@ namespace feng {
 		void calculate_center();
 
 		glm::vec2 project_onto(const glm::vec3& axis) const override;
+		void add_data_offset(const glm::vec3& offset) override;
 
 	};
 
@@ -142,13 +157,14 @@ namespace feng {
 		float get_radius() const;
 		glm::vec3 get_center() const;
 
-		collision_contact calculate_collision_contact(const glm::vec3& axis) const override;
+		collision_contact calculate_collision_contact() const override;
 
 	protected:
 		float _radius;
 		glm::vec3 _center;
 
 		glm::vec2 project_onto(const glm::vec3& axis) const override;
+		void add_data_offset(const glm::vec3& offset) override;
 
 	};
 

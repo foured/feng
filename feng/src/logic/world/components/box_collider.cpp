@@ -100,17 +100,18 @@ namespace feng {
 		}
 	}
 
-	void box_collider::on_collision(const advanced_collision_data& data) {
-		if (_instance->flags.get(INST_FLAG_STATIC)) {
-			return;
-		}
+	bool box_collider::is_static() const {
+		return _instance->flags.get(INST_FLAG_STATIC);
+	}
 
-		float penetration = data.collision_data->penetration;
-		// hardcoded
-		if (!data.other->flags.get(INST_FLAG_STATIC) && data.other->transform.changed_this_frame) {
-			penetration *= 0.5f;
-		}
-		_instance->transform.add_position(data.collision_data->axis * penetration);
+	void box_collider::add_position(const glm::vec3& offset) {
+		_instance->transform.add_position(offset);
+	}
+
+	void box_collider::on_collision(const advanced_collision_data& data) {
+		LOG_INFO(data.collision_data->contact.type_to_int());
+		edge e = data.collision_data->contact.get<edge>();
+		LOG_INFO(e.p1, " ", e.p2);
 	}	
 
 	glm::vec3 box_collider::get_position() const {

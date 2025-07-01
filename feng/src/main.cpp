@@ -228,7 +228,7 @@ int main() {
 	helpers::line_renderer x_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(axis_len, 0, 0) });
 	helpers::line_renderer y_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, axis_len, 0) });
 	helpers::line_renderer z_axis(&am->shaders.debug_line_shader, { glm::vec3(0), glm::vec3(0, 0, axis_len) });
-	glm::vec3 d_pos(0, -1.97651, -4.99145);
+	glm::vec3 d_pos(3, -4.15752, 1.00082);
 	helpers::line_renderer debug_axis(&am->shaders.debug_line_shader, { glm::vec3(0), d_pos });
 
 	utilities::test_octree_visualiser = std::make_unique<helpers::box_renderer_instanced>(

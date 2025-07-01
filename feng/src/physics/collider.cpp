@@ -41,6 +41,40 @@ namespace feng {
 
 	// POLYGON----------------------------------------------------------------------------------------------------------
 
+	bool polygon::is_convex_and_correct_order() const {
+		if (points.size() < 3) return false;
+
+		glm::vec3 N = normal;
+
+		bool is_positive = true;
+		bool is_initialized = false;
+
+		const size_t n = points.size();
+		for (size_t i = 0; i < n; ++i) {
+			const glm::vec3& A = points[i];
+			const glm::vec3& B = points[(i + 1) % n];
+			const glm::vec3& C = points[(i + 2) % n];
+
+			glm::vec3 AB = B - A;
+			glm::vec3 BC = C - B;
+			glm::vec3 cross_prod = glm::cross(AB, BC);
+
+			float dot_with_normal = glm::dot(N, cross_prod);
+
+			if (!is_initialized) {
+				is_positive = (dot_with_normal > 0);
+				is_initialized = true;
+			}
+			else {
+				if ((dot_with_normal > 0) != is_positive) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	bool polygon::is_coplanar(const polygon& other) const {
 		FENG_ASSERT(!points.empty() || !other.points.empty(), "Polygon is empty, can check if is coplanar");
 
@@ -81,68 +115,52 @@ namespace feng {
 
 	std::optional<edge> polygon::cyrus_beck_clip(const edge& seg, float epsilon) const {
 		FENG_ASSERT(points.size() >= 3, "Not enough points for cyrus_beck_clip");
+#ifdef  FENG_DEBUG
+		FENG_ASSERT(is_convex_and_correct_order(), "Bad polygon");
+#endif
 
-		//if (!is_coplanar(seg.p1) || !is_coplanar(seg.p2)) {
-		//	LOG_INFO("Not coplanar");
-		//	return std::nullopt;
-		//}
+		if (!is_coplanar(seg.p1) || !is_coplanar(seg.p2)) {
+			return std::nullopt;
+		}
 
+		glm::vec3 d = seg.p2 - seg.p1;
 		float t_enter = 0.0f;
 		float t_exit = 1.0f;
 
-		glm::vec3 d = seg.p2 - seg.p1;
+		for (size_t i = 0; i < points.size(); ++i) {
+			const glm::vec3& P0 = points[i];
+			const glm::vec3& P1 = points[(i + 1) % points.size()];
+			glm::vec3 edge_vec = P1 - P0;
+			glm::vec3 edge_normal = glm::normalize(glm::cross(edge_vec, normal)); // внутренн€€ нормаль
 
-		size_t n = points.size();
-		for (size_t i = 0; i < n; ++i) {
-			const glm::vec3& A = points[i];
-			const glm::vec3& B = points[(i + 1) % n];
-			glm::vec3 edge_vec = B - A;
+			glm::vec3 w = seg.p1 - P0;
+			float denom = glm::dot(edge_normal, d);
+			float numer = -glm::dot(edge_normal, w);
 
-			glm::vec3 edge_normal = glm::normalize(glm::cross(normal, edge_vec));
-
-			float numerator = glm::dot(edge_normal, A - seg.p1);
-			float denominator = glm::dot(edge_normal, d);
-
-			if (std::abs(denominator) < epsilon) {
-				if (numerator < 0) {
-					LOG_INFO(1);
+			if (std::abs(denom) < epsilon) {
+				if (numer < 0)
 					return std::nullopt;
-				}
 				continue;
 			}
 
-			float t = numerator / denominator;
-
-			if (denominator > 0) {
-				if (t > t_enter) {
-					t_enter = t;
-				}
+			float t = numer / denom;
+			if (denom > 0) {
+				if (t < t_exit)
+					t_exit = t;
 			}
 			else {
-				if (t < t_exit) {
-					t_exit = t;
-				}
+				if (t > t_enter)
+					t_enter = t;
 			}
 
 			if (t_enter > t_exit) {
-				LOG_INFO(2);
 				return std::nullopt;
 			}
 		}
 
-		if (t_enter > 1.0f || t_exit < 0.0f) {
-			LOG_INFO(3);
-			return std::nullopt;
-		}
-
-		t_enter = glm::clamp(t_enter, 0.0f, 1.0f);
-		t_exit = glm::clamp(t_exit, 0.0f, 1.0f);
-
-		edge clipped_edge;
-		clipped_edge.p1 = seg.p1 + t_enter * d;
-		clipped_edge.p2 = seg.p1 + t_exit * d;
-
-		return clipped_edge;
+		glm::vec3 clipped_start = seg.p1 + d * t_enter;
+		glm::vec3 clipped_end = seg.p1 + d * t_exit;
+		return edge{ clipped_start, clipped_end };
 	}
 
 	std::optional<polygon> polygon::sutherland_hodgman_clip(const polygon& clipper) {
@@ -204,6 +222,67 @@ namespace feng {
 		return res;
 	}
 
+	float polygon::orient(const glm::vec2& o, const glm::vec2& a, const glm::vec2& b) {
+		return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+	}
+
+	polygon polygon::make_convex_polygon(const std::vector<glm::vec3>& points) {
+		size_t points_size = points.size();
+		FENG_ASSERT(points_size >= 3, "Not enough points to make a polygon");
+
+		glm::vec3 origin = points[0];
+		glm::vec3 p1 = points[1];
+		glm::vec3 p2 = points[2];
+
+		glm::vec3 normal = glm::normalize(glm::cross(p1 - origin, p2 - origin));
+		glm::vec3 x_axis = glm::normalize(p1 - origin);
+		glm::vec3 y_axis = glm::normalize(glm::cross(normal, x_axis));
+
+		struct point2d {
+			glm::vec2 pos;
+			glm::vec3 original;
+		};
+
+		std::vector<point2d> projected;
+		projected.reserve(points_size);
+		for (const glm::vec3& p : points) {
+			glm::vec3 r_dir = p - origin;
+			float r_x = glm::dot(x_axis, r_dir);
+			float r_y = glm::dot(y_axis, r_dir);
+			projected.emplace_back(glm::vec2(r_x, r_y), p);
+		}
+		
+		std::swap(projected[0], *std::min_element(projected.begin(), projected.end(), [](const point2d& a, const point2d& b) {
+			return (a.pos.y < b.pos.y) || (a.pos.y == b.pos.y && a.pos.x < b.pos.x);
+			}));
+		glm::vec2 pivot = projected[0].pos;
+
+		std::sort(projected.begin(), projected.end(), [&pivot](const point2d& p1, const point2d& p2) {
+				float ori = orient(pivot, p1.pos, p2.pos);
+				if (ori == 0) {
+					return glm::length2(p1.pos - pivot) < glm::length2(p2.pos - pivot);
+				}
+				return ori > 0;
+			});
+
+		std::vector<point2d> hull;
+		size_t hs = 0;
+		for (const auto& point : projected) {
+			hs = hull.size();
+			while (hs >= 2 && orient(hull[hs - 2].pos, hull[hs - 1].pos, point.pos) <= FLT_EPSILON) {
+				hull.pop_back();
+			}
+			hull.push_back(point);
+		}
+
+		polygon res;
+		res.normal = normal;
+		for (const auto& point : hull) {
+			res.points.push_back(point.original);
+		}
+		return res;
+	}
+
 	// EDGE-------------------------------------------------------------------------------------------------------------
 
 	edge edge::overlap(const edge& e1, const edge& e2, float epsilon) {
@@ -251,6 +330,10 @@ namespace feng {
 
 	// COLLISION_CONTACT------------------------------------------------------------------------------------------------
 
+	uint32_t collision_contact::type_to_int() const {
+		return static_cast<int32_t>(type);
+	}
+
 	collision_contact collision_contact::overlap(const collision_contact& c1, const collision_contact& c2) {
 		// poins are points
 		if (c1.type == collision_contact_type::point) {
@@ -296,7 +379,7 @@ namespace feng {
 
 	collision_contact collision_contact::overlap_edge_and_polygon(const collision_contact& ed, 
 		const collision_contact& pl) {
-		std::optional<edge> res = std::get<polygon>(pl.data).cyrus_beck_clip(std::get<edge>(ed.data));
+		std::optional<edge> res = std::get<polygon>(pl.data).cyrus_beck_clip(std::get<edge>(ed.data), COLLISION_EPSILON);
 
 		collision_contact cc;
 
@@ -321,6 +404,44 @@ namespace feng {
 
 	bool collider_base::was_changed_after_update() {
 		return _was_changed_after_update;
+	}
+
+	bool collider_base::collision_cycle(collider_base* first, collider_base* second) {
+		if (first->collides(second)) {
+			bool is_first_static = first->is_static();
+			bool is_second_static = second->is_static();
+			if (is_first_static && is_second_static) {
+				LOG_WARNING("Only static objects detected in collision checks");
+				return true;
+			}
+
+			if (is_first_static && !is_second_static) {
+				glm::vec3 offset = second->lcd.axis * second->lcd.penetration;
+				second->add_position(offset);
+				second->add_data_offset(offset);
+			}
+			else if (!is_first_static && is_second_static) {
+				glm::vec3 offset = first->lcd.axis * first->lcd.penetration;
+				first->add_position(offset);
+				first->add_data_offset(offset);
+			}
+			else {
+				glm::vec3 offset = first->lcd.axis * first->lcd.penetration * 0.5f;
+				first->add_position(offset);
+				first->add_data_offset(offset);
+				second->add_position(-1.0f * offset);
+				second->add_data_offset(offset);
+			}
+			LOG_INFO("collision_cycle");
+			collision_contact c1 = first->calculate_collision_contact();
+			collision_contact c2 = second->calculate_collision_contact();
+			collision_contact c3 = collision_contact::overlap(c1, c2);
+
+			first->lcd.contact = c3;
+			second->lcd.contact = c3;
+			return true;
+		}
+		return false;
 	}
 
 	float collider_base::calculate_penetration(const glm::vec2& v1, const glm::vec2& v2) {
@@ -401,13 +522,12 @@ namespace feng {
 		if (d > 0) {
 			lcd.invert();
 		}
-		collision_contact c1 = calculate_collision_contact(lcd.axis);
-		collision_contact c2 = other->calculate_collision_contact(-1.0f * lcd.axis);
-		lcd.contact = collision_contact::overlap(c1, c2);
+		//collision_contact c1 = calculate_collision_contact();
+		//collision_contact c2 = other->calculate_collision_contact();
+		//lcd.contact = collision_contact::overlap(c1, c2);
 
 		other->lcd.penetration = lcd.penetration;
 		other->lcd.axis = -1.0f * lcd.axis;
-		other->lcd.contact = lcd.contact;
 
 		return true;
 	}
@@ -439,25 +559,19 @@ namespace feng {
 			lcd.invert();
 		}
 
-		// copy lcd to other
-		collision_contact c1 = calculate_collision_contact(lcd.axis);
-		collision_contact c2 = other->calculate_collision_contact(-1.0f * lcd.axis);
-		lcd.contact = collision_contact::overlap(c1, c2);
-
 		other->lcd.penetration = lcd.penetration;
 		other->lcd.axis = -1.0f * lcd.axis;
-		other->lcd.contact = lcd.contact;
 
 		return true;
 	}
 
-	collision_contact sat_collider_base::calculate_collision_contact(const glm::vec3& axis) const {
+	collision_contact sat_collider_base::calculate_collision_contact() const {
 		float min = FLT_MAX;
 
 		std::vector<glm::vec3> closest;
 
 		for (const glm::vec3& p : _points) {
-			float d = glm::dot(p, axis);
+			float d = glm::dot(p, lcd.axis);
 			if (d < min) { 
 				min = d; 
 				closest.clear();
@@ -480,16 +594,24 @@ namespace feng {
 			cc.type = collision_contact_type::edge;
 		}
 		else {
-			polygon p;
-			p.points = std::move(closest);
-			p.calculate_normal();
+			polygon p = polygon::make_convex_polygon(closest);
+			//p.points = std::move(closest);
+			//p.calculate_normal();
 #ifdef FENG_DEBUG
-			FENG_ASSERT(utilities::compare_normals_nd(axis, p.normal, COLLISION_EPSILON), "Noraml and axis are not the same");
+			FENG_ASSERT(utilities::compare_normals_nd(lcd.axis, p.normal, COLLISION_EPSILON), "Noraml and axis are not the same");
 #endif
 			cc.data = p;
 			cc.type = collision_contact_type::polygon;
 		}
 		return cc;
+	}
+
+	void sat_collider_base::calculate_center() {
+		_center = glm::vec3(0.0f);
+		FENG_ASSERT(!_points.empty(), "Collider points are empty.");
+
+		_center = std::reduce(_points.begin(), _points.end(), glm::vec3(0.0f));
+		_center /= static_cast<float>(_points.size());
 	}
 
 	glm::vec2 sat_collider_base::project_onto(const glm::vec3& axis) const {
@@ -505,12 +627,10 @@ namespace feng {
 		return { min, max };
 	}
 
-	void sat_collider_base::calculate_center() {
-		_center = glm::vec3(0.0f);
-		FENG_ASSERT(!_points.empty(), "Collider points are empty.");
-
-		_center = std::reduce(_points.begin(), _points.end(), glm::vec3(0.0f));
-		_center /= static_cast<float>(_points.size());
+	void sat_collider_base::add_data_offset(const glm::vec3& offset) {
+		for (glm::vec3& p : _points) {
+			p += offset;
+		}
 	}
 
 	// SPHERE_COLLIDER--------------------------------------------------------------------------------------------------
@@ -522,7 +642,6 @@ namespace feng {
 
 	bool sphere_collider_base::collides(collider_base* other) {
 		bool res = other->collides_shape(this);
-		//out->invert();
 		return res;
 	}
 
@@ -542,7 +661,6 @@ namespace feng {
 
 	bool sphere_collider_base::collides_shape(sat_collider_base* other) {
 		bool res = other->collides_shape(this);
-		//out->invert();
 		return res;
 	}
 
@@ -552,6 +670,13 @@ namespace feng {
 
 	glm::vec3 sphere_collider_base::get_center() const {
 		return _center;
+	}
+
+	collision_contact sphere_collider_base::calculate_collision_contact() const {
+		collision_contact cc;
+		cc.data = _center + lcd.axis * _radius;
+		cc.type = collision_contact_type::point;
+		return cc;
 	}
 
 	glm::vec2 sphere_collider_base::project_onto(const glm::vec3& axis) const {
@@ -569,11 +694,9 @@ namespace feng {
 		return { min, max };
 	}
 
-	collision_contact sphere_collider_base::calculate_collision_contact(const glm::vec3& axis) const {
-		collision_contact cc;
-		cc.data = _center + lcd.axis * _radius;
-		cc.type = collision_contact_type::point;
-		return cc;
+	void sphere_collider_base::add_data_offset(const glm::vec3& offset) {
+		_center += offset;
 	}
+
 
 }

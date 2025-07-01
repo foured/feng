@@ -32,6 +32,8 @@ namespace feng {
 		// overrides
 		void update_collider_data() override;
 		void check_changes() override;
+		bool is_static() const override;
+		void add_position(const glm::vec3& offset) override;
 		
 		void on_collision(const advanced_collision_data& data) override;
 
