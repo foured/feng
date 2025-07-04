@@ -37,7 +37,7 @@ namespace feng {
 	private:
 		std::vector<std::weak_ptr<collision_receiver_context>> _collision_receivers;
 		std::weak_ptr<bounds_updater_context> _updater_context;
-		std::weak_ptr<collider_base> _collider_base;
+		std::weak_ptr<phys::collider_base> _collider_base;
 
 		bool search_for_context();
 		bool search_for_collider();

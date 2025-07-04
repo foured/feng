@@ -1,13 +1,15 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "collider.h"
 
-namespace feng {
+namespace feng::phys {
 
 	class physics {
 	public:
-		static float gravity;
-		static glm::vec3 gravity_vec;
+		static bool collision(collider_base* col_1, collider_base* col_2, collision_data* data);
+
+	private:
+		static void orient_axis(collider_base* col_1, collider_base* col_2, collision_data* data);
 
 	};
 

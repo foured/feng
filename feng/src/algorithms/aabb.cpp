@@ -105,7 +105,7 @@ namespace feng {
 	}
 
 	aabb aabb::fit_rotation(const glm::vec3& rotation) const {
-		return fit_rotation(utilities::deg2mat3x3(rotation));
+		return fit_rotation(utilities::euler2mat3x3(rotation));
 	}
 
 	aabb aabb::intersect_unsafe(const aabb& target) const {

@@ -37,7 +37,7 @@ namespace feng {
 
 	box_collider::box_collider(instance* instance, const glm::vec3& offset, const glm::vec3& size, 
 		const glm::vec3& rotation)
-		: component(instance), sat_collider_base(cube_points, cube_normals),
+		: component(instance), mesh_collider_base(cube_points, cube_normals),
 		  _offset(offset), _size(size), _rotation(rotation) {
 	}
 
@@ -68,7 +68,7 @@ namespace feng {
 		glm::vec3 rot_vec = get_rotation();
 
 		glm::mat4 T = glm::translate(glm::mat4(1.0f), pos);
-		glm::mat4 R = utilities::deg2mat4x4(rot_vec);
+		glm::mat4 R = utilities::euler2mat4x4(rot_vec);
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), size);
 
 		glm::mat4 model = T * R * S;

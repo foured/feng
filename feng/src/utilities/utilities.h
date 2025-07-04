@@ -43,8 +43,8 @@ namespace feng {
 
 		static std::string strip(const std::string& str);
 
-		static glm::mat3 deg2mat3x3(const glm::vec3& deg);
-		static glm::mat4 deg2mat4x4(const glm::vec3& deg);
+		static glm::mat3 euler2mat3x3(const glm::vec3& deg);
+		static glm::mat4 euler2mat4x4(const glm::vec3& deg);
 		static glm::vec3 mul(const glm::mat4& m, const glm::vec3& p);
 
 	private:

@@ -140,11 +140,11 @@ namespace feng {
 		return str.substr(start, end - start + 1);
 	}
 
-	glm::mat3 utilities::deg2mat3x3(const glm::vec3& deg) {
+	glm::mat3 utilities::euler2mat3x3(const glm::vec3& deg) {
 		return glm::mat3_cast(glm::quat(glm::radians(deg)));
 	}
 
-	glm::mat4 utilities::deg2mat4x4(const glm::vec3& deg) {
+	glm::mat4 utilities::euler2mat4x4(const glm::vec3& deg) {
 		return glm::mat4_cast(glm::quat(glm::radians(deg)));
 	}
 

@@ -102,7 +102,7 @@ namespace feng {
 		_start_timepoint = std::chrono::high_resolution_clock::now();
 
 		int16_t count = -1;
-		int32_t dc_pos;
+		int32_t dc_pos = 0;
 		for (int i = _name.size(); i >= 0; --i) {
 			if (_name[i] == ':') {
 				count++;
@@ -120,12 +120,12 @@ namespace feng {
 
 	void timer::stop() {
 		auto end_timepoint = std::chrono::high_resolution_clock::now();
-		int64_t start = std::chrono::time_point_cast<std::chrono::milliseconds>(_start_timepoint)
+		int64_t start = std::chrono::time_point_cast<std::chrono::microseconds>(_start_timepoint)
 			.time_since_epoch().count();
-		int64_t end = std::chrono::time_point_cast<std::chrono::milliseconds>(end_timepoint)
+		int64_t end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint)
 			.time_since_epoch().count();
 
-		LOG_INFO(_name + ": " + std::to_string(end - start) + "ms");
+		LOG_INFO(_name, ": ", (end - start) / 1000.0f, "ms");
 
 		_stopped = true;
 	}

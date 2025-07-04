@@ -31,6 +31,7 @@ namespace feng {
 
 		glm::vec3 get_pos();
 		void set_pos(const glm::vec3& pos);
+		void clear_forces();
 
 	};
 

@@ -202,7 +202,11 @@
     <ClCompile Include="src\logic\world\transform.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\physics\collider.cpp" />
+    <ClCompile Include="src\physics\collision_data.cpp" />
+    <ClCompile Include="src\physics\epa.cpp" />
+    <ClCompile Include="src\physics\gjk.cpp" />
     <ClCompile Include="src\physics\physics.cpp" />
+    <ClCompile Include="src\physics\shapes.cpp" />
     <ClCompile Include="src\utilities\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -275,7 +279,11 @@
     <ClInclude Include="src\logic\world\tag.h" />
     <ClInclude Include="src\logic\world\transform.h" />
     <ClInclude Include="src\physics\collider.h" />
+    <ClInclude Include="src\physics\collision_data.h" />
+    <ClInclude Include="src\physics\epa.h" />
+    <ClInclude Include="src\physics\gjk.h" />
     <ClInclude Include="src\physics\physics.h" />
+    <ClInclude Include="src\physics\shapes.h" />
     <ClInclude Include="src\utilities\files_in_folder.hpp" />
     <ClInclude Include="src\utilities\fps_counter.h" />
     <ClInclude Include="src\utilities\singleton.hpp" />

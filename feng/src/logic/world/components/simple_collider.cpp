@@ -5,6 +5,7 @@
 #include "../instance.h"
 #include "../../data_management/files.h"
 #include "../scene.h"
+#include "../../../physics/physics.h"
 
 namespace feng {
 
@@ -60,8 +61,8 @@ namespace feng {
 			return;
 		}
 
-		std::shared_ptr<collider_base> self = _collider_base.lock();
-		std::shared_ptr<collider_base> other = other_sc->_collider_base.lock();
+		std::shared_ptr<phys::collider_base> self = _collider_base.lock();
+		std::shared_ptr<phys::collider_base> other = other_sc->_collider_base.lock();
 
 		if (self->was_changed_after_update()) {
 			self->update_collider_data();
@@ -70,15 +71,15 @@ namespace feng {
 			other->update_collider_data();
 		}
 
-		if (collider_base::collision_cycle(self.get(), other.get())) {
-			trigger_collision_receivers({ other_sc->get_instance(), &self->lcd });
-			LOG_INFO("Collision axis: ", other->lcd.axis);
-			LOG_INFO(self->lcd.contact.type_to_int());
-			//const polygon* pl = self->lcd.contact.get_pointer<polygon>();
-			//for (const auto& p : pl->points) {
-			//	LOG_INFO(p);
-			//}
-			other_sc->trigger_collision_receivers({ get_instance(), &other->lcd });
+		phys::collision_data data;
+		if (phys::physics::collision(self.get(), other.get(), &data)) {
+			LOG_INFO("Collision");
+			//LOG_INFO("Collision axis: ", other->lcd.axis, " contact type: ", self->lcd.contact.type_to_int());
+			//glm::vec3 point = *self->lcd.contact.get_pointer<glm::vec3>();
+			//LOG_INFO("Point: ", point);
+			trigger_collision_receivers({ other_sc->get_instance(), &data });
+			data.invert();
+			other_sc->trigger_collision_receivers({ get_instance(), &data });
 		}
 
 	}
@@ -168,7 +169,7 @@ namespace feng {
 	}
 
 	bool simple_collider::search_for_collider() {
-		std::shared_ptr<collider_base> col = _instance->try_find_component_of_type<collider_base>();
+		std::shared_ptr<phys::collider_base> col = _instance->try_find_component_of_type<phys::collider_base>();
 		if (col) {
 			_collider_base = col;
 			return true;

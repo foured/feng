@@ -7,7 +7,7 @@ namespace feng {
 
 	struct advanced_collision_data {
 		instance* other;
-		collision_data* collision_data;
+		phys::collision_data* collision_data;
 	};
 
 	class collision_receiver_context {

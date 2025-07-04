@@ -11,7 +11,7 @@
 
 namespace feng {
 
-	class box_collider : public component, public sat_collider_base, public collision_receiver_context, 
+	class box_collider : public component, public phys::mesh_collider_base, public collision_receiver_context,
 		public bounds_updater_context_dependent {
 	public:
 		//box_collider(instance* instance,
