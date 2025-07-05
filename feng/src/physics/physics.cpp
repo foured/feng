@@ -1,6 +1,7 @@
 #include "physics.h"
 
-#include "epa.h"
+#include "collision/algorithms/epa.h"
+#include "collision/algorithms/sat.h"
 
 namespace feng::phys {
 
@@ -42,8 +43,10 @@ namespace feng::phys {
 		//return false;
 
 		gjk::simplex out;
-		if (gjk::gjk(col_1, col_2, &out)) {
-			epa::epa(&out, col_1, col_2, data);
+
+		if (sat::sat::solve(col_1, col_2, data)) {
+		//if (gjk::gjk(col_1, col_2, &out)) {
+			//epa::epa(&out, col_1, col_2, data);
 			bool is_first_static = col_1->is_static();
 			bool is_second_static = col_2->is_static();
 			if (is_first_static && is_second_static) {
@@ -54,7 +57,7 @@ namespace feng::phys {
 			orient_axis(col_1, col_2, data);
 
 			glm::vec3 axis = data->axis;
-			float penetration = data->penetration;
+			float penetration = data->penetration + 0.0001f;
 			glm::vec3 dir = axis * penetration;
 			if (is_first_static && !is_second_static) {
 				glm::vec3 offset = dir;

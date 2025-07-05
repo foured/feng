@@ -168,7 +168,7 @@
     <ClCompile Include="src\logic\world\components\size_animator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\collider.cpp">
+    <ClCompile Include="src\physics\collision\collider.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\logic\world\components\box_collider.cpp">
@@ -183,19 +183,22 @@
     <ClCompile Include="src\logic\contexts\bounds_updater_context.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\shapes.cpp">
+    <ClCompile Include="src\physics\collision\shapes.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\gjk.cpp">
+    <ClCompile Include="src\physics\collision\algorithms\gjk.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\epa.cpp">
+    <ClCompile Include="src\physics\collision\algorithms\epa.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\collision_data.cpp">
+    <ClCompile Include="src\physics\collision\collision_data.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="src\physics\physics.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\physics\collision\algorithms\sat.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -407,7 +410,7 @@
     <ClInclude Include="src\logic\world\components\size_animator.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\collider.h">
+    <ClInclude Include="src\physics\collision\collider.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\logic\world\components\box_collider.h">
@@ -422,19 +425,25 @@
     <ClInclude Include="src\graphics\helpers\line_renderer.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\shapes.h">
+    <ClInclude Include="src\physics\collision\shapes.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\gjk.h">
+    <ClInclude Include="src\physics\collision\algorithms\gjk.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\epa.h">
+    <ClInclude Include="src\physics\collision\algorithms\epa.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\collision_data.h">
+    <ClInclude Include="src\physics\collision\collision_data.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\physics\physics.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\physics\collision\algorithms\sat.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\physics\collision\colliders_data.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

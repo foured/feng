@@ -46,7 +46,7 @@
 #include "logic/world/components/box_collider.h"
 #include "logic/world/components/rigidbody.h"
 
-#include "physics/collider.h"
+#include "physics/collision/collider.h"
 
 #include "editor/lightbaker.h"
 
@@ -111,7 +111,7 @@ int main() {
 	sptr_ins cube1_i2 = sc1.copy_instance(cube1_i1);
 	auto cube1_i2_mi = cube1_i2->try_get_component<model_instance>();
 	cube1_i2->flags.set(INST_FLAG_RCV_SHADOWS, false);
-	cube1_i2->transform.set_position(glm::vec3(2, 2, -2));
+	cube1_i2->transform.set_position(glm::vec3(2.7f, 2, -2));
 	cube1_i2->transform.set_size(glm::vec3(0.5, 2, 0.5));
 	cube1_i2->add_component<box_collider>();
 	LOG_INFO("cube1_i2 ", cube1_i2->get_uuid_string());
@@ -119,7 +119,7 @@ int main() {
 	sptr_ins cube1_i3 = sc1.copy_instance(cube1_i1);
 	cube1_i3->flags.set(INST_FLAG_STATIC, false);
 	cube1_i3->transform.set_position(glm::vec3(2, 6, -2));
-	cube1_i3->transform.set_rotation(glm::vec3(45, 0, 45));
+	cube1_i3->transform.set_rotation(glm::vec3(0, 0, 45));
 	auto cube1_i3_mi = cube1_i3->try_get_component<model_instance>();
 	cube1_i3->add_component<box_collider>();
 	cube1_i3->add_component<rigidbody>(2.0f);

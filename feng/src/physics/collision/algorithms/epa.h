@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gjk.h"
-#include "collision_data.h"
+#include "../collision_data.h"
 
 namespace feng::phys::epa {
 

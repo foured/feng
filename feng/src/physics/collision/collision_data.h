@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "shapes.h"
-#include "../logging/logging.h"
+#include "../../logging/logging.h"
 
 namespace feng::phys {
 

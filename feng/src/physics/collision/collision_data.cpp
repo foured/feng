@@ -1,6 +1,6 @@
 #include "collision_data.h"
 
-#include "../logging/logging.h"
+#include "../../logging/logging.h"
 
 namespace feng::phys {
 

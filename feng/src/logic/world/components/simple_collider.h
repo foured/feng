@@ -5,7 +5,7 @@
 #include "../component.h"
 #include "../../../algorithms/aabb.h"
 #include "../../contexts/bounds_updater_context.h"
-#include "../../../physics/collider.h"
+#include "../../../physics/collision/collider.h"
 #include "../../contexts/collision_receiver_context.h"
 
 namespace feng {

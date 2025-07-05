@@ -1,6 +1,6 @@
 #include "epa.h"
 
-#include "../logging/logging.h"
+#include "../../../logging/logging.h"
 
 #define EPA_MAX_SEARCH_DEPTH 100
 
@@ -95,7 +95,7 @@ namespace feng::phys::epa {
 
 		out->axis = min_normal;
 		// without + 0.0001f collision detection passes every time
-		out->penetration = min_dist + 0.0001f;
+		out->penetration = min_dist;
 	}
 
 	namespace impl {
