@@ -401,11 +401,10 @@ FodyWeavers.xsd
 bin/
 build/
 /.vs
-/.vscode
 .idea/
 CMakeSettings.json
 Makefile
-.vscode
+.vscode/
 
 logs.txt
 
