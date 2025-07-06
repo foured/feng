@@ -1,4 +1,4 @@
-layout (std430, binding = 2) buffer Lights
+layout (std140) uniform Lights
 {
     DirLight dirLight;
     int noSpotLights;

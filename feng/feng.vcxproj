@@ -224,7 +224,7 @@
     <ClInclude Include="src\graphics\gl_buffers\framebuffer.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\i_gl_buffer.h" />
     <ClInclude Include="src\graphics\gl_buffers\renderbuffer.hpp" />
-    <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp" />
+    <ClInclude Include="src\graphics\gl_buffers\shader_storage.hpp" />
     <ClInclude Include="src\graphics\gl_buffers\uniformbuffer.hpp" />
     <ClInclude Include="src\graphics\helpers\box_renderer.h" />
     <ClInclude Include="src\graphics\helpers\fullscreen_quad.hpp" />

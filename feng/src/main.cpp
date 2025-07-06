@@ -26,7 +26,7 @@
 #include "graphics/batching/text_batcher.h"
 #include "graphics/light/lights.h"
 #include "graphics/gl_buffers/framebuffer.hpp"
-#include "graphics/gl_buffers/ssbo.hpp"
+#include "graphics/gl_buffers/shader_storage.hpp"
 
 #include "graphics/helpers/box_renderer.h"
 #include "graphics/helpers/fullscreen_quad.hpp"
@@ -82,6 +82,9 @@ int main() {
 
 	assets_manager* am = assets_manager::get_instance();
 	am->shaders.load();
+
+	shader_storage::add_name_binding("Matrices", 0);
+	shader_storage::add_name_binding("Lights", 3);
 
 	helpers::fullscreen_quad fullscreen_quad;
 
@@ -163,6 +166,22 @@ int main() {
 	//===============
 	//    BUFFERS
 	//===============
+
+	// uniforms
+	am->shaders.obj_shader.add_ubo("Matrices");
+	am->shaders.skybox_shader.add_ubo("Matrices");
+
+	am->shaders.obj_shader.add_ubo("Lights");
+
+
+	glstd::buffer_structure test_bs;
+
+	test_bs.add_element<float>();
+	test_bs.add_element<glm::vec3>();
+	test_bs.add_element<glm::mat4>();
+	//test_bs.start_array();
+	test_bs.add_elements<int, int, int>();
+	//test_bs.end_array();
 
 	framebuffer main_framebuffer(window::win_width, window::win_height);
 	main_framebuffer.bind();

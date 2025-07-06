@@ -10,7 +10,7 @@ namespace feng {
 	public:
 		gl_buffer() = default;
 
-		gl_buffer(int32_t type, bool autogen)
+		gl_buffer(uint32_t type, bool autogen)
 			: _type(type) {
 			if (autogen) {
 				generate();
@@ -62,6 +62,6 @@ namespace feng {
 
 	protected:
 		uint32_t _id;
-		int32_t _type;
+		uint32_t _type;
 	};
 }

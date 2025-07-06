@@ -38,7 +38,7 @@ namespace feng {
 		void set_4float(const std::string& name, aiColor4D c);
 		void set_3float(const std::string& name, float v1, float v2, float v3);
 		void set_3float(const std::string& name, glm::vec3 v);
-		void set_ubo_index(const std::string& name, int v);
+		void add_ubo(const std::string& name);
 
 		uint32_t id() const;
 

@@ -7,7 +7,8 @@
 namespace feng {
 
 	scene::scene() 
-		: _octree(glm::vec3(23), 210) { }
+		: _octree(glm::vec3(23), 210), _lights_ss(glstd::buffer_std::std140), _matrices_ss(glstd::buffer_std::std140) {
+	}
 
 	void scene::start() {
 		_framebuffer_change_sub = window::on_framebuffer_size.subscribe([this](int32_t width, int32_t height) {
@@ -75,14 +76,14 @@ namespace feng {
 	}
 
 	void scene::generate_matrices_buffers() {
-		_matrices_ssbo.allocate(2 * sizeof(glm::mat4), 1);
+		_matrices_ss.allocate(2 * sizeof(glm::mat4), "Matrices");
 	}
 
 	void scene::bind_matrices_ssbo() {
-		_matrices_ssbo.start_block();
-		_matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(_projection));
-		_matrices_ssbo.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(main_camera.get_view_matrix()));
-		_matrices_ssbo.end_block();
+		_matrices_ss.start_block();
+		_matrices_ss.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(_projection));
+		_matrices_ss.add_element<glm::mat4>((glm::mat4*)glm::value_ptr(main_camera.get_view_matrix()));
+		_matrices_ss.end_block();
 	}
 
 	void scene::calculate_projection_matrix() {
@@ -125,7 +126,7 @@ namespace feng {
 		for (auto& point_light : point_lights)
 			point_light.generate_buffers();
 
-		_lights_ssbo.allocate(ssbo::generate_lights_buffer(), 2);
+		_lights_ss.allocate(shader_storage::generate_lights_buffer(), "Lights");
 	}
 
 	void scene::generate_lightspace_matrices() {
@@ -138,15 +139,15 @@ namespace feng {
 
 	void scene::bind_lights_ssbo() {
 		int32_t no_spotlights = MAX_SPOT_LIGHTS, no_pointlights = MAX_POINT_LIGHTS;
-		_lights_ssbo.start_block();
-		_lights_ssbo.add_structure(ssbo::dirlight_buffer_structure, &dir_light);
-		_lights_ssbo.add_element(&no_spotlights);
+		_lights_ss.start_block();
+		_lights_ss.add_structure(shader_storage::dirlight_buffer_structure, &dir_light);
+		_lights_ss.add_element(&no_spotlights);
 		for(int32_t i = 0; i < no_spotlights; i++)
-			_lights_ssbo.add_structure(ssbo::spotlight_buffer_structure, &spot_lights[i]);
-		_lights_ssbo.add_element(&no_pointlights);
+			_lights_ss.add_structure(shader_storage::spotlight_buffer_structure, &spot_lights[i]);
+		_lights_ss.add_element(&no_pointlights);
 		for(int32_t i = 0; i < no_pointlights; i++)
-			_lights_ssbo.add_structure(ssbo::pointlight_buffer_structure, &point_lights[i]);
-		_lights_ssbo.end_block();
+			_lights_ss.add_structure(shader_storage::pointlight_buffer_structure, &point_lights[i]);
+		_lights_ss.end_block();
 	}
 
 	size_t scene::get_free_spot_light_idx() {

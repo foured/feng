@@ -1,13 +1,9 @@
-#version 460 core
+#version 330 core
 layout (location = 0) in vec3 aPos;
 
 out vec3 TexCoords;
 
-layout (std430, binding = 1) buffer Matrices
-{
-    mat4 projection;
-    mat4 view;
-};
+#include<matrices_layout.glsl>
 
 uniform mat4 sb_view;
 

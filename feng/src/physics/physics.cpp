@@ -44,7 +44,7 @@ namespace feng::phys {
 
 		gjk::simplex out;
 
-		if (sat::sat::solve(col_1, col_2, data)) {
+		if (sat::solver::solve(col_1, col_2, data)) {
 		//if (gjk::gjk(col_1, col_2, &out)) {
 			//epa::epa(&out, col_1, col_2, data);
 			bool is_first_static = col_1->is_static();

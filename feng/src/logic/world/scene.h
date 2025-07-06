@@ -10,7 +10,7 @@
 #include "instance.h"
 #include "../../utilities/uuid.hpp"
 #include "../../graphics/light/lights.h"
-#include "../../graphics/gl_buffers/ssbo.hpp"
+#include "../../graphics/gl_buffers/shader_storage.hpp"
 #include "../../io/camera.h"
 #include "../event.hpp"
 #include "../../algorithms/octree.h"
@@ -120,10 +120,10 @@ namespace feng {
 		std::vector<sptr_mdl> _models;
 		std::vector<sptr_ins> _instances;
 
-		ssbo _lights_ssbo;
+		shader_storage _lights_ss;
 		std::bitset<MAX_SPOT_LIGHTS> _free_spot_lights;
 
-		ssbo _matrices_ssbo;
+		shader_storage _matrices_ss;
 		glm::mat4 _projection;
 		event<int32_t, int32_t>::subscription _framebuffer_change_sub;
 

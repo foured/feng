@@ -13,11 +13,11 @@ namespace feng::phys::sat {
 	}
 
 	bool mesh_collider::collides_shape(const mesh_collider* other, collision_data* data) const {
-		return sat::solve(this, other, data);
+		return solver::solve(this, other, data);
 	}
 
 	bool mesh_collider::collides_shape(const sphere_collider* other, collision_data* data) const {
-		return sat::solve(this, other, data);
+		return solver::solve(this, other, data);
 	}
 
 	glm::vec2 mesh_collider::project_onto(const glm::vec3& axis) const {
@@ -35,7 +35,7 @@ namespace feng::phys::sat {
 
 	bool mesh_collider::chech_axes(const collider* other, collision_data* data) const {
 		for (const glm::vec3& n : _normals) {
-			if (!sat::check_axis(this, other, n, data)) {
+			if (!solver::check_axis(this, other, n, data)) {
 				return false;
 			}
 		}
@@ -49,11 +49,11 @@ namespace feng::phys::sat {
 	}
 
 	bool sphere_collider::collides_shape(const mesh_collider* other, collision_data* data) const {
-		return sat::solve(other, this, data);
+		return solver::solve(other, this, data);
 	}
 
 	bool sphere_collider::collides_shape(const sphere_collider* other, collision_data* data) const {
-		return sat::solve(this, other, data);
+		return solver::solve(this, other, data);
 	}
 
 	glm::vec2 sphere_collider::project_onto(const glm::vec3& axis) const {
@@ -72,7 +72,7 @@ namespace feng::phys::sat {
 
 	// SAT ----
 
-	bool sat::check_axis(const collider* col_1, const collider* col_2, const glm::vec3& axis, collision_data* data) {
+	bool solver::check_axis(const collider* col_1, const collider* col_2, const glm::vec3& axis, collision_data* data) {
 		glm::vec2 p1 = col_1->project_onto(axis);
 		glm::vec2 p2 = col_2->project_onto(axis);
 
@@ -88,11 +88,11 @@ namespace feng::phys::sat {
 		return true;
 	}
 
-	bool sat::solve(collider* col_1, collider* col_2, collision_data* data) {
+	bool solver::solve(collider* col_1, collider* col_2, collision_data* data) {
 		return col_1->collides(col_2, data);
 	}
 
-	bool sat::solve(const mesh_collider* col_1, const mesh_collider* col_2, collision_data* data) {
+	bool solver::solve(const mesh_collider* col_1, const mesh_collider* col_2, collision_data* data) {
 		if (!col_1->chech_axes(col_2, data)) {
 			return false;
 		}
@@ -121,7 +121,7 @@ namespace feng::phys::sat {
 		return true;
 	}
 
-	bool sat::solve(const mesh_collider* mesh, const sphere_collider* sphere, collision_data* data) {
+	bool solver::solve(const mesh_collider* mesh, const sphere_collider* sphere, collision_data* data) {
 		glm::vec3 sphere_axis(0.0f);
 		glm::vec3 sphere_center = sphere->_center;
 		float min_dist_sqrt = FLT_MAX;
@@ -144,7 +144,7 @@ namespace feng::phys::sat {
 		return true;
 	}
 
-	bool sat::solve(const sphere_collider* col_1, const sphere_collider* col_2, collision_data* data) {
+	bool solver::solve(const sphere_collider* col_1, const sphere_collider* col_2, collision_data* data) {
 		glm::vec3 dir = col_2->_center - col_1->_center;
 		float r1 = col_1->_radius;
 		float r2 = col_2->_radius;

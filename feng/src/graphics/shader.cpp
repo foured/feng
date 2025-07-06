@@ -11,6 +11,7 @@
 #include "../utilities/utilities.h"
 #include "../logic/data_management/assets_manager.h"
 #include "../logic/data_management/files.h"
+#include "gl_buffers/shader_storage.hpp"
 
 #define SHADER_INCLUDE_WORD "#include"
 #define SHADER_INCLUDE_OPEN_BRACKET_CHAR '<'
@@ -199,8 +200,9 @@ namespace feng {
 		glUniform3f(glGetUniformLocation(_shader_program, name.c_str()), v.x, v.y, v.z);
 	}
 
-	void shader::set_ubo_index(const std::string& name, int v) {
-		glUniformBlockBinding(_shader_program, glGetUniformBlockIndex(_shader_program, name.c_str()), v);
+	void shader::add_ubo(const std::string& name) {
+		uint32_t slot = shader_storage::get_name_binding(name);
+		glUniformBlockBinding(_shader_program, glGetUniformBlockIndex(_shader_program, name.c_str()), slot);
 	}
 
 	uint32_t shader::id() const {

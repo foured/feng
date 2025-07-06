@@ -15,13 +15,18 @@
 
 namespace feng::glstd {
 
+	enum class buffer_std : uint8_t{
+		std140 = 0,
+		std430 = 1
+	};
+
 	static std::map<std::type_index, uint32_t> base_aligments {
 		{ TID(int), 4 },
 		{ TID(float), 4 },
 		{ TID(glm::vec2), 8 },
 		{ TID(glm::vec3), 16 },
 		{ TID(glm::vec4), 16 },
-		{ TID(glm::mat4), 64 }
+		{ TID(glm::mat4), 16 }
 	};
 
 	struct buffer_element {
@@ -40,8 +45,12 @@ namespace feng::glstd {
 		template<typename T>
 		void add_element() {
 			IS_ALIGNMENTABLE(T);
-			_size = utilities::round_to(_size, BASE_ALIGNMENT(T));
-			elements.emplace_back(TS(T), BASE_ALIGNMENT(T));
+			uint32_t alignment = BASE_ALIGNMENT(T);
+			if (_array_mode) {
+				alignment = utilities::round_to(alignment, 16);
+			}
+			_size = utilities::round_to(_size, alignment);
+			elements.emplace_back(TS(T), alignment);
 			_size += TS(T);
 		}
 
@@ -56,8 +65,13 @@ namespace feng::glstd {
 			elements.emplace_back(_size - ssize, 0, true);
 		}
 
-		uint32_t size() const {
-			return utilities::round_to(_size, 16);
+		uint32_t size(bool round = true) const {
+			if (round) {
+				return utilities::round_to(_size, 16);
+			}
+			else {
+				return _size;
+			}
 		}
 
 		std::vector<buffer_element> elements;
@@ -69,8 +83,17 @@ namespace feng::glstd {
 			return buf;
 		}
 
+		void start_array() {
+			_array_mode = true;
+		}
+
+		void end_array() {
+			_array_mode = false;
+		}
+
 	private:
 		uint32_t _size = 0;
+		bool _array_mode = false;
 
 	};
 

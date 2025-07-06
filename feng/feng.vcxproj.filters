@@ -311,7 +311,7 @@
     <ClInclude Include="src\graphics\light\lights.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\gl_buffers\ssbo.hpp">
+    <ClInclude Include="src\graphics\gl_buffers\shader_storage.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\gl_buffers\glstandards.h">
