@@ -20,7 +20,7 @@ namespace feng {
 	public:
 		shader_storage(glstd::buffer_std buffer_type)
 			: gl_buffer(get_buffer_define(buffer_type), false),
-			_standard(buffer_type) { 
+			_standard(buffer_type) {
 		}
 
 		void allocate(uint32_t data_size, const std::string& name) {
@@ -33,7 +33,14 @@ namespace feng {
 		}
 
 		void allocate(const glstd::buffer_structure& final_buf_strct, const std::string& name) {
-			allocate(final_buf_strct.size(_standard == glstd::buffer_std::std430), name);
+			bool round = false;
+#ifdef GL_SHADER_STORAGE_BUFFER
+			if (_standard == glstd::buffer_std::std430) {
+				round = true;
+
+			}
+#endif
+			allocate(final_buf_strct.size(round), name);
 		}
 
 		void start_block() {
@@ -75,7 +82,7 @@ namespace feng {
 
 		void start_array() {
 #ifdef FENG_DEBUG
-			if (_standard == glstd::buffer_std::std430) {
+			if (_standard == glstd::buffer_std::std140) {
 				LOG_WARNING("No need to use 'start_array' in shader storage for std430, it is for std140");
 				return;
 			}
@@ -85,7 +92,7 @@ namespace feng {
 
 		void end_array() {
 #ifdef FENG_DEBUG
-			if (_standard == glstd::buffer_std::std430) {
+			if (_standard == glstd::buffer_std::std140) {
 				LOG_WARNING("No need to use 'end_array' in shader storage for std430, it is for std140");
 				return;
 			}
@@ -93,7 +100,7 @@ namespace feng {
 			_array_mode = false;
 		}
 
-		static inline const glstd::buffer_structure dirlight_buffer_structure 
+		static inline const glstd::buffer_structure dirlight_buffer_structure
 			= glstd::buffer_structure::make_buffer_structure<glm::vec3, glm::vec3, glm::vec3, glm::vec3>();
 
 		static inline const glstd::buffer_structure spotlight_buffer_structure
@@ -106,7 +113,7 @@ namespace feng {
 			glstd::buffer_structure lighs_final_buffer_structure;
 			lighs_final_buffer_structure.add_struct(dirlight_buffer_structure);
 			lighs_final_buffer_structure.add_element<int>();
-			for(int32_t i = 0; i < MAX_SPOT_LIGHTS; i++)
+			for (int32_t i = 0; i < MAX_SPOT_LIGHTS; i++)
 				lighs_final_buffer_structure.add_struct(spotlight_buffer_structure);
 			lighs_final_buffer_structure.add_element<int>();
 			for (int32_t i = 0; i < MAX_POINT_LIGHTS; i++)
@@ -116,12 +123,12 @@ namespace feng {
 		}
 
 		static void add_name_binding(const std::string& name, uint32_t slot) {
-			FENG_ASSERT(!_buffers_binds.contains(name), "Buffer block name: '", name, "' already exists.");
+			FENG_ASSERT(_buffers_binds.find(name) == _buffers_binds.end(), "Buffer block name: '", name, "' already exists.");
 			_buffers_binds[name] = slot;
 		}
 
 		static uint32_t get_name_binding(const std::string& name) {
-			FENG_ASSERT(_buffers_binds.contains(name), "Buffer block name: '", name, "' doesnt exists. Add it with \
+			FENG_ASSERT(_buffers_binds.find(name) != _buffers_binds.end(), "Buffer block name: '", name, "' doesnt exists. Add it with \
 				shader_storage::add_name_binding first.");
 			return _buffers_binds[name];
 		}
@@ -131,7 +138,7 @@ namespace feng {
 		glstd::buffer_std _standard;
 		bool _array_mode = false;
 
-		static inline std::unordered_map<std::string, uint32_t> _buffers_binds {};
+		static inline std::unordered_map<std::string, uint32_t> _buffers_binds{};
 
 		void buffer_and_offset_sub_data(uint32_t size, uint32_t alignment, void* data) {
 			_offset = utilities::round_to(_offset, alignment);
@@ -140,10 +147,14 @@ namespace feng {
 		}
 
 		static uint32_t get_buffer_define(glstd::buffer_std bstd) {
+#ifndef GL_SHADER_STORAGE_BUFFER
+			return GL_UNIFORM_BUFFER;
+#else
 			if (bstd == glstd::buffer_std::std140) {
 				return GL_UNIFORM_BUFFER;
 			}
 			return GL_SHADER_STORAGE_BUFFER;
+#endif
 		}
 	};
 

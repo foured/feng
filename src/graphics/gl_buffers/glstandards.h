@@ -16,8 +16,11 @@
 namespace feng::glstd {
 
 	enum class buffer_std : uint8_t{
-		std140 = 0,
+		std140 = 0
+#ifdef GL_SHADER_STORAGE_BUFFER
+		,
 		std430 = 1
+#endif
 	};
 
 	static std::map<std::type_index, uint32_t> base_aligments {

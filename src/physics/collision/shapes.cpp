@@ -5,8 +5,8 @@
 #include <glm/gtx/norm.hpp>
 #include <numeric>
 
-#include "../utilities/utilities.h"
-#include "../logging/logging.h"
+#include "../../logging/logging.h"
+#include "../../utilities/utilities.h"
 
 namespace feng::phys {
 

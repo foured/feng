@@ -5,7 +5,7 @@
 #include <sstream>
 
 //#define FENG_DEBUG
-//#define FENG_LOGGIN
+//#define FENG_LOGGING
 //#define LOG_FUNC_NAME
 
 #define WIN_LOGGIN_COLOR_NORMAL 15
@@ -16,7 +16,7 @@
 #define WIN_LOGGIN_COLOR_PINK 13
 #define WIN_LOGGIN_COLOR_YELLOW 14
 
-#ifdef FENG_LOGGIN
+#ifdef FENG_LOGGING
 	#define LOG_INFO(...) feng::logger::log_info(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
 	#define LOG_ACTION(...) feng::logger::log_action(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
 	#define LOG_ERROR(...) feng::logger::log_error(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)

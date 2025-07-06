@@ -55,12 +55,12 @@
 using namespace feng;
 
 std::array<std::string, 6> skybox_faces{
-	"res/textures/skyboxes/1/right.jpg",
-	"res/textures/skyboxes/1/left.jpg",
-	"res/textures/skyboxes/1/top.jpg",
-	"res/textures/skyboxes/1/bottom.jpg",
-	"res/textures/skyboxes/1/front.jpg",
-	"res/textures/skyboxes/1/back.jpg"
+	RESOURCES_PATH"textures/skyboxes/1/right.jpg",
+	RESOURCES_PATH"textures/skyboxes/1/left.jpg",
+	RESOURCES_PATH"textures/skyboxes/1/top.jpg",
+	RESOURCES_PATH"textures/skyboxes/1/bottom.jpg",
+	RESOURCES_PATH"textures/skyboxes/1/front.jpg",
+	RESOURCES_PATH"textures/skyboxes/1/back.jpg"
 };
 
 glm::vec3 random_vec3(float min = -1.0f, float max = 1.0f) {

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(feng)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(RELEASE_BUILD OFF CACHE BOOL "Enable release build" FORCE)
@@ -68,7 +68,7 @@ if(RELEASE_BUILD)
 else()
 	# This is useful to get an ASSETS_PATH in your IDE during development
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/res/")
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC FENG_LOGGIN) 
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC FENG_LOGGING) 
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC FENG_DEBUG) 
 
 endif()

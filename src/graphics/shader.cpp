@@ -20,8 +20,7 @@
 namespace feng {
 
 	shader_sub_program::shader_sub_program(const char* path, uint32_t type) 
-		: path(path), type(type) { }
-
+		: path(path), type(type) {	}
 
 	shader::shader() {}
 
@@ -38,12 +37,14 @@ namespace feng {
 
 	void shader::load_sub_programs(const std::vector<shader_sub_program>& additional_progs, const std::vector<std::string>& defines) {
 		std::vector<uint32_t> shader_progs;
-		for (const auto& sp : additional_progs)
+		for (const auto& sp : additional_progs) {
 			shader_progs.push_back(compile_shader(sp.path, sp.type, defines));
+		}
 
 		_shader_program = glCreateProgram();
-		for (auto sp : shader_progs)
+		for (auto sp : shader_progs) {
 			glAttachShader(_shader_program, sp);
+		}
 		glLinkProgram(_shader_program);
 
 		int32_t success;
@@ -54,8 +55,9 @@ namespace feng {
 			LOG_ERROR("Error to attach shaders:\n " + std::string(info_log));
 		}
 
-		for (auto sp : shader_progs)
+		for (auto sp : shader_progs) {
 			glDeleteShader(sp);
+		}
 
 		std::string res_str = "Compiled shader: ";
 		for (const auto& sp : additional_progs)
@@ -76,7 +78,7 @@ namespace feng {
 			ret = buf.str();
 		}
 		else {
-			LOG_ERROR("Couldn`t open " + std::string(filepath));
+			LOG_ERROR("Couldn`t open file: ", strerror(errno), " ", filepath);
 		}
 
 		file.close();
