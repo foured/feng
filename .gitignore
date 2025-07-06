@@ -397,6 +397,15 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+/out
+bin/
+build/
+/.vs
+.idea/
+CMakeSettings.json
+Makefile
+
+logs.txt
 
 #feng
 *.fmp
