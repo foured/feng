@@ -11,7 +11,7 @@ namespace feng {
 		void start() override;
 		void late_start() override;
 		void update() override;
-		std::shared_ptr<component> copy(instance* new_instance);
+		std::shared_ptr<component> copy(instance* new_instance) override;
 
 		void serialize(data::wfile* file) override;
 		void deserialize(data::rfile* file, scene* scene) override;

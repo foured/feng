@@ -5,7 +5,9 @@ in vec3 Color;
 
 out vec4 color;
 
-uniform sampler2D textures[32];
+#external define [MAX_NO_TEXTURE_UNITS]
+
+uniform sampler2D textures[MAX_NO_TEXTURE_UNITS];
 
 void main()
 {    

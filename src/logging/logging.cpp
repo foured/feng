@@ -5,7 +5,7 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
-#include <exception>
+#include <stdexcept>
 
 #ifdef _WIN32
 	#include "Windows.h"
@@ -16,19 +16,19 @@
 namespace feng {
 
 	void logger::log_action(const std::string& msg, const std::string& func_name, int32_t line) {
-		log(msg, "ACTION", WIN_LOGGIN_COLOR_GREEN, func_name, line);
+		log(msg, "ACTION", log_color::green, func_name, line);
 	}
 
 	void logger::log_info(const std::string& msg, const std::string& func_name, int32_t line) {
-		log(msg, "INFO", WIN_LOGGIN_COLOR_BLUE, func_name, line);
+		log(msg, "INFO", log_color::blue, func_name, line);
 	}
 
 	void logger::log_error(const std::string& msg, const std::string& func_name, int32_t line) {
-		log(msg, "ERROR", WIN_LOGGIN_COLOR_RED, func_name, line);
+		log(msg, "ERROR", log_color::red, func_name, line);
 	}
 
 	void logger::log_warning(const std::string& msg, const std::string& func_name, int32_t line) {
-		log(msg, "WARNING", WIN_LOGGIN_COLOR_PINK, func_name, line);
+		log(msg, "WARNING", log_color::pink, func_name, line);
 	}
 
 	void logger::log_time() {
@@ -36,19 +36,19 @@ namespace feng {
 		std::time_t now_c = std::chrono::system_clock::to_time_t(now);
 		std::tm now_tm = *localtime(&now_c);
 		std::cout << '[';
-		set_color(WIN_LOGGIN_COLOR_YELLOW);
+		set_color(log_color::yellow);
 		std::cout << std::put_time(&now_tm, "%H:%M:%S");
-		set_color(WIN_LOGGIN_COLOR_NORMAL);
+		set_color(log_color::normal);
 		std::cout << ']';
 	}
 
 	void logger::throw_error(const std::string& msg, const std::string& func_name, int32_t line) {
 		log_error(msg, func_name, line);
-		throw std::exception(msg.c_str());
+		throw std::runtime_error(msg.c_str());
 	}
 
 	void logger::call_assert(const std::string& msg, const std::string& func_name, int32_t line) {
-		log(msg, "ASSERT", WIN_LOGGIN_COLOR_YELLOW, func_name, line);
+		log(msg, "ASSERT", log_color::yellow, func_name, line);
 		std::abort();
 	}
 
@@ -75,7 +75,7 @@ namespace feng {
 		}
 	}
 
-	void logger::log(const std::string& msg, const std::string& type_name, char color, std::string func_name, int32_t line) {
+	void logger::log(const std::string& msg, const std::string& type_name, log_color color, std::string func_name, int32_t line) {
 		log_time();
 		std::cout << " | [";
 		set_color(color);
@@ -86,15 +86,69 @@ namespace feng {
 		set_color(WIN_LOGGIN_COLOR_DARK_BLUE);
 		std::cout << func_name << " (" << line << ")";
 #endif
-		set_color(WIN_LOGGIN_COLOR_NORMAL);
+		set_color(log_color::normal);
 		std::cout << "] -> " << msg << std::endl;
 	}
 
-	void logger::set_color(char color) {
+	void logger::set_color(log_color color) {
 #ifdef _WIN32
+		char col = WIN_LOGGIN_COLOR_NORMAL;
+
+		switch(color){
+		case log_color::normal:
+			col = WIN_LOGGIN_COLOR_NORMAL;
+			break;
+		case log_color::dark_blue:
+			col = WIN_LOGGIN_COLOR_DARK_BLUE;
+			break;
+		case log_color::green:
+			col = WIN_LOGGIN_COLOR_GREEN;
+			break;
+		case log_color::blue:
+			col = WIN_LOGGIN_COLOR_BLUE;
+			break;
+		case log_color::red:
+			col = WIN_LOGGIN_COLOR_RED;
+			break;
+		case log_color::pink:
+			col = WIN_LOGGIN_COLOR_PINK;
+			break;
+		case log_color::yellow:
+			col = WIN_LOGGIN_COLOR_YELLOW;
+			break;
+		}
+
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-		SetConsoleTextAttribute(hConsole, color);
-#endif // _WIN32
+		SetConsoleTextAttribute(hConsole, col); // _WIN32
+#else
+		const char* col = TERM_COLOR_NORMAL;
+
+		switch(color){
+		case log_color::normal:
+			col = TERM_COLOR_NORMAL;
+			break;
+		case log_color::dark_blue:
+			col = TERM_COLOR_DARK_BLUE;
+			break;
+		case log_color::green:
+			col = TERM_COLOR_GREEN;
+			break;
+		case log_color::blue:
+			col = TERM_COLOR_BLUE;
+			break;
+		case log_color::red:
+			col = TERM_COLOR_RED;
+			break;
+		case log_color::pink:
+			col = TERM_COLOR_PINK;
+			break;
+		case log_color::yellow:
+			col = TERM_COLOR_YELLOW;
+			break;
+		}
+
+		std::cout << col;
+#endif
 	}
 
 	timer::timer(const char* name)

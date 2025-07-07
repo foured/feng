@@ -4,6 +4,7 @@
 
 #include "../logging/logging.h"
 #include "../io/input.h"
+#include "GLFW/glfw3.h"
 
 namespace feng {
 
@@ -18,6 +19,10 @@ namespace feng {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
 		_window = glfwCreateWindow(width, height, title, NULL, NULL);
 		if (_window == NULL)
@@ -34,16 +39,18 @@ namespace feng {
 		//lfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		set_cursor_mode(false);
 
-		window::win_width = width;
-		window::win_height = height;
-		window::current_window = this;
-
 		glEnable(GL_DEPTH_TEST);
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		glViewport(0, 0, width, height);
+		int32_t fb_width = 100, fb_height = 100;
+		glfwGetFramebufferSize(_window, &fb_width, &fb_height);
+		glViewport(0, 0, fb_width, fb_height);
+
+		window::win_width = fb_width;
+		window::win_height = fb_height;
+		window::current_window = this;
 
 		glfwSetErrorCallback(error_callback);
 		glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);

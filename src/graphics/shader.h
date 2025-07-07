@@ -6,7 +6,7 @@
 
 #include <assimp/scene.h>
 
-#include <iostream>
+#include <unordered_map>
 #include <vector>
 #include <string>
 
@@ -29,6 +29,10 @@ namespace feng {
 
 		void activate();
 
+		static void add_external_define(const std::string& key, const std::string& val);
+		static std::string get_external_define(const std::string& key);
+
+
 		void set_bool(const std::string& name, bool val);
 		void set_mat4(const std::string& name, glm::mat4 val);
 		void set_int(const std::string& name, int value);
@@ -45,11 +49,12 @@ namespace feng {
 	private:
 		uint32_t _shader_program;
 
-	private:
+		static std::unordered_map<std::string, std::string> _external_defines;
+
 		void load_sub_programs(const std::vector<shader_sub_program>& additional_progs, const std::vector<std::string>& defines);
 		std::string load_shader_from_file(const char* filepath);
 		uint32_t compile_shader(const char* filepath, uint32_t shader_type, const std::vector<std::string>& defines);
-		std::string include_headers(std::string& shader_code);
+		std::string include_headers_and_external_defines(std::string& shader_code);
 		void set_defines(std::string* target, const std::vector<std::string>& defines);
 
 	};

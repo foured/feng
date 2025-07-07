@@ -14,6 +14,7 @@
 #include "logging/logging.h"
 
 #include "graphics/window.h"
+#include "graphics/renderer.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
 #include "graphics/model.h"
@@ -79,6 +80,8 @@ int main() {
 	//========================
 	timer startup_timer("Startup timer");
 	window win("Feng", 1920 - 192, 1080 - 108);
+
+	renderer::get_static_values();
 
 	assets_manager* am = assets_manager::get_instance();
 	am->shaders.load();
@@ -175,13 +178,6 @@ int main() {
 
 
 	glstd::buffer_structure test_bs;
-
-	test_bs.add_element<float>();
-	test_bs.add_element<glm::vec3>();
-	test_bs.add_element<glm::mat4>();
-	//test_bs.start_array();
-	test_bs.add_elements<int, int, int>();
-	//test_bs.end_array();
 
 	framebuffer main_framebuffer(window::win_width, window::win_height);
 	main_framebuffer.bind();
@@ -302,7 +298,6 @@ int main() {
 		sc1.render_flag(am->shaders.dirlight_depth_shader, INST_FLAG_CAST_SHADOWS);
 		sc1.dir_light.render_cleanup();
 		
-
 		//for (auto& pl : sc1.point_lights) {
 		//	pl.render_preparations(am->shaders.pointlight_depth_shader);
 		//	sc1.render_flag(am->shaders.pointlight_depth_shader, INST_FLAG_CAST_SHADOWS);
@@ -315,7 +310,7 @@ int main() {
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		//main render pass
 		am->shaders.obj_shader.activate();
 		am->shaders.obj_shader.set_3float("viewPos", sc1.main_camera.position);
@@ -323,18 +318,16 @@ int main() {
 		am->shaders.obj_shader.set_float("material.shininess", 32.0f);
 		am->shaders.obj_shader.set_mat4("lightSpaceMatrix", sc1.dir_light.lightspace_matrix);
 		am->shaders.obj_shader.set_mat4("model", sc1.model_matrix);
-		am->shaders.obj_shader.set_int("shadowMap", 31);
-		sc1.dir_light.bind_shadowmap();
+		am->shaders.obj_shader.set_int("shadowMap", renderer::get_shadowmap_texture_slot());
+		sc1.dir_light.bind_shadowmap(renderer::get_shadowmap_texture_slot());
 		//obj_shader.set_int("penumbraMask", 30);
 		for (uint8_t i = 0; i < MAX_POINT_LIGHTS; i++) {
 			uint8_t slot = 30 - i;
 			am->shaders.obj_shader.set_int("pointLightCube", slot);
 			sc1.point_lights[i].bind_shadowmap(slot);
 		}
-		
 		sc1.render_models(am->shaders.obj_shader);
 		sb.render(sc1.main_camera.get_view_matrix());
-
 		//utilities::test_octree_visualiser->update_buffers();
 		//utilities::test_octree_visualiser->render(glm::vec3(0.0f, 1.0f, 0.0f), sc1.model_matrix,
 		//																	   sc1.main_camera.get_view_matrix(), 

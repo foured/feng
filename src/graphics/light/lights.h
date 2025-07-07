@@ -44,7 +44,7 @@ namespace feng {
         void render_preparations();
         void full_render_preparations(shader& shader, glm::mat4 model);
         void render_cleanup();
-        void bind_shadowmap(uint32_t slot = SHADOWMAP_TEXTURE_SLOT);
+        void bind_shadowmap(uint32_t slot);
 
         void delete_buffers();
 

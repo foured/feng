@@ -17,10 +17,16 @@
 #define SHADER_INCLUDE_OPEN_BRACKET_CHAR '<'
 #define SHADER_INCLUDE_CLOSE_BRACKET_CHAR '>'
 
+#define SHADER_EXTERNA_WORD "#external define"
+#define SHADER_EXTERNAL_OPEN_BRACKET_CHAR '['
+#define SHADER_EXTERNAL_CLOSE_BRACKET_CHAR ']'
+
 namespace feng {
 
 	shader_sub_program::shader_sub_program(const char* path, uint32_t type) 
 		: path(path), type(type) {	}
+
+	std::unordered_map<std::string, std::string> shader::_external_defines = {};
 
 	shader::shader() {}
 
@@ -83,12 +89,13 @@ namespace feng {
 
 		file.close();
 
-		return include_headers(ret);
+		include_headers_and_external_defines(ret);
+		return ret;
 	}
 
-	std::string shader::include_headers(std::string& shader_code) {
+	std::string shader::include_headers_and_external_defines(std::string& shader_code) {
 		size_t include_pos = shader_code.find(SHADER_INCLUDE_WORD);
-		std::vector<std::string> included_headers;
+		std::vector<std::string> included_symbols;
 		while (include_pos != std::string::npos) {
 			size_t ob_pos = shader_code.find(SHADER_INCLUDE_OPEN_BRACKET_CHAR, include_pos);
 			size_t cb_pos = shader_code.find(SHADER_INCLUDE_CLOSE_BRACKET_CHAR, include_pos);
@@ -97,17 +104,38 @@ namespace feng {
 				return shader_code;
 			}
 			std::string include_name = utilities::strip(shader_code.substr(ob_pos + 1, cb_pos - ob_pos - 1));
-			if (std::find(included_headers.begin(), included_headers.end(), include_name) == included_headers.end()) {
+			if (std::find(included_symbols.begin(), included_symbols.end(), include_name) == included_symbols.end()) {
 				shader_code.replace(
 					include_pos, cb_pos - include_pos + 1, '\n' + assets_manager::get_instance()->get_shader(include_name) + '\n');
-				included_headers.emplace_back(include_name);
+				included_symbols.emplace_back(include_name);
 			}
 			else {
 				shader_code.replace(include_pos, cb_pos - include_pos + 1, "");
 			}
 			include_pos = shader_code.find(SHADER_INCLUDE_WORD);
 		}
-		return shader_code;
+
+		included_symbols.clear();
+		include_pos = shader_code.find(SHADER_EXTERNA_WORD);
+		while(include_pos != std::string::npos){
+			size_t ob_pos = shader_code.find(SHADER_EXTERNAL_OPEN_BRACKET_CHAR, include_pos);
+			size_t cb_pos = shader_code.find(SHADER_EXTERNAL_CLOSE_BRACKET_CHAR, include_pos);
+			if ((ob_pos == std::string::npos) || (cb_pos == std::string::npos)) {
+				LOG_ERROR("Error to find include brackets in shader.");
+				return shader_code;
+			}
+			std::string include_name = utilities::strip(shader_code.substr(ob_pos + 1, cb_pos - ob_pos - 1));
+			if(std::find(included_symbols.begin(), included_symbols.end(), include_name) == included_symbols.end()){
+				std::string define = "#define " + include_name + " " + get_external_define(include_name);
+				shader_code.replace(include_pos, cb_pos - include_pos + 1, define);
+				included_symbols.push_back(include_name);
+			} else{
+				shader_code.replace(include_pos, cb_pos - include_pos + 1, "");
+			}
+			include_pos = shader_code.find(SHADER_EXTERNA_WORD);
+		}
+
+		return "";
 	}
 
 	uint32_t shader::compile_shader(const char* filepath, uint32_t shader_type, const std::vector<std::string>& defines) {
@@ -160,6 +188,16 @@ namespace feng {
 
 	void shader::activate() {
 		glUseProgram(_shader_program);
+	}
+
+	void shader::add_external_define(const std::string& key, const std::string& val){
+		FENG_ASSERT(!_external_defines.contains(key), "Shaders external defines key '", key,"' already exists.");
+		_external_defines[key] = val;
+	}
+
+	std::string shader::get_external_define(const std::string& key){
+		FENG_ASSERT(_external_defines.contains(key), "No shaders external defines key '", key,"' found.");
+		return _external_defines.at(key);
 	}
 
 	//

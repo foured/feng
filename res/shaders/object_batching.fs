@@ -34,7 +34,9 @@ uniform int has_tex;
 uniform Material material;
 uniform int isSLWorking;
 
-uniform sampler2D textures[32];
+#external define [MAX_NO_FREE_TEXTURE_UNITS]
+
+uniform sampler2D textures[MAX_NO_FREE_TEXTURE_UNITS];
 uniform sampler2D shadowMap;
 uniform samplerCube pointLightCube;
 uniform sampler3D shadowMapOffsetTexture;

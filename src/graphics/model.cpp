@@ -6,6 +6,7 @@
 
 #include "../logging/logging.h"
 #include "../logic/data_management/files.h"
+#include "renderer.h"
 
 namespace feng {
 
@@ -316,7 +317,7 @@ namespace feng {
 					}
 				}
 
-				if ((batch.textures.size() + unique_textures) <= MAX_TEXTURE_SLOT_M) {
+				if ((batch.textures.size() + unique_textures) <= renderer::get_max_no_free_texture_units()) {
 					batched = true;
 					batch.add_mesh(mesh);
 				}

@@ -16,6 +16,14 @@
 #define WIN_LOGGIN_COLOR_PINK 13
 #define WIN_LOGGIN_COLOR_YELLOW 14
 
+#define TERM_COLOR_NORMAL     "\033[0m"
+#define TERM_COLOR_DARK_BLUE  "\033[34m"
+#define TERM_COLOR_GREEN      "\033[32m"
+#define TERM_COLOR_BLUE       "\033[36m"
+#define TERM_COLOR_RED        "\033[31m"
+#define TERM_COLOR_PINK       "\033[35m"
+#define TERM_COLOR_YELLOW     "\033[33m"
+
 #ifdef FENG_LOGGING
 	#define LOG_INFO(...) feng::logger::log_info(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
 	#define LOG_ACTION(...) feng::logger::log_action(feng::logger::gen_string(__VA_ARGS__), __FUNCTION__, __LINE__)
@@ -53,6 +61,16 @@
 										
 namespace feng {
 
+	enum class log_color : uint8_t {
+		normal,
+		dark_blue,
+		green,
+		blue,
+		red,
+		pink,
+		yellow
+	};
+
 	class logger {
 	public:
 		static void log_info(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
@@ -71,12 +89,12 @@ namespace feng {
 			return oss.str();
 		}
 
-		static void log(const std::string& msg, const std::string& type_name, char color,
+		static void log(const std::string& msg, const std::string& type_name, log_color color,
 			std::string f_name, int32_t line);
 
 	private:
 		static void log_time();
-		static void set_color(char color);
+		static void set_color(log_color color);
 	};
 
 	class timer {

@@ -287,6 +287,10 @@ namespace feng::phys {
 		struct point2d {
 			glm::vec2 pos;
 			glm::vec3 original;
+
+
+			point2d(const glm::vec2& position, const glm::vec3& orig)
+				: pos(position), original(orig) {}
 		};
 
 		std::vector<point2d> projected;

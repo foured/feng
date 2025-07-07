@@ -3,15 +3,15 @@
 #include <map>
 #include <typeindex>
 #include "../../utilities/utilities.h"
+#include "../../logging/logging.h"
 
 #define TID typeid
 #define TS sizeof
 
-#define BASE_ALIGNMENT(T) feng::glstd::base_aligments[TID(T)]
+#define BASE_ALIGNMENT(T) feng::glstd::get_base_aligments()[TID(T)]
 
 #define IS_ALIGNMENTABLE(T) \
-	const auto& t = TID(T);\
-	FENG_ASSERT(feng::glstd::base_aligments.contains(t), "Can`t find 'base aligment' for type: ", t.name());
+	FENG_ASSERT(feng::glstd::get_base_aligments().contains(std::type_index(typeid(T))), "Can't find base alignment for type: ", typeid(T).name());
 
 namespace feng::glstd {
 
@@ -22,20 +22,26 @@ namespace feng::glstd {
 		std430 = 1
 #endif
 	};
-
-	static std::map<std::type_index, uint32_t> base_aligments {
-		{ TID(int), 4 },
-		{ TID(float), 4 },
-		{ TID(glm::vec2), 8 },
-		{ TID(glm::vec3), 16 },
-		{ TID(glm::vec4), 16 },
-		{ TID(glm::mat4), 16 }
-	};
+	
+	inline std::map<std::type_index, uint32_t>& get_base_aligments() {
+		static std::map<std::type_index, uint32_t> map = {
+			{ TID(int), 4 },
+			{ TID(float), 4 },
+			{ TID(glm::vec2), 8 },
+			{ TID(glm::vec3), 16 },
+			{ TID(glm::vec4), 16 },
+			{ TID(glm::mat4), 16 }
+		};
+		return map;
+	}
 
 	struct buffer_element {
 		uint32_t size = 0;
 		uint32_t aligned_size = 0;
 		bool is_empty = false;
+
+		buffer_element(uint32_t s, uint32_t a, bool empty = false)
+			: size(s), aligned_size(a), is_empty(empty) {}
 	};
 
 	struct buffer_structure {
