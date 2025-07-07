@@ -17,6 +17,7 @@ namespace feng {
 		};
 
 		bounds_updater_context();
+		virtual ~bounds_updater_context() = default;
 
 		autonomy get_autonomy() const;
 		aabb calculate_bounds() const;

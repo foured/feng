@@ -9,6 +9,9 @@ namespace feng::phys::sat {
 	struct sphere_collider;
 
 	class collider {
+	public:
+		virtual ~collider() = default;
+
 	protected:
 		friend class solver;
 		friend class mesh_collider;
@@ -22,6 +25,9 @@ namespace feng::phys::sat {
 	};
 
 	class mesh_collider : virtual protected collider, virtual protected mesh_collider_data {
+	public:
+		virtual ~mesh_collider() = default;
+
 	protected:
 		friend class solver;
 
@@ -35,6 +41,8 @@ namespace feng::phys::sat {
 	};
 
 	class sphere_collider : virtual protected collider, virtual protected sphere_collider_data {
+	public:
+		virtual ~sphere_collider() = default;
 	protected:
 		friend class solver;
 

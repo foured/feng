@@ -27,7 +27,7 @@ namespace feng {
 		void start() override;
 		void late_start() override;
 		void update() override;
-		std::shared_ptr<component> copy(instance* new_instance);
+		std::shared_ptr<component> copy(instance* new_instance) override;
 
 		// overrides
 		void update_collider_data() override;

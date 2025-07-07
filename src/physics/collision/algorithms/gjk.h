@@ -9,6 +9,7 @@ namespace feng::phys::gjk {
 	// thx to: https://winter.dev/articles/gjk-algorithm
 
 	struct collider {
+		virtual ~collider() = default;
 		virtual glm::vec3 find_furthest_point(const glm::vec3& axis) const = 0;
 	};
 

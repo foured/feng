@@ -232,6 +232,7 @@ namespace feng {
 				return feng::mesh(vertices, indices, diff, spec);
 			}
 		}
+		THROW_ERROR("Some aiMesh-es doesnt have material. Feng dont support it for now.");
 	}
 
 	std::vector<texture> model::load_material_textures(aiMaterial* mat, aiTextureType type) {
@@ -345,6 +346,8 @@ namespace feng {
 						break;
 					case aiTextureType_NORMALS:
 						n_idx = i;
+						break;
+					default:
 						break;
 					}
 				}

@@ -9,7 +9,7 @@ namespace feng {
 	cubemap::cubemap() {}
 
 	cubemap::cubemap(uint32_t width, uint32_t height, uint32_t internalformat, uint32_t format, uint32_t type) {
-		if (format == NULL)
+		if (format == 0)
 			format = internalformat;
 		glGenTextures(1, &_texture_id);
 		bind();

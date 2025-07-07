@@ -16,7 +16,8 @@ namespace feng {
 
 	void vertexarray::set_attrib_pointer(uint32_t index, int32_t no_data_elements, GLenum element_type,
 		bool normalized, int32_t data_size, uint32_t offset, int32_t devisor) {
-		glVertexAttribPointer(index, no_data_elements, element_type, normalized, data_size, (void*)offset);
+		const void* ptr = reinterpret_cast<const void*>(offset);
+		glVertexAttribPointer(index, no_data_elements, element_type, normalized, data_size, ptr);
 		glEnableVertexAttribArray(index);
 
 		if (devisor != 0)

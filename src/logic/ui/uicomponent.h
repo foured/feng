@@ -6,6 +6,7 @@ namespace feng::ui {
 	class uicomponent {
 	public:
 		uicomponent(uiinstance* instance);
+		virtual ~uicomponent() = default;
 
 		bool is_active = true;
 

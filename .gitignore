@@ -405,6 +405,7 @@ build/
 CMakeSettings.json
 Makefile
 .vscode/
+*.DS_[Ss]tore
 
 logs.txt
 

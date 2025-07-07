@@ -8,7 +8,6 @@
 #include "io/input.h"
 
 #include "utilities/utilities.h"
-#include "utilities/uuid.hpp"
 #include "utilities/fps_counter.h"
 
 #include "logging/logging.h"
@@ -182,7 +181,7 @@ int main() {
 	framebuffer main_framebuffer(window::win_width, window::win_height);
 	main_framebuffer.bind();
 	texture main_render_texture = main_framebuffer.allocate_and_attach_texture(
-		GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB16F, GL_RGB);
+		GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, 0, 0, GL_RGB16F, GL_RGB);
 	renderbuffer main_renderbuffer = main_framebuffer.allocate_and_attach_renderbuffer(
 		GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT);
 	framebuffer::check_status();
@@ -195,7 +194,7 @@ int main() {
 			main_framebuffer.height = height;
 			main_render_texture.delete_buffer();
 			main_render_texture = main_framebuffer.allocate_and_attach_texture(
-				GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, NULL, NULL, GL_RGB16F, GL_RGB);
+				GL_COLOR_ATTACHMENT0, GL_LINEAR, GL_LINEAR, 0, 0, GL_RGB16F, GL_RGB);
 			main_renderbuffer.bind();
 			main_renderbuffer.renderbuffer_storage(GL_DEPTH24_STENCIL8, width, height);
 			framebuffer::check_status();

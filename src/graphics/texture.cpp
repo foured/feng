@@ -1,8 +1,5 @@
 #include "texture.h"
 
-#ifdef _WIN32
-	#define __STDC_LIB_EXT1__
-#endif
 #include <stb/stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
@@ -134,13 +131,13 @@ namespace feng {
 	}
 
 	void texture::set_params(int32_t min_filter, int32_t mag_filter, int32_t wrap_s, int32_t wrap_t) {
-		if(min_filter != NULL)
+		if(min_filter != 0)
 			set_param_i(GL_TEXTURE_MIN_FILTER, min_filter);
-		if(mag_filter != NULL)
+		if(mag_filter != 0)
 			set_param_i(GL_TEXTURE_MAG_FILTER, mag_filter);
-		if(wrap_s != NULL)
+		if(wrap_s != 0)
 			set_param_i(GL_TEXTURE_WRAP_S, wrap_s);
-		if(wrap_t != NULL)
+		if(wrap_t != 0)
 			set_param_i(GL_TEXTURE_WRAP_T, wrap_t);
 	}
 

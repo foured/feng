@@ -7,8 +7,8 @@
 
 namespace feng {
 
-	class i_gl_buffer {
-	public:
+	struct i_gl_buffer {
+		virtual ~i_gl_buffer() = default;
 		virtual void generate() = 0;
 		virtual void bind() = 0;
 		virtual void unbind() = 0;

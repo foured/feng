@@ -12,6 +12,8 @@ namespace feng {
 
 	class collision_receiver_context {
 	public:
+		virtual ~collision_receiver_context() = default;
+
 		virtual void on_collision(const advanced_collision_data& data) = 0;
 	};
 

@@ -55,8 +55,8 @@ namespace feng {
 		}
 
 		texture allocate_and_attach_texture(uint32_t attachment_mode, int32_t min_filter, int32_t mag_filter, 
-			int32_t wrap_s, int32_t wrap_t, int32_t internalformat, uint32_t format = NULL, uint32_t type = GL_FLOAT) {
-			if (format == NULL)
+			int32_t wrap_s, int32_t wrap_t, int32_t internalformat, uint32_t format = 0, uint32_t type = GL_FLOAT) {
+			if (format == 0)
 				format = internalformat;
 			texture fb_texture;
 			fb_texture.generate();

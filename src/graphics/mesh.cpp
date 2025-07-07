@@ -55,6 +55,8 @@ namespace feng {
 				case aiTextureType_NORMALS:
 					name = "normal" + std::to_string(norm_idx++);
 					break;
+				default: 
+					break;
 				}
 
 				shader.set_int("material." + name, i);

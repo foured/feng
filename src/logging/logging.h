@@ -77,7 +77,7 @@ namespace feng {
 		static void log_action(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void log_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void log_warning(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
-		static void throw_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
+		[[noreturn]] static void throw_error(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 		static void call_assert(const std::string& msg, const std::string& func_name = "", int32_t line = 0);
 
 		static std::string get_error_string(uint32_t err);

@@ -16,6 +16,7 @@ namespace feng {
 	class component : public data::serializable {
 	public:
 		component(instance* instance);
+		virtual ~component() = default;
 
 		bool is_active = true;
 

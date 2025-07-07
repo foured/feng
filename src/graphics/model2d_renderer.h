@@ -10,6 +10,7 @@ namespace feng {
 	class model2d_renderer {
 	public:
 		model2d_renderer(std::vector<mesh2d> meshes);
+		virtual ~model2d_renderer() = default;
 
 		virtual void render(shader& shader) = 0;
 

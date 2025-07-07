@@ -18,6 +18,8 @@ namespace feng::phys {
 	class  collider_base : protected gjk::collider, virtual public sat::collider,
 		virtual protected base_collider_data {
 	public:
+		virtual ~collider_base() = default;
+
 		bool was_changed_after_update();
 
 		virtual void update_collider_data() = 0;
