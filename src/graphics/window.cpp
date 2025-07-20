@@ -31,7 +31,7 @@ namespace feng {
 			THROW_ERROR("Failed to create GLFW window");
 		}
 		glfwMakeContextCurrent(_window);
-		//glfwSwapInterval(0);
+		glfwSwapInterval(0);
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
 			THROW_ERROR("Failed to initialize GLAD");

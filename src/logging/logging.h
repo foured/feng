@@ -106,7 +106,7 @@ namespace feng {
 
 	private:
 		std::string _name;
-		std::chrono::time_point<std::chrono::steady_clock> _start_timepoint;
+		std::chrono::high_resolution_clock::time_point _start_timepoint;
 		bool _stopped = false;
 
 	};

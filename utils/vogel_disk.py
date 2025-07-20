@@ -10,7 +10,8 @@ def calculate_vogel_r_array(samples: int):
         s += f"\n    {r:.8f}{comma}"
     s += ');'
 
-    with open(LOG_FILE_PATH, 'w') as f:
-        f.write(s)
+    # with open(LOG_FILE_PATH, 'w') as f:
+    #     f.write(s)
+    print(s)
 
-calculate_vogel_r_array(256)
+calculate_vogel_r_array(64)

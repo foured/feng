@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <string>
+#include <memory>
 
 #include "../graphics/helpers/box_renderer.h"
 

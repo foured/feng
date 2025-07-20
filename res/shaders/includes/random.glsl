@@ -5,7 +5,11 @@
 float CalculateVogelR(int index, int samples) {
     if (samples == 256) {
         return vogel_r_256[index];
-    } else {
+    }
+    else if (samples == 64){
+        return vogel_r_64[index];
+    }
+    else {
         return sqrt((index + 0.5) / samples);
     }
 }

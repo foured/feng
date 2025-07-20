@@ -54,7 +54,7 @@ float SmoothPCF(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float
     return 1 - shadow;
 }
 
-float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float searchWidth, int samples, out float numBlockers){
+float CalculateAvgBlockerDepth(sampler2D shadowMap, float gradientNoise, vec3 projCoords, float searchWidth, int samples, out int numBlockers){
     float avgBlockerDepth = 0.0;
 
     for (int i = 0; i < samples; ++i) {
@@ -81,13 +81,15 @@ float CalculatePenumbra(float avgBlockerDepth, float searchWidth, float zDepth) 
 }
 
 float PCSS(sampler2D shadowMap, vec3 projCoords) {
-    float numBlockers = 0.0;
+    int numBlockers = 0;
 
     float gradientNoise = InterleavedGradientNoise(projCoords.xy);
     float bdSearchWidth = LIGHT_SIZE * (projCoords.z - NEAR) / projCoords.z;
     float avgBlockerDepth = CalculateAvgBlockerDepth(shadowMap, gradientNoise, projCoords, bdSearchWidth, BLOCKER_SEARCH_NUM_SAMPLES, numBlockers);
-    if (numBlockers < 1.0)
+    if (numBlockers < 1)
         return 0.0;
+    if (numBlockers == BLOCKER_SEARCH_NUM_SAMPLES)
+        return 1.0;
     float pnSearchWidth = LIGHT_SIZE * NEAR / projCoords.z;
     float penumbra = CalculatePenumbra(avgBlockerDepth, pnSearchWidth, projCoords.z);
     return SmoothPCF(shadowMap, gradientNoise, projCoords, penumbra, PCF_NUM_SAMPLES);
