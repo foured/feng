@@ -46,6 +46,8 @@
 #include "logic/world/components/box_collider.h"
 #include "logic/world/components/rigidbody.h"
 
+#include <fecs/core/registry.h>
+
 #include "physics/collision/collider.h"
 
 #include "editor/lightbaker.h"

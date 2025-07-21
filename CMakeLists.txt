@@ -56,6 +56,7 @@ add_subdirectory("thirdparty/glm")
 add_subdirectory("thirdparty/stb")
 add_subdirectory("thirdparty/assimp")
 add_subdirectory("thirdparty/freetype")
+add_subdirectory("thirdparty/fecs")
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -64,11 +65,9 @@ add_executable(${CMAKE_PROJECT_NAME})
 target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC GLFW_INCLUDE_NONE=1) 
 
 if(RELEASE_BUILD)
-	# setup the ASSETS_PATH macro to be in the root folder of your exe
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./res/") 
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./res/")
 
 else()
-	# This is useful to get an ASSETS_PATH in your IDE during development
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/res/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC FENG_LOGGING) 
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC FENG_DEBUG) 
@@ -87,4 +86,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         stb
         assimp
         freetype
+		fecs
 )
